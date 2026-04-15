@@ -114,3 +114,16 @@ export async function backupFile(filePath) {
   }
   return null;
 }
+
+/**
+ * Save a pre-install snapshot (.pre-ace) for uninstall restore.
+ * Only creates the snapshot if one doesn't already exist (first install).
+ */
+export async function backupPreInstall(filePath) {
+  const snapshotPath = `${filePath}.pre-ace`;
+  if (await fs.pathExists(filePath) && !await fs.pathExists(snapshotPath)) {
+    await fs.copy(filePath, snapshotPath);
+    return snapshotPath;
+  }
+  return null;
+}

@@ -6,7 +6,7 @@ import {
   CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS,
   PLUGIN_SRC_DIR, PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
 } from './constants.js';
-import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, conflictCheck, backupFile } from './merger.js';
+import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, conflictCheck, backupFile, backupPreInstall } from './merger.js';
 
 export class Installer {
   constructor(options = {}) {
@@ -141,6 +141,9 @@ export class Installer {
       return;
     }
 
+    if (exists && fileSpec.merge) {
+      await backupPreInstall(destPath);
+    }
     await fs.ensureDir(path.dirname(destPath));
     await fs.copy(srcPath, destPath);
     this.results.installed.push(fileSpec.dest);
@@ -189,6 +192,7 @@ export class Installer {
       return;
     }
 
+    await backupPreInstall(destPath);
     await backupFile(destPath);
     await fs.writeFile(destPath, content, 'utf-8');
     this.results.merged.push({ file: fileSpec.dest, added });
@@ -210,6 +214,7 @@ export class Installer {
       return;
     }
 
+    await backupPreInstall(destPath);
     await backupFile(destPath);
     await fs.writeJson(destPath, merged, { spaces: 2 });
     this.results.merged.push({ file: fileSpec.dest });

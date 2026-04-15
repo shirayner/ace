@@ -25,7 +25,7 @@ export const ROLES = {
     label: 'Backend Developer',
     description: 'Java/Go/Python backend, microservices, APIs',
     primaryLang: 'Java',
-    hooks: ['java-compile-check.sh'],
+    hooks: ['ace.java-compile-check.sh'],
   },
   frontend: {
     label: 'Frontend Developer',
@@ -43,7 +43,7 @@ export const ROLES = {
     label: 'Fullstack Developer',
     description: 'Full-stack development, frontend + backend',
     primaryLang: 'TypeScript + Java',
-    hooks: ['java-compile-check.sh'],
+    hooks: ['ace.java-compile-check.sh'],
   },
 };
 
@@ -78,16 +78,16 @@ export const COMPONENTS = {
     description: 'Hook scripts (optional, role-dependent)',
     required: false,
     conditional: [
-      { src: 'hooks/java-compile-check.sh', dest: 'hooks/java-compile-check.sh', roles: ['backend', 'fullstack'] },
+      { src: 'hooks/ace.java-compile-check.sh', dest: 'hooks/ace.java-compile-check.sh', roles: ['backend', 'fullstack'] },
     ],
   },
   hookify: {
     description: 'Safety guard rules (block dangerous ops, protect secrets, require verification)',
     required: false,
     files: [
-      { src: 'hookify/hookify.block-dangerous-ops.local.md', dest: 'hookify.block-dangerous-ops.local.md' },
-      { src: 'hookify/hookify.protect-secrets.local.md', dest: 'hookify.protect-secrets.local.md' },
-      { src: 'hookify/hookify.require-verification.local.md', dest: 'hookify.require-verification.local.md' },
+      { src: 'hookify/ace.hookify.block-dangerous-ops.local.md', dest: 'ace.hookify.block-dangerous-ops.local.md' },
+      { src: 'hookify/ace.hookify.protect-secrets.local.md', dest: 'ace.hookify.protect-secrets.local.md' },
+      { src: 'hookify/ace.hookify.require-verification.local.md', dest: 'ace.hookify.require-verification.local.md' },
     ],
   },
   memory: {
