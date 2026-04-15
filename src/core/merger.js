@@ -83,6 +83,19 @@ function mergeHooksArrays(target, source) {
 }
 
 /**
+ * Merge installed_plugins.json: add or update the ace plugin entry.
+ */
+export async function mergeInstalledPlugins(filePath, pluginKey, entry) {
+  let data = { version: 2, plugins: {} };
+  if (await fs.pathExists(filePath)) {
+    data = await fs.readJson(filePath);
+  }
+  data.plugins[pluginKey] = [entry];
+  await fs.ensureDir(path.dirname(filePath));
+  await fs.writeJson(filePath, data, { spaces: 2 });
+}
+
+/**
  * Check if a file or directory exists at the target path.
  */
 export async function conflictCheck(targetPath) {

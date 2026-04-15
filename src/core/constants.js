@@ -7,10 +7,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const CLAUDE_DIR = path.join(os.homedir(), '.claude');
 export const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
 
+export const PLUGIN_NAME = 'ace';
+export const MARKETPLACE_NAME = 'ace-local';
+export const PLUGIN_SRC_DIR = path.join(__dirname, '..', '..', 'plugin');
+export const PLUGIN_CACHE_DIR = path.join(CLAUDE_DIR, 'plugins', 'cache', MARKETPLACE_NAME, PLUGIN_NAME);
+export const INSTALLED_PLUGINS_FILE = path.join(CLAUDE_DIR, 'plugins', 'installed_plugins.json');
+export const PLUGIN_KEY = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
+
 export const PRESETS = {
-  full: ['core', 'rules', 'skills', 'hooks', 'hookify', 'memory', 'commands'],
-  minimal: ['core', 'rules', 'skills'],
-  safe: ['core', 'rules', 'skills', 'hookify', 'memory'],
+  full: ['core', 'rules', 'plugin', 'hooks', 'hookify', 'memory'],
+  minimal: ['core', 'rules', 'plugin'],
+  safe: ['core', 'rules', 'plugin', 'hookify', 'memory'],
 };
 
 export const ROLES = {
@@ -53,24 +60,19 @@ export const COMPONENTS = {
     description: 'Cognitive & code quality rules',
     required: true,
     files: [
-      { src: 'rules/thinking.md', dest: 'rules/thinking.md' },
-      { src: 'rules/clean-code.md', dest: 'rules/clean-code.md' },
-      { src: 'rules/code-quality.md', dest: 'rules/code-quality.md' },
-      { src: 'rules/reporting.md', dest: 'rules/reporting.md' },
-      { src: 'rules/task-recovery.md', dest: 'rules/task-recovery.md' },
-      { src: 'rules/context-hygiene.md', dest: 'rules/context-hygiene.md' },
-      { src: 'rules/memory-policy.md', dest: 'rules/memory-policy.md' },
+      { src: 'rules/ace/thinking.md', dest: 'rules/ace/thinking.md' },
+      { src: 'rules/ace/clean-code.md', dest: 'rules/ace/clean-code.md' },
+      { src: 'rules/ace/code-quality.md', dest: 'rules/ace/code-quality.md' },
+      { src: 'rules/ace/reporting.md', dest: 'rules/ace/reporting.md' },
+      { src: 'rules/ace/task-recovery.md', dest: 'rules/ace/task-recovery.md' },
+      { src: 'rules/ace/context-hygiene.md', dest: 'rules/ace/context-hygiene.md' },
+      { src: 'rules/ace/memory-policy.md', dest: 'rules/ace/memory-policy.md' },
     ],
   },
-  skills: {
-    description: 'AI skills (auto-goal, coding, skill-creator, skill-optimize)',
+  plugin: {
+    description: 'Ace plugin (skills: auto-goal, coding, skill-creator, skill-optimize; commands: report)',
     required: true,
-    directories: [
-      'skills/auto-goal',
-      'skills/coding',
-      'skills/skill-creator',
-      'skills/skill-optimize',
-    ],
+    isPlugin: true,
   },
   hooks: {
     description: 'Hook scripts (optional, role-dependent)',
@@ -95,12 +97,5 @@ export const COMPONENTS = {
       { src: 'memory/MEMORY.md', dest: 'memory/MEMORY.md', merge: 'skip-existing' },
     ],
     roleTemplates: true,
-  },
-  commands: {
-    description: 'Custom commands (report)',
-    required: false,
-    files: [
-      { src: 'commands/report.md', dest: 'commands/report.md' },
-    ],
   },
 };

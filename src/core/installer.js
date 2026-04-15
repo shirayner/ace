@@ -2,8 +2,11 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
-import { CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS } from './constants.js';
-import { mergeClaudeMd, mergeSettingsJson, conflictCheck, backupFile } from './merger.js';
+import {
+  CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS,
+  PLUGIN_SRC_DIR, PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
+} from './constants.js';
+import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, conflictCheck, backupFile } from './merger.js';
 
 export class Installer {
   constructor(options = {}) {
@@ -40,14 +43,17 @@ export class Installer {
   }
 
   async installComponent(name, component) {
-    // Install regular files
+    if (component.isPlugin) {
+      await this.installPlugin();
+      return;
+    }
+
     if (component.files) {
       for (const file of component.files) {
         await this.installFile(file);
       }
     }
 
-    // Install conditional files (role-dependent)
     if (component.conditional) {
       for (const file of component.conditional) {
         if (file.roles && file.roles.includes(this.role)) {
@@ -56,17 +62,48 @@ export class Installer {
       }
     }
 
-    // Install directories (e.g., skills)
     if (component.directories) {
       for (const dir of component.directories) {
         await this.installDirectory(dir);
       }
     }
 
-    // Install role-specific templates (e.g., memory/user_profile.md)
     if (component.roleTemplates) {
       await this.installRoleTemplate();
     }
+  }
+
+  async installPlugin() {
+    const pluginJsonPath = path.join(PLUGIN_SRC_DIR, '.claude-plugin', 'plugin.json');
+    if (!await fs.pathExists(pluginJsonPath)) {
+      this.results.errors.push({ component: 'plugin', error: 'Plugin source not found' });
+      return;
+    }
+
+    const pluginJson = await fs.readJson(pluginJsonPath);
+    const version = pluginJson.version || '0.0.0';
+    const destDir = path.join(PLUGIN_CACHE_DIR, version);
+
+    if (this.dryRun) {
+      console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
+      console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
+      this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
+      return;
+    }
+
+    await fs.ensureDir(path.dirname(destDir));
+    await fs.copy(PLUGIN_SRC_DIR, destDir, { overwrite: true });
+    this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
+
+    const pluginEntry = {
+      scope: 'user',
+      installPath: destDir,
+      version,
+      installedAt: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+    };
+    await mergeInstalledPlugins(INSTALLED_PLUGINS_FILE, PLUGIN_KEY, pluginEntry);
+    this.results.merged.push({ file: 'plugins/installed_plugins.json' });
   }
 
   async installFile(fileSpec) {
@@ -94,7 +131,6 @@ export class Installer {
         await this.mergeSettingsJsonFile(srcPath, destPath, fileSpec);
         return;
       }
-      // No merge strategy — skip existing
       this.results.skipped.push(fileSpec.dest);
       return;
     }

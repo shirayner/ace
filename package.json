@@ -36,6 +36,7 @@
     "bin/",
     "src/",
     "templates/",
+    "plugin/",
     "README.md",
     "LICENSE"
   ]

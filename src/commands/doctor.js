@@ -1,7 +1,10 @@
 import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
-import { CLAUDE_DIR, COMPONENTS } from '../core/constants.js';
+import {
+  CLAUDE_DIR, COMPONENTS,
+  PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
+} from '../core/constants.js';
 
 export async function doctorCommand() {
   console.log(chalk.bold('\n  ace doctor — verifying installation\n'));
@@ -15,23 +18,42 @@ export async function doctorCommand() {
   checks.push(await check('CLAUDE.md', fs.pathExists(path.join(CLAUDE_DIR, 'CLAUDE.md'))));
   checks.push(await check('settings.json', fs.pathExists(path.join(CLAUDE_DIR, 'settings.json'))));
 
-  // 3. Check rules
+  // 3. Check rules (in ace/ namespace subdirectory)
   const ruleFiles = COMPONENTS.rules.files;
   for (const file of ruleFiles) {
-    checks.push(await check(`rules/${path.basename(file.dest)}`, fs.pathExists(path.join(CLAUDE_DIR, file.dest))));
+    checks.push(await check(`rules/ace/${path.basename(file.dest)}`, fs.pathExists(path.join(CLAUDE_DIR, file.dest))));
   }
 
-  // 4. Check skills
-  const skillDirs = COMPONENTS.skills.directories;
-  for (const dir of skillDirs) {
-    const skillMd = path.join(CLAUDE_DIR, dir, 'SKILL.md');
-    checks.push(await check(dir, fs.pathExists(skillMd)));
+  // 4. Check plugin installation
+  const pluginVersions = await getPluginVersionDirs();
+  if (pluginVersions.length > 0) {
+    const latestDir = pluginVersions[pluginVersions.length - 1];
+    const pluginJsonPath = path.join(latestDir, '.claude-plugin', 'plugin.json');
+    checks.push(await check('plugin: ace directory', Promise.resolve(true)));
+    checks.push(await check('plugin: plugin.json', fs.pathExists(pluginJsonPath)));
+
+    const skillNames = ['auto-goal', 'coding', 'skill-creator', 'skill-optimize'];
+    for (const skill of skillNames) {
+      const skillMd = path.join(latestDir, 'skills', skill, 'SKILL.md');
+      checks.push(await check(`plugin: skill ace:${skill}`, fs.pathExists(skillMd)));
+    }
+  } else {
+    checks.push({ name: 'plugin: ace directory', ok: false });
   }
 
-  // 5. Check memory
+  // 5. Check installed_plugins.json registration
+  try {
+    const installed = await fs.readJson(INSTALLED_PLUGINS_FILE);
+    const hasAce = !!installed?.plugins?.[PLUGIN_KEY];
+    checks.push({ name: 'installed_plugins.json has ace', ok: hasAce });
+  } catch {
+    checks.push({ name: 'installed_plugins.json has ace', ok: false });
+  }
+
+  // 6. Check memory
   checks.push(await check('memory/MEMORY.md', fs.pathExists(path.join(CLAUDE_DIR, 'memory', 'MEMORY.md'))));
 
-  // 6. Validate settings.json structure
+  // 7. Validate settings.json structure
   try {
     const settings = await fs.readJson(path.join(CLAUDE_DIR, 'settings.json'));
     checks.push({ name: 'settings.json valid JSON', ok: true });
@@ -41,11 +63,14 @@ export async function doctorCommand() {
 
     const hasMemoryDir = settings?.autoMemoryDirectory;
     checks.push({ name: 'settings.json has autoMemoryDirectory', ok: !!hasMemoryDir });
+
+    const aceEnabled = settings?.enabledPlugins?.[PLUGIN_KEY] === true;
+    checks.push({ name: 'settings.json has ace plugin enabled', ok: aceEnabled });
   } catch {
     checks.push({ name: 'settings.json parseable', ok: false });
   }
 
-  // 7. Validate CLAUDE.md @references
+  // 8. Validate CLAUDE.md @references
   try {
     const claudeMd = await fs.readFile(path.join(CLAUDE_DIR, 'CLAUDE.md'), 'utf-8');
     const refs = claudeMd.match(/@~?\/?\.?claude\/[^\s)]+/g) || [];
@@ -74,6 +99,19 @@ export async function doctorCommand() {
   } else {
     console.log(chalk.green('  All checks passed. Environment is healthy.\n'));
   }
+}
+
+async function getPluginVersionDirs() {
+  if (!await fs.pathExists(PLUGIN_CACHE_DIR)) return [];
+  const entries = await fs.readdir(PLUGIN_CACHE_DIR);
+  const dirs = [];
+  for (const entry of entries) {
+    const full = path.join(PLUGIN_CACHE_DIR, entry);
+    if (await fs.stat(full).then(s => s.isDirectory())) {
+      dirs.push(full);
+    }
+  }
+  return dirs;
 }
 
 async function check(name, promise) {

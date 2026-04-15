@@ -6,6 +6,7 @@ import chalk from 'chalk';
 import { initCommand } from '../src/commands/init.js';
 import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
+import { uninstallCommand } from '../src/commands/uninstall.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -35,5 +36,11 @@ program
   .command('list')
   .description('List installed components and their status')
   .action(listCommand);
+
+program
+  .command('uninstall')
+  .description('Remove all ace-managed components')
+  .option('-y, --yes', 'Skip confirmation prompt', false)
+  .action(uninstallCommand);
 
 program.parse();

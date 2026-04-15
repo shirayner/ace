@@ -6,6 +6,7 @@
   },
   "autoMemoryDirectory": "~/.claude/memory/",
   "enabledPlugins": {
-    "hookify@claude-plugins-official": true
+    "hookify@claude-plugins-official": true,
+    "ace@ace-local": true
   }
 }

@@ -7,7 +7,14 @@
       "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/code-review-guide.md templates/skills/coding/references/)",
       "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/code-smells.md templates/skills/coding/references/)",
       "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/implement-guide.md templates/skills/coding/references/)",
-      "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/unit-test-guide.md templates/skills/coding/references/)"
+      "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/unit-test-guide.md templates/skills/coding/references/)",
+      "Read(//d/Users/r.shi/.claude/plugins/cache/ace-local/ace/0.1.0/.claude-plugin/**)",
+      "Read(//d/Users/r.shi/.claude/plugins/cache/ace-local/ace/0.1.0/skills/**)",
+      "Read(//d/Users/r.shi/.claude/plugins/cache/ace-local/ace/0.1.0/commands/**)",
+      "Bash(node bin/ace.js doctor)",
+      "Bash(node bin/ace.js list)",
+      "Bash(node bin/ace.js uninstall --yes)",
+      "Bash(node bin/ace.js init --no-interaction)"
     ]
   }
 }
