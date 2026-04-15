@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0-snapshot.3] - 2026-04-16
+
+### Fixed
+- Plugin installation failure: `Plugin "ace" not found in marketplace "ace-local"`
+- Root cause: `ace init` did not create local marketplace directory or register in `known_marketplaces.json`
+
+### Added
+- Local marketplace self-registration during `ace init` (marketplace directory + `marketplace.json` + `known_marketplaces.json` entry)
+- `mergeKnownMarketplaces()` and `removeKnownMarketplace()` in merger.js
+- `setupMarketplace()` method in installer.js
+- Doctor checks for marketplace directory, `marketplace.json`, and `known_marketplaces.json`
+- Uninstall cleanup for marketplace directory and `known_marketplaces.json` entry
+
 ## [0.1.0-snapshot.2] - 2026-04-15
 
 ### Added
