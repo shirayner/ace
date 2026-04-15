@@ -4,9 +4,11 @@ import chalk from 'chalk';
 import ora from 'ora';
 import {
   CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS,
-  PLUGIN_SRC_DIR, PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
+  PLUGIN_SRC_DIR, PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE,
+  KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
+  PLUGIN_KEY, PLUGIN_NAME,
 } from './constants.js';
-import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, conflictCheck, backupFile, backupPreInstall } from './merger.js';
+import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, mergeKnownMarketplaces, conflictCheck, backupFile, backupPreInstall } from './merger.js';
 
 export class Installer {
   constructor(options = {}) {
@@ -85,16 +87,21 @@ export class Installer {
     const destDir = path.join(PLUGIN_CACHE_DIR, version);
 
     if (this.dryRun) {
+      console.log(chalk.cyan(`  [dry-run] Would create marketplace ${MARKETPLACE_NAME}`));
       console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
       console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
       this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
       return;
     }
 
+    // 1. Setup local marketplace (directory + marketplace.json + known_marketplaces.json)
+    await this.setupMarketplace(pluginJson);
+
+    // 2. Copy plugin to cache
     await fs.ensureDir(path.dirname(destDir));
     await fs.copy(PLUGIN_SRC_DIR, destDir, { overwrite: true });
-    this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
 
+    // 3. Register in installed_plugins.json
     const pluginEntry = {
       scope: 'user',
       installPath: destDir,
@@ -103,7 +110,42 @@ export class Installer {
       lastUpdated: new Date().toISOString(),
     };
     await mergeInstalledPlugins(INSTALLED_PLUGINS_FILE, PLUGIN_KEY, pluginEntry);
+
+    this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
     this.results.merged.push({ file: 'plugins/installed_plugins.json' });
+  }
+
+  async setupMarketplace(pluginJson) {
+    // 1. Copy plugin files to marketplace directory
+    await fs.ensureDir(MARKETPLACE_DIR);
+    await fs.copy(PLUGIN_SRC_DIR, MARKETPLACE_DIR, { overwrite: true });
+
+    // 2. Create marketplace.json alongside the existing plugin.json
+    const marketplaceJson = {
+      name: MARKETPLACE_NAME,
+      owner: pluginJson.author || { name: 'unknown' },
+      plugins: [
+        {
+          name: pluginJson.name,
+          source: './',
+          description: pluginJson.description || '',
+          version: pluginJson.version || '0.0.0',
+        },
+      ],
+    };
+    const marketplaceJsonPath = path.join(MARKETPLACE_DIR, '.claude-plugin', 'marketplace.json');
+    await fs.ensureDir(path.dirname(marketplaceJsonPath));
+    await fs.writeJson(marketplaceJsonPath, marketplaceJson, { spaces: 2 });
+
+    // 3. Register in known_marketplaces.json
+    const marketplaceEntry = {
+      source: { source: 'local' },
+      installLocation: MARKETPLACE_DIR,
+      lastUpdated: new Date().toISOString(),
+    };
+    await mergeKnownMarketplaces(KNOWN_MARKETPLACES_FILE, MARKETPLACE_NAME, marketplaceEntry);
+
+    this.results.merged.push({ file: 'plugins/known_marketplaces.json' });
   }
 
   async installFile(fileSpec) {

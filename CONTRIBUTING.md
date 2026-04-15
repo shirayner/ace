@@ -2,9 +2,11 @@
 
 Thank you for your interest in contributing to ace!
 
+ace is hosted on both **GitHub** (open source) and **GitLab** (internal). The workflow is nearly identical — pick whichever platform your repository lives on.
+
 ## Development Setup
 
-1. Fork and clone the repository
+1. Fork (GitHub) or create a branch (GitLab) from the repository
 2. Install dependencies: `npm install`
 3. Link locally: `npm link`
 4. Test your changes: `ace init --dry-run`
@@ -29,13 +31,26 @@ We use [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore:` — Build process or auxiliary tool changes
 - `test:` — Adding or correcting tests
 
-## Pull Request Process
+## Pull / Merge Request Process
 
-1. Create a feature branch from `main`
-2. Make your changes with clear commit messages
-3. Ensure `npm test` and `npm run lint` pass
-4. Update CHANGELOG.md under `[Unreleased]`
-5. Submit a PR with a clear description
+| Step | GitHub | GitLab |
+|------|--------|--------|
+| 1 | Fork repo, create feature branch | Create feature branch from `main` |
+| 2 | Make changes with clear commits | Same |
+| 3 | Ensure `npm test` and `npm run lint` pass | Same |
+| 4 | Update CHANGELOG.md under `[Unreleased]` | Same |
+| 5 | Open a **Pull Request** | Open a **Merge Request** |
+
+Both platforms have templates that pre-fill a checklist for you.
+
+## CI Pipelines
+
+| Platform | Config | Triggers |
+|----------|--------|----------|
+| GitHub | `.github/workflows/ci.yml` | push, pull_request |
+| GitLab | `.gitlab-ci.yml` | push, merge_request |
+
+Both run lint + test across Node 18/20/22. The GitLab pipeline additionally uses per-version caching for faster runs.
 
 ## Project Structure
 
@@ -53,7 +68,10 @@ ace/
 
 ## Reporting Issues
 
-Use GitHub Issues. Please include:
+**GitHub**: Use [GitHub Issues](../../issues).
+**GitLab**: Use [GitLab Issues](../../-/issues).
+
+Please include:
 
 - ace version (`ace --version`)
 - Node.js version (`node --version`)

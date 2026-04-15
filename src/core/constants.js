@@ -12,6 +12,8 @@ export const MARKETPLACE_NAME = 'ace-local';
 export const PLUGIN_SRC_DIR = path.join(__dirname, '..', '..', 'plugin');
 export const PLUGIN_CACHE_DIR = path.join(CLAUDE_DIR, 'plugins', 'cache', MARKETPLACE_NAME, PLUGIN_NAME);
 export const INSTALLED_PLUGINS_FILE = path.join(CLAUDE_DIR, 'plugins', 'installed_plugins.json');
+export const KNOWN_MARKETPLACES_FILE = path.join(CLAUDE_DIR, 'plugins', 'known_marketplaces.json');
+export const MARKETPLACE_DIR = path.join(CLAUDE_DIR, 'plugins', 'marketplaces', MARKETPLACE_NAME);
 export const PLUGIN_KEY = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
 
 export const PRESETS = {

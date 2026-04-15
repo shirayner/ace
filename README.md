@@ -81,7 +81,8 @@ That's it. Run `ace doctor` to verify.
 
 ## Contributing
 
-Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Contributions are welcome on both GitHub and GitLab (internal).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## License
 

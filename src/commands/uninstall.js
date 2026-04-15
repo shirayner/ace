@@ -6,7 +6,9 @@ import ora from 'ora';
 import {
   CLAUDE_DIR, COMPONENTS,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
+  KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
 } from '../core/constants.js';
+import { removeKnownMarketplace } from '../core/merger.js';
 
 export async function uninstallCommand(options) {
   console.log(chalk.bold('\n  ace uninstall — removing ace components\n'));
@@ -44,7 +46,7 @@ export async function uninstallCommand(options) {
     errors.push({ component: 'rules', error: err.message });
   }
 
-  // 2. Remove plugin from cache
+  // 2. Remove plugin from cache and marketplace
   const spinner2 = ora('Removing plugin...').start();
   try {
     if (await fs.pathExists(PLUGIN_CACHE_DIR)) {
@@ -63,6 +65,16 @@ export async function uninstallCommand(options) {
         removed.push('installed_plugins.json entry');
       }
     }
+
+    // Remove marketplace directory
+    if (await fs.pathExists(MARKETPLACE_DIR)) {
+      await fs.remove(MARKETPLACE_DIR);
+      removed.push('marketplace: ' + MARKETPLACE_NAME);
+    }
+
+    // Remove from known_marketplaces.json
+    await removeKnownMarketplace(KNOWN_MARKETPLACES_FILE, MARKETPLACE_NAME);
+    removed.push('known_marketplaces.json entry');
 
     spinner2.succeed('plugin removed');
   } catch (err) {

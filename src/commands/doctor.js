@@ -4,6 +4,7 @@ import chalk from 'chalk';
 import {
   CLAUDE_DIR, COMPONENTS,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
+  KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
 } from '../core/constants.js';
 
 export async function doctorCommand() {
@@ -48,6 +49,17 @@ export async function doctorCommand() {
     checks.push({ name: 'installed_plugins.json has ace', ok: hasAce });
   } catch {
     checks.push({ name: 'installed_plugins.json has ace', ok: false });
+  }
+
+  // 5b. Check marketplace registration
+  checks.push(await check('marketplace directory', fs.pathExists(MARKETPLACE_DIR)));
+  checks.push(await check('marketplace.json', fs.pathExists(path.join(MARKETPLACE_DIR, '.claude-plugin', 'marketplace.json'))));
+  try {
+    const known = await fs.readJson(KNOWN_MARKETPLACES_FILE);
+    const hasMarketplace = !!known?.[MARKETPLACE_NAME];
+    checks.push({ name: 'known_marketplaces.json has ace-local', ok: hasMarketplace });
+  } catch {
+    checks.push({ name: 'known_marketplaces.json has ace-local', ok: false });
   }
 
   // 6. Check memory

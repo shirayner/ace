@@ -1,0 +1,38 @@
+stages:
+  - test
+
+variables:
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
+
+.node-template: &node-template
+  image: node:${NODE_VERSION}
+  cache:
+    key: "node-${NODE_VERSION}"
+    paths:
+      - .npm/
+  before_script:
+    - npm install
+
+test:node-18:
+  <<: *node-template
+  stage: test
+  variables:
+    NODE_VERSION: "18"
+  script:
+    - npm test
+
+test:node-20:
+  <<: *node-template
+  stage: test
+  variables:
+    NODE_VERSION: "20"
+  script:
+    - npm test
+
+test:node-22:
+  <<: *node-template
+  stage: test
+  variables:
+    NODE_VERSION: "22"
+  script:
+    - npm test

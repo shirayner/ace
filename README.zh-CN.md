@@ -76,7 +76,7 @@ ace init
 
 ## 参与贡献
 
-欢迎贡献！详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+欢迎通过 GitHub 或 GitLab（内部）参与贡献！详见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 许可证
 

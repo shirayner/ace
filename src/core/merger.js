@@ -96,6 +96,29 @@ export async function mergeInstalledPlugins(filePath, pluginKey, entry) {
 }
 
 /**
+ * Merge known_marketplaces.json: add or update the marketplace entry.
+ */
+export async function mergeKnownMarketplaces(filePath, marketplaceName, entry) {
+  let data = {};
+  if (await fs.pathExists(filePath)) {
+    data = await fs.readJson(filePath);
+  }
+  data[marketplaceName] = entry;
+  await fs.ensureDir(path.dirname(filePath));
+  await fs.writeJson(filePath, data, { spaces: 2 });
+}
+
+/**
+ * Remove a marketplace entry from known_marketplaces.json.
+ */
+export async function removeKnownMarketplace(filePath, marketplaceName) {
+  if (!await fs.pathExists(filePath)) return;
+  const data = await fs.readJson(filePath);
+  delete data[marketplaceName];
+  await fs.writeJson(filePath, data, { spaces: 2 });
+}
+
+/**
  * Check if a file or directory exists at the target path.
  */
 export async function conflictCheck(targetPath) {
