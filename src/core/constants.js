@@ -49,6 +49,24 @@ export const ROLES = {
   },
 };
 
+// Spec (project-level) constants
+export const OPENSPEC_TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates', 'openspec');
+export const SPEC_TEMPLATE_FILES = [
+  'taxonomy/requirement-issue-taxonomy.md',
+  'taxonomy/design-issue-taxonomy.md',
+  'issues/requirement-issues.md',
+  'issues/design-issues.md',
+  'issues/retrospective-notes.md',
+  'evolution/adr.md',
+  'evolution/glossary.md',
+  'evolution/risk-map.md',
+  'procedures/requirement-clarification-flow.md',
+  'procedures/design-clarification-flow.md',
+  'procedures/interactive-clarification-protocol.md',
+  'procedures/evolution-system.md',
+  'retrospective-template.md',
+];
+
 export const COMPONENTS = {
   core: {
     description: 'Core config (CLAUDE.md + settings.json)',
@@ -61,15 +79,7 @@ export const COMPONENTS = {
   rules: {
     description: 'Cognitive & code quality rules',
     required: true,
-    files: [
-      { src: 'rules/ace/thinking.md', dest: 'rules/ace/thinking.md' },
-      { src: 'rules/ace/clean-code.md', dest: 'rules/ace/clean-code.md' },
-      { src: 'rules/ace/code-quality.md', dest: 'rules/ace/code-quality.md' },
-      { src: 'rules/ace/reporting.md', dest: 'rules/ace/reporting.md' },
-      { src: 'rules/ace/task-recovery.md', dest: 'rules/ace/task-recovery.md' },
-      { src: 'rules/ace/context-hygiene.md', dest: 'rules/ace/context-hygiene.md' },
-      { src: 'rules/ace/memory-policy.md', dest: 'rules/ace/memory-policy.md' },
-    ],
+    rulesDir: 'rules/ace',
   },
   plugin: {
     description: 'Ace plugin (skills: auto-goal, coding, skill-creator, skill-optimize; commands: report)',

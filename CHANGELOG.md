@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.0-snapshot.4] - 2026-04-16
+
+### Added
+- `ace spec` command family for spec-driven development workflow (`spec init`, `spec doctor`, `spec update`)
+- OpenSpec templates: taxonomy, issues, procedures, evolution, and retrospective
+- `interactive-clarify.md` rule for interactive clarification (now 8 rules total)
+- `js-yaml` dependency for YAML merge support
+- `SpecInstaller` and `YamlMerger` core modules
+
+### Changed
+- Rules installation refactored to dynamic directory scanning (no more hardcoded file lists in constants.js)
+- Doctor and list commands updated to use dynamic rule discovery from templates directory
+- `CLAUDE.md` template now includes interactive clarification rule reference
+
 ## [0.1.0-snapshot.3] - 2026-04-16
 
 ### Fixed

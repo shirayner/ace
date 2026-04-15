@@ -27,6 +27,15 @@ $ ace init
 Done! Your AI coding environment is ready.
 ```
 
+### Spec-driven Development
+
+```
+$ ace spec init ./my-project
+✔ openspec config installed
+✔ spec templates installed (taxonomy, issues, procedures, evolution)
+Done! Spec workflow is ready.
+```
+
 ## Why ace?
 
 Claude Code is powerful out of the box — but configuring rules, skills,
@@ -34,8 +43,9 @@ safety guards, and memory templates by hand is tedious and error-prone.
 
 **ace solves this in one command:**
 
-- **Rules** — 7 cognitive and code-quality rules (deep thinking, clean code, ...)
+- **Rules** — 8 cognitive and code-quality rules (deep thinking, clean code, ...)
 - **Skills** — 4 AI skills with namespace isolation (`ace:auto-goal`, `ace:coding`, ...)
+- **Spec** — Spec-driven development workflow with OpenSpec integration
 - **Safety** — Hookify guards that block dangerous ops and protect secrets
 - **Memory** — Templates for cross-session memory and developer profiles
 - **Non-destructive** — Smart merge preserves your existing config; uninstall restores it
@@ -54,11 +64,12 @@ That's it. Run `ace doctor` to verify.
 | Component | Contents | Preset |
 |-----------|----------|--------|
 | **Core** | `CLAUDE.md` + `settings.json` (smart merge) | all |
-| **Rules** | 7 rules: thinking, clean-code, code-quality, ... | all |
+| **Rules** | 8 rules: thinking, clean-code, code-quality, ... | all |
 | **Plugin** | 4 skills + 1 command (`ace:auto-goal`, `ace:coding`, ...) | all |
 | **Hookify** | 3 safety guards (block-dangerous-ops, protect-secrets, ...) | full, safe |
 | **Hooks** | Role-dependent scripts (e.g., Java compile check) | full |
 | **Memory** | MEMORY.md template + role-based developer profile | full, safe |
+| **Spec** | Spec-driven workflow templates (taxonomy, issues, procedures) | `ace spec init` |
 
 ## Design Philosophy
 

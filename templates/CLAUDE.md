@@ -14,3 +14,6 @@
 
 ## 质量控制
 - @~/.claude/rules/ace/memory-policy.md - Memory 质量策略
+
+## 交互规则
+- @~/.claude/rules/ace/interactive-clarify.md - 交互式澄清规则

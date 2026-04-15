@@ -7,6 +7,7 @@ import { initCommand } from '../src/commands/init.js';
 import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
 import { uninstallCommand } from '../src/commands/uninstall.js';
+import { specInitCommand, specDoctorCommand, specUpdateCommand } from '../src/commands/spec.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -42,5 +43,27 @@ program
   .description('Remove all ace-managed components')
   .option('-y, --yes', 'Skip confirmation prompt', false)
   .action(uninstallCommand);
+
+const spec = program
+  .command('spec')
+  .description('Manage spec-driven development workflow (project-level)');
+
+spec
+  .command('init [path]')
+  .description('Initialize spec workflow in a project')
+  .option('-f, --force', 'Overwrite existing configuration', false)
+  .option('--dry-run', 'Preview without making changes', false)
+  .option('--skip-openspec', 'Skip openspec CLI installation', false)
+  .action(specInitCommand);
+
+spec
+  .command('doctor [path]')
+  .description('Check spec workflow health')
+  .action(specDoctorCommand);
+
+spec
+  .command('update [path]')
+  .description('Update spec templates to latest version')
+  .action(specUpdateCommand);
 
 program.parse();

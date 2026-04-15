@@ -7,7 +7,7 @@ Detailed description of everything ace installs.
 - **CLAUDE.md** — Global config index with `@` references pointing to each rule file
 - **settings.json** — Claude Code base settings (auto memory directory, hookify plugin enabled, ace plugin enabled)
 
-## Rules (7 rules)
+## Rules (8 rules)
 
 Installed to `~/.claude/rules/ace/`:
 
@@ -20,6 +20,7 @@ Installed to `~/.claude/rules/ace/`:
 | task-recovery.md | Task interruption recovery protocol |
 | context-hygiene.md | Context hygiene and compaction protection |
 | memory-policy.md | Memory quality policy for cross-session reuse |
+| interactive-clarify.md | Interactive clarification rules for user-facing prompts |
 
 ## Plugin (4 skills + 1 command)
 
@@ -54,3 +55,14 @@ Installed as a Claude Code plugin under the `ace:` namespace:
 
 - **MEMORY.md** — Memory index template (skipped if already exists)
 - **user_profile.md** — Role-based developer profile generated from selected role
+
+## Spec (project-level)
+
+Installed to project directory via `ace spec init`:
+
+- **config.yaml** — OpenSpec configuration file
+- **taxonomy/** — Requirement and design issue taxonomies
+- **issues/** — Requirement issues, design issues, retrospective notes
+- **procedures/** — Clarification flows, evolution system
+- **evolution/** — ADR, glossary, risk map
+- **retrospective-template.md** — Retrospective template

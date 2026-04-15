@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import {
-  CLAUDE_DIR, COMPONENTS,
+  CLAUDE_DIR, COMPONENTS, TEMPLATES_DIR,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
 } from '../core/constants.js';
 
@@ -59,6 +59,14 @@ async function getPluginVersion() {
 async function getComponentStatus(component) {
   const allPaths = [];
 
+  if (component.rulesDir) {
+    try {
+      const templateDir = path.join(TEMPLATES_DIR, component.rulesDir);
+      const files = await fs.readdir(templateDir);
+      allPaths.push(...files.filter(f => f.endsWith('.md')).map(f => path.join(CLAUDE_DIR, component.rulesDir, f)));
+    } catch { /* ignore */ }
+  }
+
   if (component.files) {
     allPaths.push(...component.files.map(f => path.join(CLAUDE_DIR, f.dest)));
   }
@@ -83,11 +91,21 @@ async function getComponentDetails(component) {
   const missing = [];
   const installed = [];
 
-  const allFiles = [
+  const allFiles = [];
+
+  if (component.rulesDir) {
+    try {
+      const templateDir = path.join(TEMPLATES_DIR, component.rulesDir);
+      const files = await fs.readdir(templateDir);
+      allFiles.push(...files.filter(f => f.endsWith('.md')).map(f => path.join(component.rulesDir, f)));
+    } catch { /* ignore */ }
+  }
+
+  allFiles.push(
     ...(component.files || []).map(f => f.dest),
     ...(component.directories || []),
     ...(component.conditional || []).map(f => f.dest),
-  ];
+  );
 
   for (const file of allFiles) {
     const exists = await fs.pathExists(path.join(CLAUDE_DIR, file));

@@ -50,6 +50,10 @@ export class Installer {
       return;
     }
 
+    if (component.rulesDir) {
+      await this.installRulesDir(component.rulesDir);
+    }
+
     if (component.files) {
       for (const file of component.files) {
         await this.installFile(file);
@@ -146,6 +150,22 @@ export class Installer {
     await mergeKnownMarketplaces(KNOWN_MARKETPLACES_FILE, MARKETPLACE_NAME, marketplaceEntry);
 
     this.results.merged.push({ file: 'plugins/known_marketplaces.json' });
+  }
+
+  async installRulesDir(rulesDir) {
+    const srcDir = path.join(this.templatesDir, rulesDir);
+    if (!await fs.pathExists(srcDir)) {
+      this.results.errors.push({ file: rulesDir, error: 'Rules directory not found' });
+      return;
+    }
+    const files = await fs.readdir(srcDir);
+    for (const file of files) {
+      if (!file.endsWith('.md')) continue;
+      await this.installFile({
+        src: path.join(rulesDir, file),
+        dest: path.join(rulesDir, file),
+      });
+    }
   }
 
   async installFile(fileSpec) {

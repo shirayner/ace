@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import chalk from 'chalk';
 import {
-  CLAUDE_DIR, COMPONENTS,
+  CLAUDE_DIR, COMPONENTS, TEMPLATES_DIR,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
 } from '../core/constants.js';
@@ -19,10 +19,19 @@ export async function doctorCommand() {
   checks.push(await check('CLAUDE.md', fs.pathExists(path.join(CLAUDE_DIR, 'CLAUDE.md'))));
   checks.push(await check('settings.json', fs.pathExists(path.join(CLAUDE_DIR, 'settings.json'))));
 
-  // 3. Check rules (in ace/ namespace subdirectory)
-  const ruleFiles = COMPONENTS.rules.files;
-  for (const file of ruleFiles) {
-    checks.push(await check(`rules/ace/${path.basename(file.dest)}`, fs.pathExists(path.join(CLAUDE_DIR, file.dest))));
+  // 3. Check rules (dynamically scan templates directory)
+  const rulesDir = COMPONENTS.rules.rulesDir;
+  if (rulesDir) {
+    const templateRulesDir = path.join(TEMPLATES_DIR, rulesDir);
+    try {
+      const ruleFiles = await fs.readdir(templateRulesDir);
+      for (const file of ruleFiles) {
+        if (!file.endsWith('.md')) continue;
+        checks.push(await check(`rules/ace/${file}`, fs.pathExists(path.join(CLAUDE_DIR, rulesDir, file))));
+      }
+    } catch {
+      checks.push({ name: 'rules/ace/ directory', ok: false });
+    }
   }
 
   // 4. Check plugin installation

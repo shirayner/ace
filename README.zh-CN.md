@@ -27,14 +27,22 @@ $ ace init
 Done! Your AI coding environment is ready.
 ```
 
-## 为什么需要 ace？
+### Spec 驱动开发
+
+```
+$ ace spec init ./my-project
+✔ openspec config installed
+✔ spec templates installed (taxonomy, issues, procedures, evolution)
+Done! Spec workflow is ready.
+```
 
 Claude Code 开箱即用已经很强大——但手动配置规则、技能、安全守卫和记忆模板既繁琐又容易出错。
 
 **ace 用一条命令解决这个问题：**
 
-- **规则** — 7 条认知与代码质量规则（深度思考、Clean Code……）
+- **规则** — 8 条认知与代码质量规则（深度思考、Clean Code……）
 - **技能** — 4 个 AI 技能，命名空间隔离（`ace:auto-goal`、`ace:coding`……）
+- **规约** — Spec 驱动开发工作流，集成 OpenSpec
 - **安全** — Hookify 守卫，拦截危险操作并保护密钥
 - **记忆** — 跨会话记忆模板和开发者画像
 - **无损安装** — 智能合并保留你的已有配置；卸载可完整还原
@@ -53,11 +61,12 @@ ace init
 | 组件 | 内容 | 预设 |
 |------|------|------|
 | **Core** | `CLAUDE.md` + `settings.json`（智能合并） | 全部 |
-| **Rules** | 7 条规则：thinking、clean-code、code-quality…… | 全部 |
+| **Rules** | 8 条规则：thinking、clean-code、code-quality…… | 全部 |
 | **Plugin** | 4 个技能 + 1 个命令（`ace:auto-goal`、`ace:coding`……） | 全部 |
 | **Hookify** | 3 条安全守卫（block-dangerous-ops、protect-secrets……） | full、safe |
 | **Hooks** | 角色相关脚本（如 Java 编译检查） | full |
 | **Memory** | MEMORY.md 模板 + 角色开发者画像 | full、safe |
+| **Spec** | Spec 驱动工作流模板（分类、问题、流程） | `ace spec init` |
 
 ## 设计理念
 
