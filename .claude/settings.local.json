@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp /d/Users/r.shi/.claude/hookify.block-dangerous-ops.local.md templates/hookify/hookify.block-dangerous-ops.local.md)",
+      "Bash(cp /d/Users/r.shi/.claude/hookify.protect-secrets.local.md templates/hookify/hookify.protect-secrets.local.md)",
+      "Bash(cp /d/Users/r.shi/.claude/hookify.require-verification.local.md templates/hookify/hookify.require-verification.local.md)",
+      "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/code-review-guide.md templates/skills/coding/references/)",
+      "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/code-smells.md templates/skills/coding/references/)",
+      "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/implement-guide.md templates/skills/coding/references/)",
+      "Bash(cp /d/Users/r.shi/.claude/skills/coding/references/unit-test-guide.md templates/skills/coding/references/)"
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+#!/usr/bin/env node
+
+import { createRequire } from 'module';
+import { Command } from 'commander';
+import chalk from 'chalk';
+import { initCommand } from '../src/commands/init.js';
+import { doctorCommand } from '../src/commands/doctor.js';
+import { listCommand } from '../src/commands/list.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../package.json');
+
+const program = new Command();
+
+program
+  .name('ace')
+  .description('AI Coding Environment - One command to set up your Claude Code harness')
+  .version(pkg.version);
+
+program
+  .command('init')
+  .description('Initialize AI coding environment')
+  .option('-p, --preset <name>', 'Installation preset: full, minimal, safe', 'full')
+  .option('-f, --force', 'Overwrite existing files', false)
+  .option('--dry-run', 'Show what would be done without making changes', false)
+  .option('--no-interaction', 'Skip interactive prompts, use defaults', false)
+  .action(initCommand);
+
+program
+  .command('doctor')
+  .description('Verify installation integrity')
+  .action(doctorCommand);
+
+program
+  .command('list')
+  .description('List installed components and their status')
+  .action(listCommand);
+
+program.parse();

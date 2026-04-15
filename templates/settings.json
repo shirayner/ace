@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "hooks": {
+      "PostToolUse": []
+    }
+  },
+  "autoMemoryDirectory": "~/.claude/memory/",
+  "enabledPlugins": {
+    "hookify@claude-plugins-official": true
+  }
+}

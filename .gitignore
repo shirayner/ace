@@ -1,0 +1,8 @@
+node_modules/
+.tasks/
+.task/
+*.log
+.DS_Store
+Thumbs.db
+tempdoc/
+package-lock.json
