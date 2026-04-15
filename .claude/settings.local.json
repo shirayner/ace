@@ -28,7 +28,8 @@
       "Bash(mv \"templates/hooks/java-compile-check.sh\" \"templates/hooks/ace.java-compile-check.sh\")",
       "Bash(node bin/ace.js init --dry-run)",
       "Bash(node bin/ace.js init --force --no-interaction)",
-      "Bash(node bin/ace.js uninstall -y)"
+      "Bash(node bin/ace.js uninstall -y)",
+      "WebSearch"
     ]
   }
 }
