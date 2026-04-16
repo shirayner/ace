@@ -260,20 +260,40 @@ guards:
 
 项目级的需求管理和设计决策追踪。
 
-#### OpenSpec 结构
+#### aspec (ace-spec) 增强工作流
+
+ACE 在 OpenSpec 基础上增加了 **aspec** 工作流，采用"寄生模式"增强：
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    aspec 三命令开发流程                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  /opsx:proposal  ──→  /opsx:apply  ──→  /opsx:archive      │
+│    创建提案              代码实现            归档复盘        │
+│                                                             │
+│  关键增强点：                                                │
+│  • proposal 中：需求澄清门禁 + 设计澄清门禁（强制）         │
+│  • archive 后：三层知识库进化                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**核心特点**：
+- **寄生模式**：不改变 OpenSpec schema，在关键阶段注入检查
+- **门禁机制**：不满足澄清条件时强制阻断，避免基于假设的实施
+- **知识累积**：每次 archive 自动沉淀 ADR、词汇表、风险图谱
+
+> 详见 [aspec 完整文档](aspec.md)
+
+#### OpenSpec 基础结构
 
 ```
 openspec/
 ├── config.yaml              # OpenSpec 配置
-├── taxonomy/                # 分类体系
-│   ├── functional/          # 功能需求分类
-│   │   ├── user-management.yaml
-│   │   └── payment.yaml
-│   ├── non-functional/      # 非功能需求分类
-│   │   ├── performance.yaml
-│   │   └── security.yaml
-│   └── design/              # 设计模式分类
-│       └── architecture-patterns.yaml
+├── taxonomy/                # 问题分类学
+│   ├── requirement-issue-taxonomy.md   # 需求问题分类学（6 维度）
+│   └── design-issue-taxonomy.md        # 技术设计问题分类学（7 维度）
 ├── issues/                  # 问题跟踪
 │   ├── requirements/        # 需求文档
 │   │   ├── REQ-001-user-login.md

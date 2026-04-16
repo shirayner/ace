@@ -55,12 +55,28 @@ $ ace init
 Done! 你的 AI 开发环境已就绪。
 ```
 
-### 规范驱动开发
+### Spec Coding 完整流程
 ```bash
 $ ace spec init ./my-project
-✓ OpenSpec 配置已安装
-✓ 规范模板已部署 (taxonomy, issues, procedures, evolution)
-Done! 规范驱动工作流已就绪。
+✓ aspec 工作流已初始化
+Done! 规范驱动开发已就绪。
+
+# 在 Claude Code 中体验完整流程：
+$ claude
+
+> 帮我实现用户积分系统，使用 aspec 流程
+
+Claude:
+【explore】读取知识库，理解现有用户体系
+【propose】需求澄清 → 4个问题确认 → 创建 proposal.md
+【specs】规格定义 → 积分规则、数据结构、API契约
+【design】技术设计 → 并发处理、事务策略
+【tasks】任务分解 → 8个可执行任务
+【apply】代码实施 → 逐任务验证
+【archive】归档复盘 → 知识库进化
+
+✓ 需求澄清避免返工
+✓ 知识自动沉淀到 ADR/词汇表/风险图谱
 ```
 
 ### 健康检查
@@ -218,10 +234,11 @@ claude
 - [架构全景](docs/architecture/index.md) — 完整组件关系图
 - [8 条规则详解](docs/architecture/rules.md) — 每条规则的用途与设计
 - [4 个 Skills 详解](docs/architecture/skills.md) — 工作原理与最佳实践
+- [aspec 规范驱动](docs/architecture/aspec.md) — spec coding 完整工作流
 - [Hookify 安全体系](docs/architecture/hookify.md)
 - [Hooks 角色脚本](docs/architecture/hooks.md)
 - [记忆系统](docs/architecture/memory.md)
-- [Spec 规范驱动](docs/architecture/spec.md)
+- [OpenSpec 集成](docs/architecture/spec.md)
 
 ### 理论基础
 - [理论总览](docs/theory/index.md)

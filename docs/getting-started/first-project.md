@@ -1,6 +1,6 @@
 # 第一个项目
 
-通过构建一个实际的 Web API，体验 ACE 的完整工作流程
+通过构建一个实际的任务管理 API，体验 aspec 的完整 spec coding 工作流程。
 
 ---
 
@@ -15,24 +15,24 @@
 
 ---
 
-## 第一步：初始化项目
+## 准备工作
 
-### 1.1 创建项目目录
+### 1. 创建项目目录
 
 ```bash
 mkdir task-api
 cd task-api
 ```
 
-### 1.2 初始化规范驱动工作流
+### 2. 初始化 aspec 工作流
 
 ```bash
 ace spec init .
 ```
 
-这会创建 `openspec/` 目录，用于管理需求和设计。
+这会创建 `openspec/` 目录，用于管理需求澄清、设计决策和知识累积。
 
-### 1.3 启动 Claude Code
+### 3. 启动 Claude Code
 
 ```bash
 claude
@@ -40,317 +40,264 @@ claude
 
 ---
 
-## 第二步：需求分析
+## 完整 Spec Coding 流程
 
-使用 ACE 的规范驱动流程，先定义需求再开发。
+aspec 的开发流程由**三个命令**驱动：
 
-### 2.1 创建需求文档
+```
+/opsx:proposal  ──→  /opsx:apply  ──→  /opsx:archive
+  创建提案              代码实现            归档复盘
+```
+
+---
+
+## Step 1: `/opsx:proposal` — 创建提案
 
 在 Claude Code 中输入：
 
 ```
-帮我为任务管理 API 创建需求文档，包括：
-1. 功能需求：CRUD 操作、状态流转
-2. 非功能需求：性能、安全
-3. API 端点设计
-
-使用 openspec 目录结构。
+/opsx:proposal 我想开发一个任务管理 API
 ```
 
-ACE 的 `reporting` 规则会自动将分析结果写入 `openspec/issues/requirements/`。
+Claude 会自动执行以下流程：
 
-### 2.2 查看生成的需求
+### 1.1 需求澄清（门禁检查）
 
-```bash
-ls openspec/issues/requirements/
-```
-
-你会看到结构化的需求文档：
-```
-requirements/
-├── functional/
-│   ├── task-crud.md
-│   └── task-status.md
-├── non-functional/
-│   ├── performance.md
-│   └── security.md
-└── api-design.md
-```
-
----
-
-## 第三步：架构设计
-
-### 3.1 让 Claude 设计架构
+Claude 首先基于需求问题分类学（6 维度）扫描需求，识别不确定性：
 
 ```
-基于刚才的需求，帮我设计系统架构：
-1. 实体关系图
-2. 分层架构
-3. 主要组件职责
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+需求澄清 — 发现 4 个待确认问题
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-输出到 openspec/issues/designs/
+需要确认 4 个问题（2 High，2 Medium）：
+
+1. 【High】任务状态流转规则
+   选项：A) 任意状态可跳转 B) 待办→进行中→已完成 C) 自定义工作流
+
+2. 【High】用户认证方式
+   选项：A) JWT Token B) Session Cookie C) 暂不需要
+
+3. 【Medium】任务是否支持标签/分类？
+   选项：A) 是 B) 否 C) 后续迭代
+
+4. 【Medium】是否需要任务优先级？
+   选项：A) 是（高/中/低）B) 否 C) 后续迭代
+
+────────────────────────────────────────
 ```
 
-### 3.2 创建架构决策记录
+### 1.2 创建提案
 
-```
-为以下决策创建 ADR：
-1. 为什么使用 Spring Boot
-2. 数据库选择 PostgreSQL 的理由
-3. 认证方案选择 JWT
+澄清完成后，Claude 创建 `spec/proposal.md`：
 
-输出到 openspec/evolution/adr/
-```
+```markdown
+# Proposal: 任务管理 API
 
----
+## Why
+需要一个轻量级任务管理后端服务，支持个人或小团队的任务跟踪。
 
-## 第四步：初始化代码项目
+## Capabilities
+1. 任务 CRUD 操作（基于澄清：需完整 CRUD）
+2. 状态流转：待办 → 进行中 → 已完成（基于澄清：线性流转）
+3. JWT 认证（基于澄清：选择 JWT）
+4. 任务优先级：高/中/低（基于澄清：需要优先级）
+5. 标签支持（基于澄清：后续迭代，本期不做）
 
-### 4.1 生成 Spring Boot 项目
-
-```bash
-# 使用 Spring Initializr
-curl https://start.spring.io/starter.zip \
-  -d dependencies=web,data-jpa,postgresql,security,lombok \
-  -d type=maven-project \
-  -o starter.zip
-unzip starter.zip
+## Impact
+- 提供 RESTful API 供前端调用
+- 支持多用户隔离
+- 可扩展的架构设计
 ```
 
-### 4.2 让 Claude 理解项目
+### 1.3 技术澄清（门禁检查）
 
-在 Claude Code 中：
-
-```
-请阅读项目结构，理解：
-1. 当前目录结构
-2. 已有的依赖和配置
-3. 需要添加的组件
-```
-
-ACE 的 `coding` skill 会自动识别这是**实现意图**，并加载实现指南。
-
----
-
-## 第五步：开发核心功能
-
-### 5.1 实体设计
+Claude 基于技术设计问题分类学（7 维度）扫描设计方案，识别技术不确定性：
 
 ```
-根据需求和架构设计，创建 Task 实体类：
-- 基本字段：id, title, description, status, createdAt, updatedAt
-- 使用 JPA 注解
-- 放在 entity 包下
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+设计澄清 — 发现 2 个待确认问题
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-请使用 Plan Mode，让我确认方案后再执行。
+1. 【High】JWT Token 有效期设置？
+   选项：A) 1小时 B) 24小时 C) 7天
+
+2. 【Medium】是否需要软删除任务？
+   选项：A) 是（保留数据）B) 否（物理删除）
+
+────────────────────────────────────────
 ```
 
-**预期行为**：
-1. Claude 进入 Plan Mode
-2. 展示实体设计方案
-3. 你确认后执行
-4. 自动编译检查（Backend 角色的 Hook）
+### 1.4 确定技术方案和任务
 
-### 5.2 Repository 层
+澄清完成后，Claude 生成完整产出：
 
-```
-为 Task 实体创建 Repository：
-- 继承 JpaRepository
-- 添加自定义查询：按状态查找、按创建时间排序
-```
+**`spec/design.md`** — 技术设计：
+```markdown
+# Design: 任务管理 API 技术设计
 
-### 5.3 Service 层
+## 架构
+三层架构：Controller → Service → Repository
 
-```
-创建 TaskService：
-- CRUD 操作
-- 业务逻辑验证
-- 异常处理
+## 技术决策
+### 1. 认证方案：JWT
+选择: Spring Security + JJWT
+理由: 无状态、跨域支持好、社区成熟
+备选: Session + Cookie
+放弃原因: 有状态，扩展性差
 
-遵循 Clean Code 原则，保持方法单一职责。
+### 2. 数据库：PostgreSQL 14+
+...
 ```
 
-### 5.4 Controller 层
+**`spec/tasks.md`** — 实施任务计划：
+```markdown
+# Tasks: 任务清单
 
-```
-创建 TaskController：
-- RESTful API 端点
-- 请求/响应 DTO
-- 统一异常处理
+## 环境准备
+- [ ] 1. 初始化 Spring Boot 项目
+- [ ] 2. 配置数据库连接
+- [ ] 3. 配置 JWT 工具类
+
+## 认证模块
+- [ ] 4. 创建 User 实体和 Repository
+- [ ] 5. 实现注册接口
+- [ ] 6. 实现登录接口（返回 JWT）
+- [ ] 7. 配置 Spring Security
+
+## 任务模块
+- [ ] 8. 创建 Task 实体和 Repository
+- [ ] 9-14. 实现 CRUD + 状态变更接口
+
+## 测试与完善
+- [ ] 15-17. 单元测试 + 集成测试 + 代码审查
 ```
 
 ---
 
-## 第六步：测试与验证
-
-### 6.1 生成单元测试
+## Step 2: `/opsx:apply` — 代码实现
 
 ```
-为 TaskService 生成单元测试：
-- 使用 JUnit 5 和 Mockito
-- 覆盖正常和异常场景
-- 目标覆盖率：行 80%，分支 70%
+/opsx:apply
 ```
 
-ACE 的 `coding` skill 会加载测试指南，生成高质量测试代码。
+Claude 按 `spec/tasks.md` 逐项执行，严格遵循 proposal 阶段的澄清决策：
 
-### 6.2 运行测试
-
-```bash
-./mvnw test
-```
-
-### 6.3 代码审查
+### 执行过程
 
 ```
-审查 TaskController 和 TaskService：
-- 代码质量
-- 潜在问题
-- 改进建议
+执行 tasks 1-3：环境准备
+变更: pom.xml, application.yml, JwtUtil.java
+验证: mvn compile 成功
 
-输出审查报告。
+执行 tasks 4-7：认证模块
+变更: User.java, UserRepository.java, AuthService.java, AuthController.java, SecurityConfig.java
+验证: 注册/登录 API 测试通过
+
+执行 tasks 8-14：任务模块
+变更: Task.java, TaskRepository.java, TaskService.java, TaskController.java, DTO/*
+验证: 所有 CRUD API + 状态流转验证通过
+
+执行 tasks 15-17：测试
+变更: TaskServiceTest.java, TaskControllerIntegrationTest.java
+验证: mvn test 全部通过，行覆盖率 85%
 ```
 
-ACE 会生成结构化的审查报告，分级显示问题。
+每步完成后自动标记 `- [x]`，并将实施观察记录到 `spec/retrospective-notes.md`。
 
 ---
 
-## 第七步：观察 ACE 的工作
-
-在开发过程中，注意 ACE 如何增强 Claude Code：
-
-### 7.1 深度思考规则
-
-当遇到复杂设计决策时，Claude 会：
-- **序** — 先理解需求再设计
-- **验** — 每个方案都有验证标准
-- **深** — 追问根因，不只是表面
-- **广** — 考虑系统影响
-- **辨** — 区分事实和假设
-- **简** — 追求简洁方案
-
-### 7.2 Clean Code 原则
-
-代码生成时会自动遵循：
-- 意图清晰的命名
-- 单一职责的方法
-- 最小化 Surprise
-- DRY 原则
-- 显性错误处理
-
-### 7.3 安全防护
-
-尝试执行危险操作：
-
-```bash
-rm -rf /
-```
-
-Hookify 会拦截并警告。
-
----
-
-## 第八步：迭代优化
-
-### 8.1 添加分页功能
+## Step 3: `/opsx:archive` — 归档复盘
 
 ```
-为任务列表 API 添加分页支持：
-- 使用 Spring Data 分页
-- 支持按字段排序
-- 返回分页元数据
+/opsx:archive
 ```
 
-### 8.2 添加搜索功能
+### 复盘摘要
 
 ```
-添加任务搜索功能：
-- 按标题模糊搜索
-- 按状态过滤
-- 按日期范围过滤
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+复盘摘要
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+完成：任务管理 API 全部功能
+文件：17 个（实体 2，Repository 2，Service 2，Controller 2，DTO 6，配置 3）
+测试：27 个用例，通过率 100%
+
+亮点：
+- 需求澄清避免了状态流转的返工
+- 统一异常处理提升了代码一致性
+
+改进点：
+- 下次可提前约定 API 响应格式
+- Repository 层可添加更多自定义查询
+
+────────────────────────────────────────
 ```
 
-### 8.3 完善认证
+### 知识库更新
 
-```
-完善 JWT 认证：
-- 登录/注册端点
-- Token 刷新机制
-- 受保护的路由
-```
-
----
-
-## 第九步：项目收尾
-
-### 9.1 生成 API 文档
-
-```
-为所有 API 端点生成文档：
-- 使用 OpenAPI/Swagger 注解
-- 包含请求/响应示例
-- 错误码说明
-```
-
-### 9.2 回顾与复盘
-
-使用 ACE 的 retrospective 模板：
-
-```
-帮我完成项目复盘：
-1. 做得好的地方
-2. 遇到的问题
-3. 改进建议
-4. 学到的经验
-
-使用 openspec/retrospective-template.md 格式。
-```
+**Layer A 立即更新**：
+- **ADR 决策账本**：记录 JWT 认证方案选择
+- **领域词汇表**：Task、Status、Priority 等术语
+- **风险图谱**：TaskRepository 自定义查询需索引优化
+- **效率指标**：本次开发数据
 
 ---
 
 ## 学到的技能
 
-通过这个项目，你体验了：
+通过这个项目，你体验了完整的 **spec coding** 流程：
 
-✅ **规范驱动开发** — 先定义需求再编码  
-✅ **分层架构** — Controller/Service/Repository  
-✅ **ACE Skills** — auto-goal、coding、reporting  
-✅ **代码质量保证** — 测试、审查、Clean Code  
-✅ **安全防护** — Hookify 危险操作拦截
+| 命令 | 做了什么 |
+|------|----------|
+| `/opsx:proposal` | 需求澄清 → 提案 → 技术澄清 → 设计 + 任务 |
+| `/opsx:apply` | 按任务逐项实现，每步验证 |
+| `/opsx:archive` | 复盘总结，知识库三层进化 |
+
+---
+
+## 对比传统开发
+
+| 环节 | 传统开发 | spec coding (aspec) |
+|------|----------|---------------------|
+| **需求** | 口头描述，隐性假设 | 显式澄清，门禁阻断 |
+| **设计** | 边做边想 | 先决策，后编码 |
+| **编码** | 一次性大改 | 原子变更，持续验证 |
+| **知识** | 丢失在代码中 | 沉淀到知识库 |
+| **返工** | 频繁 | 大幅减少 |
 
 ---
 
 ## 下一步
 
-- 🏗️ [深入理解 ACE 架构](../architecture/index.md)
-- 🧠 [探索理论基础](../theory/index.md)
-- 🛠️ [查看 CLI 完整功能](../reference/cli.md)
-- 📚 [阅读更多最佳实践](https://docs.anthropic.com/claude-code)
+- [深入理解 aspec](../architecture/aspec.md) — 设计理念与完整流程
+- [探索理论基础](../theory/index.md)
+- [查看 CLI 完整功能](../reference/cli.md)
+- [阅读更多最佳实践](https://docs.anthropic.com/claude-code)
 
 ---
 
 ## 常见问题
 
-**Q: 如果我不想要 Plan Mode？**
+**Q: 小改动也需要完整流程吗？**
 
-可以在请求中明确：
+不需要。aspec 的复杂度适配机制会自动调整：
+- **轻量**：单文件改动 → 跳过部分阶段
+- **标准**：多文件功能 → 完整流程
+- **深度**：架构重构 → 分阶段状态外化
+
+**Q: 如何跳过某个阶段？**
+
+明确说明即可：
 ```
-直接实现，不用 Plan Mode
+直接实现，跳过设计澄清阶段
 ```
 
-**Q: 如何跳过测试生成？**
-
-```
-实现功能，暂时不用生成测试
-```
-
-**Q: 项目完成后如何清理 ACE 配置？**
+**Q: 项目完成后如何查看知识库？**
 
 ```bash
-# 仅清理当前项目的 spec
-rm -rf openspec/
-
-# 或完整卸载 ACE
-ace uninstall
+ls openspec/
+# evolution/  — ADR 技术决策、领域词汇表、风险图谱
+# retrospectives/ — 复盘记录
 ```

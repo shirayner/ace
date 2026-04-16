@@ -31,10 +31,11 @@
 - [架构全景](architecture/index.md) — 完整组件关系图
 - [8 条规则详解](architecture/rules.md) — 每条规则的用途与设计
 - [4 个 Skills 详解](architecture/skills.md) — 工作原理与最佳实践
+- [aspec 规范驱动](architecture/aspec.md) — spec coding 完整工作流（推荐）
 - [Hookify 安全体系](architecture/hookify.md) — 三层防护机制
 - [Hooks 角色脚本](architecture/hooks.md) — 自动化检查
 - [记忆系统](architecture/memory.md) — 跨会话持久化
-- [Spec 规范驱动](architecture/spec.md) — OpenSpec 集成
+- [OpenSpec 集成](architecture/spec.md) — OpenSpec 基础框架
 
 ---
 

@@ -21,6 +21,41 @@ ACE 的核心能力封装：auto-goal、coding、skill-creator、skill-optimize
 
 > **每步行动都是带预测的实验** — 预期与现实的偏差是最有价值的学习信号
 
+### spec coding 示例
+
+使用 aspec 进行规范驱动开发的完整流程：
+
+```
+用户: 帮我实现用户积分系统，使用 aspec 流程
+
+Claude (auto-goal skill):
+├── 【explore】读取知识库
+│   └── ADR + 词汇表 + 风险图谱
+│
+├── 【propose】需求澄清门禁
+│   ├── 检查 requirement-issues.md 状态
+│   ├── 发现 4 个问题 → 批量提问确认
+│   └── 创建 proposal.md
+│
+├── 【specs】规格定义
+│   └── 积分规则、数据结构、API 契约
+│
+├── 【design】技术设计
+│   └── 并发处理、事务策略、决策四要素
+│
+├── 【tasks】设计澄清门禁
+│   ├── 检查 design-issues.md 状态
+│   └── 创建任务清单
+│
+├── 【apply】代码实施
+│   └── 逐任务执行，每步验证
+│
+└── 【archive】归档复盘
+    └── 更新 ADR/词汇表/风险图谱
+
+结果: 知识库进化，下次流程更精准
+```
+
 ### 六字原则
 
 | 字 | 含义 | 自检 |

@@ -1,6 +1,6 @@
 # 进化体系 v5
 
-mspec 的知识积累分为三层，在 `archive` 时自动推进——**使用越久，整个 spec coding 流程越精准**。
+aspec (ace-spec) 的知识积累分为三层，在 `archive` 时自动推进——**使用越久，整个 spec coding 流程越精准**。
 
 ## 三层架构
 

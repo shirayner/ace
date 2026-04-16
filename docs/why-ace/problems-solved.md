@@ -165,9 +165,9 @@ Claude 执行了 rm -rf /（幸亏有权限限制）
 
 ```
 openspec/
-├── taxonomy/        # 分类体系
-│   ├── functional/  # 功能需求分类
-│   └── design/      # 设计模式分类
+├── taxonomy/        # 问题分类学
+│   ├── requirement-issue-taxonomy.md   # 需求问题分类学
+│   └── design-issue-taxonomy.md        # 技术设计问题分类学
 ├── issues/          # 问题跟踪
 │   ├── requirements/# 需求文档
 │   └── designs/     # 设计文档

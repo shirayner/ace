@@ -1,6 +1,8 @@
 # Spec 规范驱动开发
 
-OpenSpec 集成的需求管理与设计决策追踪
+OpenSpec 集成的需求管理与设计决策追踪。
+
+> **进阶阅读**: [aspec — 寄生模式增强型 OpenSpec](aspec.md) 详细介绍了 ACE 的 spec coding 完整工作流（三个命令：`/opsx:proposal` → `/opsx:apply` → `/opsx:archive`），包含需求/设计澄清门禁和三层知识库进化体系。
 
 ---
 
@@ -21,10 +23,9 @@ Spec 是 ACE 集成的**规范驱动开发工作流**，基于 OpenSpec 框架�
 ```
 openspec/
 ├── config.yaml              # OpenSpec 配置
-├── taxonomy/                # 分类体系
-│   ├── functional/          # 功能需求分类
-│   ├── non-functional/      # 非功能需求分类
-│   └── design/              # 设计模式分类
+├── taxonomy/                # 问题分类学
+│   ├── requirement-issue-taxonomy.md   # 需求问题分类学（6 维度）
+│   └── design-issue-taxonomy.md        # 技术设计问题分类学（7 维度）
 ├── issues/                  # 问题跟踪
 │   ├── requirements/        # 需求文档 (REQ-xxx)
 │   └── designs/             # 设计文档 (DES-xxx)
@@ -54,19 +55,32 @@ ace spec init [path]
 
 ## 核心组件
 
-### 1. Taxonomy (分类体系)
+### 1. Taxonomy (问题分类学)
 
-定义需求、设计的分类标准。
+定义需求澄清和技术设计澄清的问题分类标准，用于系统性识别不确定性。
 
-**示例**：`taxonomy/functional/user-management.yaml`
-```yaml
-category: 用户管理
-description: 用户注册、登录、权限管理
-subcategories:
-  - authentication: 认证
-  - authorization: 授权
-  - profile: 用户资料
-```
+**需求问题分类学** (`taxonomy/requirement-issue-taxonomy.md`) — 6 个维度：
+
+| 维度 | 覆盖范围 |
+|------|----------|
+| 功能完整性 | 边界模糊、流程缺失、未声明依赖 |
+| 数据关切 | 数据定义模糊、数据规模不明、一致性问题 |
+| 用户体验 | 用户场景缺失、交互未决、性能体验 |
+| 边界与异常 | 边界未定义、异常处理缺失、权限安全 |
+| 集成与依赖 | 外部系统集成、内部模块依赖、环境依赖 |
+| 优先级与范围 | 必要 vs 可选、时间约束、资源约束 |
+
+**技术设计问题分类学** (`taxonomy/design-issue-taxonomy.md`) — 7 个维度：
+
+| 维度 | 覆盖范围 |
+|------|----------|
+| 架构决策 | 架构模式不确定、服务边界模糊、扩展性缺失 |
+| 技术选型 | 核心框架未决、数据库选型、中间件依赖 |
+| 接口设计 | API 契约未定义、数据流不明确、异步处理 |
+| 数据与状态 | 数据模型未定义、状态机未定义、数据迁移方案 |
+| 安全合规 | 认证授权未设计、数据安全、审计日志 |
+| 性能可靠性 | 瓶颈未识别、缓存策略未定义、降级与熔断 |
+| 部署运维 | 部署方案未定义、监控告警、配置管理 |
 
 ### 2. Requirements (需求文档)
 
