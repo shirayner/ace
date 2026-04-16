@@ -34,6 +34,11 @@ $ ace spec init ./my-project
 ✔ openspec config installed
 ✔ spec templates installed (taxonomy, issues, procedures, evolution)
 Done! Spec workflow is ready.
+
+# 三命令 spec coding 流程：
+/opsx:proposal   → 需求澄清 + 创建提案 + 技术澄清 + 确定方案
+/opsx:apply      → 按方案逐项实现，每步验证
+/opsx:archive    → 归档复盘，知识库三层进化
 ```
 
 Claude Code 开箱即用已经很强大——但手动配置规则、技能、安全守卫和记忆模板既繁琐又容易出错。

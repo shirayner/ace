@@ -61,22 +61,28 @@ $ ace spec init ./my-project
 ✓ aspec 工作流已初始化
 Done! 规范驱动开发已就绪。
 
-# 在 Claude Code 中体验完整流程：
+# 在 Claude Code 中体验三命令开发流程：
 $ claude
 
-> 帮我实现用户积分系统，使用 aspec 流程
+> /opsx:proposal 帮我实现用户积分系统
 
 Claude:
-【explore】读取知识库，理解现有用户体系
-【propose】需求澄清 → 4个问题确认 → 创建 proposal.md
-【specs】规格定义 → 积分规则、数据结构、API契约
-【design】技术设计 → 并发处理、事务策略
-【tasks】任务分解 → 8个可执行任务
-【apply】代码实施 → 逐任务验证
-【archive】归档复盘 → 知识库进化
+【需求澄清】积分获取规则？消费规则？过期策略？→ 3 个问题确认
+【创建提案】proposal.md
+【技术澄清】并发扣减方案？积分流水存储？→ 2 个问题确认
+【确定方案】design.md + tasks.md（8 个可执行任务）
 
-✓ 需求澄清避免返工
-✓ 知识自动沉淀到 ADR/词汇表/风险图谱
+> /opsx:apply
+
+Claude:
+按 tasks.md 逐项实现，每步验证
+✓ 所有任务完成，测试通过
+
+> /opsx:archive
+
+Claude:
+复盘总结，知识库三层进化
+✓ ADR/术语表/风险图谱 已更新
 ```
 
 ### 健康检查
