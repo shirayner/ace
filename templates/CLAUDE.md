@@ -15,5 +15,11 @@
 ## 质量控制
 - @~/.claude/rules/ace/memory-policy.md - Memory 质量策略
 
+## Hookify 规则
+- @~/.claude/hooks/ace.hookify.block-dangerous-ops.local.md - 阻止危险操作
+- @~/.claude/hooks/ace.hookify.protect-secrets.local.md - 保护敏感信息
+- @~/.claude/hooks/ace.hookify.safe-git-commands.local.md - Git 安全命令
+- @~/.claude/hooks/ace.hookify.code-quality-gate.local.md - 代码质量门禁
+
 ## 交互规则
 - @~/.claude/rules/ace/interactive-clarify.md - 交互式澄清规则

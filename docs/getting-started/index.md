@@ -115,30 +115,29 @@ All systems operational.
 如果你想使用 OpenSpec 管理项目需求和设计：
 
 ```bash
-# 在你的项目目录
-ace spec init .
+# 进入你的项目目录
+mkdir my-project && cd my-project
 
-# 或使用特定路径
-ace spec init ./my-new-project
+# 初始化 aspec 工作流
+ace spec init
 ```
 
 这会创建：
 
 ```
-my-new-project/
+my-project/
 ├── openspec/
-│   ├── config.yaml      # OpenSpec 配置
-│   ├── taxonomy/        # 需求与设计分类
-│   │   ├── functional/  # 功能需求分类
-│   │   ├── non-functional/ # 非功能需求
-│   │   └── design/      # 设计模式分类
-│   ├── issues/          # 需求与设计问题
-│   │   ├── requirements/# 需求文档
-│   │   └── designs/     # 设计文档
-│   ├── procedures/      # 流程规范
-│   └── evolution/       # 演进记录
-│       ├── adr/         # 架构决策记录
-│       └── glossary.md  # 术语表
+│   ├── config.yaml                          # OpenSpec 配置
+│   ├── taxonomy/                            # 问题分类学
+│   │   ├── requirement-issue-taxonomy.md    # 需求问题分类学（6 维度）
+│   │   └── design-issue-taxonomy.md         # 技术设计问题分类学（7 维度）
+│   ├── issues/                              # 问题跟踪
+│   │   ├── requirements/                    # 需求文档
+│   │   └── designs/                         # 设计文档
+│   ├── procedures/                          # 流程规范
+│   └── evolution/                           # 演进记录
+│       ├── adr/                             # 架构决策记录
+│       └── glossary.md                      # 术语表
 ```
 
 ---

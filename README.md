@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/shirayner/ace/main/assets/logo.svg" width="48" align="center"> ACE
+# `<img src="https://raw.githubusercontent.com/shirayner/ace/main/assets/logo.svg" width="48" align="center">` ACE
 
 <p align="center">
   <b>AI Coding Environment</b> — 一键配置专业级 Claude Code 开发环境
@@ -42,6 +42,7 @@ ace init
 ## ✨ 一分钟速览
 
 ### 初始化向导
+
 ```bash
 $ ace init
 ? 选择你的角色: Fullstack Developer
@@ -56,8 +57,14 @@ Done! 你的 AI 开发环境已就绪。
 ```
 
 ### Spec Coding 完整流程
+
 ```bash
-$ ace spec init ./my-project
+# 进入工作目录
+$ mkdir my-project 
+$ cd my-project
+
+# 执行 aspec 初始化
+$ ace spec init
 ✓ aspec 工作流已初始化
 Done! 规范驱动开发已就绪。
 
@@ -81,11 +88,13 @@ Claude:
 > /opsx:archive
 
 Claude:
+spec 归档
 复盘总结，知识库三层进化
 ✓ ADR/术语表/风险图谱 已更新
 ```
 
 ### 健康检查
+
 ```bash
 $ ace doctor
 ✓ CLAUDE.md 配置正常
@@ -139,14 +148,14 @@ All systems operational.
 
 ## 📦 安装预设
 
-| 组件 | `full` | `safe` | `minimal` |
-|------|:------:|:------:|:---------:|
-| **Core** (CLAUDE.md + settings.json) | ✅ | ✅ | ✅ |
-| **Rules** (8 条认知与代码质量规则) | ✅ | ✅ | ✅ |
-| **Plugin** (4 个 Skills) | ✅ | ✅ | ✅ |
-| **Hooks** (角色相关脚本) | ✅ | ❌ | ❌ |
-| **Hookify** (3 个安全守卫) | ✅ | ✅ | ❌ |
-| **Memory** (模板 + 开发者画像) | ✅ | ✅ | ❌ |
+| 组件                                       | `full` | `safe` | `minimal` |
+| ------------------------------------------ | :------: | :------: | :---------: |
+| **Core** (CLAUDE.md + settings.json) |    ✅    |    ✅    |     ✅     |
+| **Rules** (8 条认知与代码质量规则)   |    ✅    |    ✅    |     ✅     |
+| **Plugin** (4 个 Skills)             |    ✅    |    ✅    |     ✅     |
+| **Hooks** (角色相关脚本)             |    ✅    |    ❌    |     ❌     |
+| **Hookify** (3 个安全守卫)           |    ✅    |    ✅    |     ❌     |
+| **Memory** (模板 + 开发者画像)       |    ✅    |    ✅    |     ❌     |
 
 ```bash
 # 完整功能（推荐）
@@ -166,16 +175,19 @@ ace init --preset minimal
 ACE 的设计融合了多学科的深层洞察：
 
 ### 认知科学
+
 - **双过程理论** (Kahneman) — 简单任务快速响应，复杂任务深度分析
 - **认知负荷理论** (Sweller) — 渐进式信息披露，避免工作记忆过载
 - **元认知监控** — 持续自我监控与策略调整
 
 ### 控制论
+
 - **OODA 循环** (Boyd) — 观察-定向-决策-行动的快速迭代
 - **必要多样性定律** (Ashby) — 策略库必须匹配任务复杂度
 - **闭环控制** — 每个操作都内建验证
 
 ### 软件工程
+
 - **Clean Code 原则** (Robert C. Martin)
 - **单一职责** (SOLID)
 - **渐进式复杂度** (OpenAI Agent 最佳实践)
@@ -199,6 +211,7 @@ ace init
 ```
 
 按提示选择你的角色和预设。ACE 会自动配置：
+
 - 全局 CLAUDE.md 索引
 - 8 条认知规则
 - 4 个 AI Skills
@@ -227,16 +240,19 @@ claude
 ## 📚 文档导航
 
 ### 新手入门
+
 - [5 分钟快速开始](docs/getting-started/index.md) — 从零到专业开发环境
 - [安装指南](docs/getting-started/installation.md) — 详细安装与配置
 - [第一个项目](docs/getting-started/first-project.md) — 手把手入门教程
 
 ### 理解 ACE
+
 - [为什么选 ACE](docs/why-ace/index.md) — 价值主张与核心优势
 - [解决的问题](docs/why-ace/problems-solved.md) — ACE 如何应对开发痛点
 - [方案对比](docs/why-ace/comparisons.md) — 与其他工具的比较
 
 ### 深度架构
+
 - [架构全景](docs/architecture/index.md) — 完整组件关系图
 - [8 条规则详解](docs/architecture/rules.md) — 每条规则的用途与设计
 - [4 个 Skills 详解](docs/architecture/skills.md) — 工作原理与最佳实践
@@ -247,6 +263,7 @@ claude
 - [OpenSpec 集成](docs/architecture/spec.md)
 
 ### 理论基础
+
 - [理论总览](docs/theory/index.md)
 - [认知科学基础](docs/theory/cognitive-science.md)
 - [控制论与系统论](docs/theory/cybernetics.md)
@@ -255,6 +272,7 @@ claude
 - [社会学视角](docs/theory/sociology.md)
 
 ### 参考手册
+
 - [CLI 完整参考](docs/reference/cli.md)
 - [合并策略](docs/reference/merge-strategy.md)
 - [角色说明](docs/reference/roles.md)

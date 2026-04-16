@@ -27,7 +27,7 @@ cd task-api
 ### 2. 初始化 aspec 工作流
 
 ```bash
-ace spec init .
+ace spec init
 ```
 
 这会创建 `openspec/` 目录，用于管理需求澄清、设计决策和知识累积。

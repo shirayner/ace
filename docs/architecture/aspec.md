@@ -331,11 +331,13 @@ openspec/
 ## 快速开始
 
 ```bash
-# 1. 初始化 aspec 工作流
-ace spec init ./my-project
-cd my-project
+# 1. 进入项目目录
+mkdir my-project && cd my-project
 
-# 2. 启动 Claude Code，使用三个命令驱动开发
+# 2. 初始化 aspec 工作流
+ace spec init
+
+# 3. 启动 Claude Code，使用三个命令驱动开发
 /opsx:proposal    # 创建提案（含需求澄清 + 技术澄清）
 /opsx:apply       # 按方案实施代码
 /opsx:archive     # 归档复盘，沉淀知识

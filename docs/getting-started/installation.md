@@ -120,8 +120,11 @@ ACE 在以下位置安装文件：
             ├── skill-creator/
             └── skill-optimize/
 
-~/.hookify/                   # Hookify 配置
-└── hooks/                    # 安全守卫配置
+~/.claude/hooks/              # Hookify 规则配置
+├── ace.hookify.block-dangerous-ops.local.md
+├── ace.hookify.protect-secrets.local.md
+├── ace.hookify.safe-git-commands.local.md
+└── ace.hookify.code-quality-gate.local.md
 
 你的项目目录/               # 执行 ace spec init 的项目
 └── openspec/               # 规范驱动工作流文件
@@ -163,7 +166,7 @@ Checking ACE installation...
 
 ✓ Hookify
   - Plugin enabled in settings
-  - Guards configured: 3/3
+  - Guards configured: 5/5
 
 ✓ Memory
   - Directory exists: ~/.claude/memory
@@ -216,6 +219,56 @@ ACE 安装的 `CLAUDE.md` 是一个**配置索引**：
 
 `@` 引用语法告诉 Claude Code 自动加载这些规则文件。
 
+### settings.json 配置
+
+ACE 自动配置 `settings.json`，包含权限管理和 Hookify 集成：
+
+```json
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(npm*)",
+      "Bash(node*)",
+      "Read", "Glob", "Grep"
+    ],
+    "deny": [
+      "Bash(rm -rf*)",
+      "Bash(sudo*)",
+      "Write(*.env)"
+    ]
+  },
+  "enabledPlugins": {
+    "hookify@claude-plugins-official": true,
+    "ace@ace-local": true
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [{
+          "type": "prompt",
+          "prompt": "Check if command is dangerous: $ARGUMENTS"
+        }]
+      }
+    ]
+  }
+}
+```
+
+**权限配置说明**：
+
+| 类别 | 配置项 | 说明 |
+|------|--------|------|
+| **允许** | `Bash(git:*)` | 所有 git 命令直接执行 |
+| **允许** | `Bash(ls*)` | 基础文件命令 |
+| **允许** | `Read`, `Glob`, `Grep` | 内置工具 |
+| **禁止** | `Bash(rm -rf*)` | 危险删除命令 |
+| **禁止** | `Bash(sudo*)` | 提权命令 |
+| **禁止** | `Write(*.env)` | 写入敏感文件 |
+
 ### settings.json 合并
 
 ACE 使用**深度合并**策略：
@@ -229,16 +282,16 @@ ACE 使用**深度合并**策略：
 
 // ACE 添加的配置
 {
-  "plugins": ["ace@ace-local"],
-  "hookify": { "enabled": true }
+  "permissions": { "allow": [...], "deny": [...] },
+  "enabledPlugins": { "hookify@claude-plugins-official": true }
 }
 
 // 合并结果
 {
   "model": "claude-sonnet-4-6",  // 保留你的设置
   "theme": "dark",               // 保留你的设置
-  "plugins": ["ace@ace-local"],  // ACE 添加
-  "hookify": { "enabled": true } // ACE 添加
+  "permissions": { ... },         // ACE 添加
+  "enabledPlugins": { ... }       // ACE 添加
 }
 ```
 

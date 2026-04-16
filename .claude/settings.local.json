@@ -25,6 +25,10 @@
       "Bash(mv \"templates/hookify/hookify.block-dangerous-ops.local.md\" \"templates/hookify/ace.hookify.block-dangerous-ops.local.md\")",
       "Bash(mv \"templates/hookify/hookify.protect-secrets.local.md\" \"templates/hookify/ace.hookify.protect-secrets.local.md\")",
       "Bash(mv \"templates/hookify/hookify.require-verification.local.md\" \"templates/hookify/ace.hookify.require-verification.local.md\")",
+      "Read(templates/hookify/ace.hookify.safe-git-commands.local.md)",
+      "Read(templates/hookify/ace.hookify.code-quality-gate.local.md)",
+      "Write(templates/hookify/ace.hookify.*.local.md)",
+      "Edit(templates/hookify/ace.hookify.*.local.md)",
       "Bash(mv \"templates/hooks/java-compile-check.sh\" \"templates/hooks/ace.java-compile-check.sh\")",
       "Bash(node bin/ace.js init --dry-run)",
       "Bash(node bin/ace.js init --force --no-interaction)",
@@ -46,7 +50,30 @@
       "Bash(mkdir -p /tmp/test-spec-project)",
       "Bash(node bin/ace.js spec init --skip-openspec /tmp/test-spec-project)",
       "Bash(node bin/ace.js spec doctor /tmp/test-spec-project)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Skill(update-config)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if this bash command could be dangerous or destructive. Command: $ARGUMENTS. If it contains rm -rf, sudo, or modifies system files, respond with 'dangerous'. Otherwise respond with 'safe'."
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "agent",
+            "prompt": "Check if the file being written contains sensitive information like API keys, passwords, or secrets. File: $ARGUMENTS. If sensitive data found, warn the user and suggest using environment variables."
+          }
+        ]
+      }
     ]
   }
 }
