@@ -31,7 +31,22 @@
       "Bash(node bin/ace.js uninstall -y)",
       "WebSearch",
       "Bash(node bin/ace.js init --preset minimal --no-interaction)",
-      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('ace-local',{}\\), indent=2\\)\\)\")"
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('ace-local',{}\\), indent=2\\)\\)\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(p.version\\)\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/mspec-cli/src/mspec/templates/config.yaml\" \"D:/Users/r.shi/work-space/incubator/ace/templates/openspec/config.yaml\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/mspec-cli/src/mspec/templates/retrospective-template.md\" \"D:/Users/r.shi/work-space/incubator/ace/templates/openspec/retrospective-template.md\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/mspec-cli/src/mspec/templates/taxonomy/requirement-issue-taxonomy.md\" \"D:/Users/r.shi/work-space/incubator/ace/templates/openspec/taxonomy/requirement-issue-taxonomy.md\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/mspec-cli/src/mspec/templates/taxonomy/design-issue-taxonomy.md\" \"D:/Users/r.shi/work-space/incubator/ace/templates/openspec/taxonomy/design-issue-taxonomy.md\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/mspec-cli/src/mspec/templates/issues/requirement-issues.md\" \"D:/Users/r.shi/work-space/incubator/ace/templates/openspec/issues/requirement-issues.md\")",
+      "Bash(npm install:*)",
+      "Bash(node bin/ace.js --help)",
+      "Bash(node bin/ace.js spec --help)",
+      "Bash(node bin/ace.js spec init --help)",
+      "Bash(node bin/ace.js spec init --dry-run --skip-openspec /tmp/test-spec-project)",
+      "Bash(mkdir -p /tmp/test-spec-project)",
+      "Bash(node bin/ace.js spec init --skip-openspec /tmp/test-spec-project)",
+      "Bash(node bin/ace.js spec doctor /tmp/test-spec-project)",
+      "Bash(git add:*)"
     ]
   }
 }
