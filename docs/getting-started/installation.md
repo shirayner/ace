@@ -120,7 +120,7 @@ ACE 在以下位置安装文件：
             ├── skill-creator/
             └── skill-optimize/
 
-~/.claude/hooks/              # Hookify 规则配置
+~/.claude/hooks/              # Hookify 规则配置（通过 hookify 插件启用）
 ├── ace.hookify.block-dangerous-ops.local.md
 ├── ace.hookify.protect-secrets.local.md
 ├── ace.hookify.safe-git-commands.local.md
@@ -221,7 +221,7 @@ ACE 安装的 `CLAUDE.md` 是一个**配置索引**：
 
 ### settings.json 配置
 
-ACE 自动配置 `settings.json`，包含权限管理和 Hookify 集成：
+ACE 自动配置 `settings.json`，包含权限管理和 Hookify 插件集成：
 
 ```json
 {
@@ -244,19 +244,11 @@ ACE 自动配置 `settings.json`，包含权限管理和 Hookify 集成：
     "hookify@claude-plugins-official": true,
     "ace@ace-local": true
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [{
-          "type": "prompt",
-          "prompt": "Check if command is dangerous: $ARGUMENTS"
-        }]
-      }
-    ]
-  }
+  "hooks": {}
 }
 ```
+
+> **注意**：ACE 使用 **Hookify 插件**（而非原生 hooks）实现安全守卫。规则文件位于 `~/.claude/hooks/*.local.md`，由 hookify 插件自动加载。
 
 **权限配置说明**：
 

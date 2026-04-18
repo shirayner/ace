@@ -9,14 +9,25 @@
       "Bash(cd*)",
       "Bash(find*)",
       "Bash(grep*)",
+      "Bash(sed*)",
       "Bash(mkdir*)",
       "Bash(touch*)",
       "Bash(npm*)",
       "Bash(node*)",
       "Bash(jq*)",
+      "Bash(openspec*)",
+      "Bash(opc*)",
+      "Bash(gh *)",
       "Read",
       "Glob",
-      "Grep"
+      "Grep",
+      "Skill(openspec:*)",
+      "WebSearch",
+      "WebFetch",
+      "mcp__context7__resolve_library_id",
+      "mcp__context7__query_docs",
+      "Skill(report)",
+      "Skill(ace:report)"
     ],
     "deny": [
       "Bash(rm -rf*)",
@@ -24,7 +35,10 @@
       "Bash(curl*--data*)",
       "Write(*.env)",
       "Write(*id_rsa*)"
-    ]
+    ],
+    "hooks": {
+      "PostToolUse": []
+    }
   },
   "autoMemoryDirectory": "~/.claude/memory/",
   "enabledPlugins": {
@@ -32,26 +46,5 @@
     "revealjs@revealjs-skill": true,
     "ace@ace-local": true
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "Check if this bash command could be dangerous or destructive. Command: $ARGUMENTS. If it contains rm -rf, sudo, or modifies system files, respond with 'dangerous'. Otherwise respond with 'safe'."
-          }
-        ]
-      },
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "agent",
-            "prompt": "Check if the file being written contains sensitive information like API keys, passwords, or secrets. File: $ARGUMENTS. If sensitive data found, warn the user and suggest using environment variables."
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": {}
 }

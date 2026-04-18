@@ -97,11 +97,11 @@ export const COMPONENTS = {
     description: 'Safety guard rules (block dangerous ops, protect secrets, safe git, code quality, require verification)',
     required: false,
     files: [
-      { src: 'hookify/ace.hookify.block-dangerous-ops.local.md', dest: 'ace.hookify.block-dangerous-ops.local.md' },
-      { src: 'hookify/ace.hookify.protect-secrets.local.md', dest: 'ace.hookify.protect-secrets.local.md' },
-      { src: 'hookify/ace.hookify.safe-git-commands.local.md', dest: 'ace.hookify.safe-git-commands.local.md' },
-      { src: 'hookify/ace.hookify.code-quality-gate.local.md', dest: 'ace.hookify.code-quality-gate.local.md' },
-      { src: 'hookify/ace.hookify.require-verification.local.md', dest: 'ace.hookify.require-verification.local.md' },
+      { src: 'hookify/ace.hookify.block-dangerous-ops.local.md', dest: 'hooks/ace.hookify.block-dangerous-ops.local.md' },
+      { src: 'hookify/ace.hookify.protect-secrets.local.md', dest: 'hooks/ace.hookify.protect-secrets.local.md' },
+      { src: 'hookify/ace.hookify.safe-git-commands.local.md', dest: 'hooks/ace.hookify.safe-git-commands.local.md' },
+      { src: 'hookify/ace.hookify.code-quality-gate.local.md', dest: 'hooks/ace.hookify.code-quality-gate.local.md' },
+      { src: 'hookify/ace.hookify.require-verification.local.md', dest: 'hooks/ace.hookify.require-verification.local.md' },
     ],
   },
   memory: {
