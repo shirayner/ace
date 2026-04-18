@@ -1,37 +1,63 @@
 import chalk from 'chalk';
 import inquirer from 'inquirer';
-import { PRESETS, ROLES } from '../core/constants.js';
+import { createRequire } from 'module';
+import { PRESETS, ROLES, COMPONENTS } from '../core/constants.js';
 import { Installer } from '../core/installer.js';
+import {
+  printBanner, sectionHeader, stepDone, stepSkip, stepFail,
+  fileEntry, summaryBox, doneMessage, doneWithErrors, separator,
+  conflictHeader, conflictFile,
+  colors, icons, componentIcons, componentLabels,
+} from '../core/ui.js';
+
+const require = createRequire(import.meta.url);
+const pkg = require('../../package.json');
 
 export async function initCommand(options) {
-  console.log(chalk.bold('\n  ace - AI Coding Environment\n'));
+  // ─── Banner ──────────────────────────────────────────────────────
+  printBanner(pkg.version);
 
   let role = 'fullstack';
   let preset = options.preset;
 
-  // Interactive mode
+  // ─── Interactive prompts ─────────────────────────────────────────
   if (options.interaction !== false) {
     const answers = await inquirer.prompt([
       {
         type: 'list',
         name: 'role',
-        message: 'What is your primary role?',
+        message: `${icons.gear}  Your primary role?`,
         choices: Object.entries(ROLES).map(([key, val]) => ({
-          name: `${val.label} — ${val.description}`,
+          name: `${colors.white(val.label)} ${colors.dim('—')} ${colors.muted(val.description)}`,
           value: key,
+          short: val.label,
         })),
         default: 'fullstack',
+        prefix: colors.brand('?'),
       },
       {
         type: 'list',
         name: 'preset',
-        message: 'Installation scope?',
+        message: `${icons.package}  Installation scope?`,
         choices: [
-          { name: 'Full — All components (rules, skills, hooks, safety guards, memory)', value: 'full' },
-          { name: 'Safe — Core + rules + skills + safety guards + memory', value: 'safe' },
-          { name: 'Minimal — Core + rules + skills only', value: 'minimal' },
+          {
+            name: `${colors.white('Full')} ${colors.dim('—')} ${colors.muted('All components (rules, plugin, hooks, safety guards, memory)')}`,
+            value: 'full',
+            short: 'Full',
+          },
+          {
+            name: `${colors.white('Safe')} ${colors.dim('—')} ${colors.muted('Core + rules + plugin + safety guards + memory')}`,
+            value: 'safe',
+            short: 'Safe',
+          },
+          {
+            name: `${colors.white('Minimal')} ${colors.dim('—')} ${colors.muted('Core + rules + plugin only')}`,
+            value: 'minimal',
+            short: 'Minimal',
+          },
         ],
         default: 'full',
+        prefix: colors.brand('?'),
       },
     ]);
     role = answers.role;
@@ -40,59 +66,150 @@ export async function initCommand(options) {
 
   const components = PRESETS[preset];
   if (!components) {
-    console.error(chalk.red(`Unknown preset: ${preset}. Available: ${Object.keys(PRESETS).join(', ')}`));
+    console.error(colors.error(`  ${icons.cross} Unknown preset: ${preset}. Available: ${Object.keys(PRESETS).join(', ')}`));
     process.exit(1);
   }
 
-  console.log(chalk.dim(`\n  Role: ${ROLES[role].label}`));
-  console.log(chalk.dim(`  Preset: ${preset}`));
-  console.log(chalk.dim(`  Components: ${components.join(', ')}`));
-  if (options.force) console.log(chalk.yellow('  Force mode: existing files will be overwritten'));
-  if (options.dryRun) console.log(chalk.cyan('  Dry-run mode: no changes will be made'));
+  // ─── Config summary ──────────────────────────────────────────────
   console.log();
+  console.log(`  ${colors.dim('│')}  ${colors.dim('Role')}     ${colors.white(ROLES[role].label)}`);
+  console.log(`  ${colors.dim('│')}  ${colors.dim('Preset')}   ${colors.white(preset)}`);
+  console.log(`  ${colors.dim('│')}  ${colors.dim('Scope')}    ${components.map(c => componentLabels[c] || c).join(colors.dim(', '))}`);
+  if (options.force) {
+    console.log(`  ${colors.dim('│')}  ${colors.warning(`${icons.warn} Force mode — existing files will be overwritten`)}`);
+  }
+  if (options.dryRun) {
+    console.log(`  ${colors.dim('│')}  ${colors.accent(`${icons.info} Dry-run mode — no changes will be made`)}`);
+  }
 
+  // ─── Conflict detection & category confirmation ──────────────────
   const installer = new Installer({
     force: options.force,
     dryRun: options.dryRun,
     role,
     components,
+    quiet: true,
   });
 
-  const results = installer.run();
+  let resolutions = {};
 
-  // Wait for async
-  const { installed, skipped, merged, errors } = await results;
+  if (!options.force && options.interaction !== false) {
+    const conflicts = await installer.detectConflicts();
+    const conflictKeys = Object.keys(conflicts);
 
-  // Summary
-  console.log(chalk.bold('\n  Installation Summary\n'));
+    if (conflictKeys.length > 0) {
+      console.log();
+      sectionHeader(icons.warn, 'Existing files detected');
+      console.log(`  ${colors.dim('│')}  ${colors.muted('Some files already exist. Choose how to handle each category:')}`);
+      console.log(`  ${colors.dim('│')}  ${colors.muted(`CLAUDE.md ${icons.arrowR} always smart-merge (append new refs only)`)}`);
+      console.log(`  ${colors.dim('│')}  ${colors.muted(`settings.json ${icons.arrowR} always deep-merge (preserve your settings)`)}`);
 
-  if (installed.length > 0) {
-    console.log(chalk.green(`  Installed (${installed.length}):`));
-    installed.forEach(f => console.log(chalk.green(`    + ${f}`)));
+      for (const componentName of conflictKeys) {
+        const { files } = conflicts[componentName];
+        const icon = componentIcons[componentName] || icons.file;
+        const label = componentLabels[componentName] || componentName;
+
+        conflictHeader(label, icon, files.length);
+        for (const f of files) {
+          conflictFile(f.replace(/\\/g, '/'));
+        }
+      }
+
+      console.log();
+      const conflictAnswers = await inquirer.prompt(
+        conflictKeys.map((componentName) => {
+          const icon = componentIcons[componentName] || icons.file;
+          const label = componentLabels[componentName] || componentName;
+          const count = conflicts[componentName].files.length;
+          return {
+            type: 'list',
+            name: componentName,
+            message: `${icon}  ${label} (${count} files)`,
+            choices: [
+              {
+                name: `${colors.muted('Skip')} ${colors.dim('— keep existing files')}`,
+                value: 'skip',
+                short: 'Skip',
+              },
+              {
+                name: `${colors.warning('Overwrite')} ${colors.dim('— replace with ace templates')}`,
+                value: 'overwrite',
+                short: 'Overwrite',
+              },
+            ],
+            default: 'skip',
+            prefix: colors.brand('?'),
+          };
+        })
+      );
+
+      resolutions = conflictAnswers;
+    }
   }
 
-  if (merged.length > 0) {
-    console.log(chalk.blue(`  Merged (${merged.length}):`));
-    merged.forEach(m => {
-      const detail = m.added ? ` (added ${m.added.length} refs)` : '';
-      console.log(chalk.blue(`    ~ ${m.file}${detail}`));
-    });
+  // Apply resolutions to installer
+  installer.resolutions = resolutions;
+
+  // ─── Installation ────────────────────────────────────────────────
+  console.log();
+  sectionHeader(icons.rocket, 'Installing components');
+
+  for (const componentName of components) {
+    const component = COMPONENTS[componentName];
+    if (!component) continue;
+
+    const icon = componentIcons[componentName] || icons.file;
+    const label = componentLabels[componentName] || componentName;
+
+    const beforeInstalled = installer.results.installed.length;
+    const beforeMerged = installer.results.merged.length;
+    const beforeSkipped = installer.results.skipped.length;
+
+    try {
+      await installer.installComponent(componentName, component);
+      const newInstalled = installer.results.installed.length - beforeInstalled;
+      const newMerged = installer.results.merged.length - beforeMerged;
+      const newSkipped = installer.results.skipped.length - beforeSkipped;
+
+      const parts = [];
+      if (newInstalled > 0) parts.push(colors.success(`${newInstalled} installed`));
+      if (newMerged > 0) parts.push(colors.blue(`${newMerged} merged`));
+      if (newSkipped > 0) parts.push(colors.muted(`${newSkipped} skipped`));
+      const detail = parts.length > 0 ? ` ${colors.dim('—')} ${parts.join(colors.dim(', '))}` : '';
+
+      stepDone(`${icon}  ${label}${detail}`);
+    } catch (err) {
+      stepFail(`${icon}  ${label} ${colors.dim('—')} ${colors.error(err.message)}`);
+      installer.results.errors.push({ component: componentName, error: err.message });
+    }
   }
 
-  if (skipped.length > 0) {
-    console.log(chalk.yellow(`  Skipped (${skipped.length}) — already exist:`));
-    skipped.forEach(f => console.log(chalk.yellow(`    - ${f}`)));
+  const { installed, skipped, merged, errors } = installer.results;
+
+  // ─── Detailed file list ──────────────────────────────────────────
+  if (installed.length > 0 || merged.length > 0 || skipped.length > 0) {
+    separator();
+    sectionHeader(icons.file, 'File details');
+    for (const f of installed) fileEntry('install', f.replace(/\\/g, '/'));
+    for (const m of merged) {
+      const detail = m.added ? ` (${m.added.length} refs)` : '';
+      fileEntry('merge', `${m.file.replace(/\\/g, '/')}${detail}`);
+    }
+    for (const f of skipped) fileEntry('skip', f.replace(/\\/g, '/'));
+    for (const e of errors) fileEntry('error', `${(e.file || e.component).replace(/\\/g, '/')}: ${e.error}`);
   }
 
-  if (errors.length > 0) {
-    console.log(chalk.red(`  Errors (${errors.length}):`));
-    errors.forEach(e => console.log(chalk.red(`    ! ${e.file || e.component}: ${e.error}`)));
-  }
+  // ─── Summary ─────────────────────────────────────────────────────
+  summaryBox({
+    installed: installed.length,
+    merged: merged.length,
+    skipped: skipped.length,
+    errors: errors.length,
+  });
 
   if (errors.length === 0) {
-    console.log(chalk.green.bold('\n  Done! Your AI coding environment is ready.\n'));
-    console.log(chalk.dim('  Run `ace doctor` to verify the installation.'));
+    doneMessage();
   } else {
-    console.log(chalk.yellow('\n  Completed with errors. Run `ace doctor` to diagnose.\n'));
+    doneWithErrors();
   }
 }

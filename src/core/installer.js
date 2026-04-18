@@ -19,6 +19,76 @@ export class Installer {
     this.role = options.role || 'fullstack';
     this.components = options.components || [];
     this.results = { installed: [], skipped: [], merged: [], errors: [] };
+    // Per-component resolution: { componentName: 'overwrite' | 'skip' }
+    this.resolutions = options.resolutions || {};
+    // Suppress inline console.log when caller handles UI
+    this.quiet = options.quiet || false;
+  }
+
+  /**
+   * Detect conflicts for all components before installation.
+   * Returns: { componentName: { files: [...conflicting dest paths], hasMerge: bool } }
+   */
+  async detectConflicts() {
+    const conflicts = {};
+
+    for (const componentName of this.components) {
+      const component = COMPONENTS[componentName];
+      if (!component) continue;
+
+      // Plugin always overwrites — no conflict prompt needed
+      if (component.isPlugin) continue;
+
+      const conflicting = [];
+      let hasMerge = false;
+
+      // Check rulesDir files
+      if (component.rulesDir) {
+        const srcDir = path.join(this.templatesDir, component.rulesDir);
+        if (await fs.pathExists(srcDir)) {
+          const files = await fs.readdir(srcDir);
+          for (const file of files) {
+            if (!file.endsWith('.md')) continue;
+            const destPath = path.join(this.targetDir, component.rulesDir, file);
+            if (await fs.pathExists(destPath)) {
+              conflicting.push(path.join(component.rulesDir, file));
+            }
+          }
+        }
+      }
+
+      // Check regular files
+      if (component.files) {
+        for (const file of component.files) {
+          const destPath = path.join(this.targetDir, file.dest);
+          if (await fs.pathExists(destPath)) {
+            if (file.merge === 'claude-md' || file.merge === 'settings-json') {
+              hasMerge = true;
+            } else if (file.merge !== 'skip-existing') {
+              conflicting.push(file.dest);
+            }
+          }
+        }
+      }
+
+      // Check conditional files
+      if (component.conditional) {
+        for (const file of component.conditional) {
+          if (file.roles && file.roles.includes(this.role)) {
+            const destPath = path.join(this.targetDir, file.dest);
+            if (await fs.pathExists(destPath)) {
+              conflicting.push(file.dest);
+            }
+          }
+        }
+      }
+
+      if (conflicting.length > 0) {
+        conflicts[componentName] = { files: conflicting, hasMerge };
+      }
+    }
+
+    return conflicts;
   }
 
   async run() {
@@ -51,19 +121,19 @@ export class Installer {
     }
 
     if (component.rulesDir) {
-      await this.installRulesDir(component.rulesDir);
+      await this.installRulesDir(component.rulesDir, name);
     }
 
     if (component.files) {
       for (const file of component.files) {
-        await this.installFile(file);
+        await this.installFile(file, name);
       }
     }
 
     if (component.conditional) {
       for (const file of component.conditional) {
         if (file.roles && file.roles.includes(this.role)) {
-          await this.installFile(file);
+          await this.installFile(file, name);
         }
       }
     }
@@ -91,9 +161,9 @@ export class Installer {
     const destDir = path.join(PLUGIN_CACHE_DIR, version);
 
     if (this.dryRun) {
-      console.log(chalk.cyan(`  [dry-run] Would create marketplace ${MARKETPLACE_NAME}`));
-      console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
-      console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would create marketplace ${MARKETPLACE_NAME}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
       this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
       return;
     }
@@ -152,7 +222,7 @@ export class Installer {
     this.results.merged.push({ file: 'plugins/known_marketplaces.json' });
   }
 
-  async installRulesDir(rulesDir) {
+  async installRulesDir(rulesDir, componentName) {
     const srcDir = path.join(this.templatesDir, rulesDir);
     if (!await fs.pathExists(srcDir)) {
       this.results.errors.push({ file: rulesDir, error: 'Rules directory not found' });
@@ -164,11 +234,11 @@ export class Installer {
       await this.installFile({
         src: path.join(rulesDir, file),
         dest: path.join(rulesDir, file),
-      });
+      }, componentName);
     }
   }
 
-  async installFile(fileSpec) {
+  async installFile(fileSpec, componentName) {
     const srcPath = path.join(this.templatesDir, fileSpec.src);
     const destPath = path.join(this.targetDir, fileSpec.dest);
 
@@ -193,12 +263,19 @@ export class Installer {
         await this.mergeSettingsJsonFile(srcPath, destPath, fileSpec);
         return;
       }
-      this.results.skipped.push(fileSpec.dest);
-      return;
+      // Check per-component resolution
+      const resolution = this.resolutions[componentName];
+      if (resolution === 'overwrite') {
+        // fall through to install
+      } else {
+        // default: skip
+        this.results.skipped.push(fileSpec.dest);
+        return;
+      }
     }
 
     if (this.dryRun) {
-      console.log(chalk.cyan(`  [dry-run] Would install: ${fileSpec.dest}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install: ${fileSpec.dest}`));
       this.results.installed.push(fileSpec.dest);
       return;
     }
@@ -228,7 +305,7 @@ export class Installer {
     }
 
     if (this.dryRun) {
-      console.log(chalk.cyan(`  [dry-run] Would install directory: ${dir}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install directory: ${dir}`));
       this.results.installed.push(dir);
       return;
     }
@@ -249,7 +326,7 @@ export class Installer {
     }
 
     if (this.dryRun) {
-      console.log(chalk.cyan(`  [dry-run] Would merge CLAUDE.md, adding ${added.length} references`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would merge CLAUDE.md, adding ${added.length} references`));
       this.results.merged.push({ file: fileSpec.dest, added });
       return;
     }
@@ -271,7 +348,7 @@ export class Installer {
     }
 
     if (this.dryRun) {
-      console.log(chalk.cyan(`  [dry-run] Would merge settings.json`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would merge settings.json`));
       this.results.merged.push({ file: fileSpec.dest });
       return;
     }
@@ -297,7 +374,7 @@ export class Installer {
     }
 
     if (this.dryRun) {
-      console.log(chalk.cyan(`  [dry-run] Would install user profile template for role: ${this.role}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install user profile template for role: ${this.role}`));
       this.results.installed.push('memory/user_profile.md');
       return;
     }

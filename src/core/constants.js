@@ -102,6 +102,8 @@ export const COMPONENTS = {
       { src: 'hookify/ace.hookify.safe-git-commands.local.md', dest: 'hooks/ace.hookify.safe-git-commands.local.md' },
       { src: 'hookify/ace.hookify.code-quality-gate.local.md', dest: 'hooks/ace.hookify.code-quality-gate.local.md' },
       { src: 'hookify/ace.hookify.require-verification.local.md', dest: 'hooks/ace.hookify.require-verification.local.md' },
+      { src: 'hookify/hookify.dangerous-commands.local.md', dest: 'hooks/hookify.dangerous-commands.local.md' },
+      { src: 'hookify/hookify.sensitive-data.local.md', dest: 'hooks/hookify.sensitive-data.local.md' },
     ],
   },
   memory: {
