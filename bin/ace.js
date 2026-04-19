@@ -25,7 +25,7 @@ program
   .option('-p, --preset <name>', 'Installation preset: full, minimal, safe', 'full')
   .option('-f, --force', 'Overwrite existing files', false)
   .option('--dry-run', 'Show what would be done without making changes', false)
-  .option('--no-interaction', 'Skip interactive prompts, use defaults', false)
+  .option('--no-interaction', 'Skip interactive prompts, use defaults')
   .action(initCommand);
 
 program
