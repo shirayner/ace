@@ -64,11 +64,6 @@ export class SpecInstaller {
   async runOpenspecInit() {
     if (this.skipOpenspec) return;
 
-    if (await fs.pathExists(this.openspecDir) && !this.force) {
-      this.results.skipped.push('openspec/ (already exists)');
-      return;
-    }
-
     if (this.dryRun) {
       this.results.installed.push('openspec/ (via openspec init)');
       return;

@@ -1,19 +1,146 @@
 import fs from 'fs-extra';
 import path from 'path';
 import deepmerge from 'deepmerge';
+import { isAceOwnedRef } from './constants.js';
 
 /**
- * Merge CLAUDE.md: append missing @references from template into existing file.
- * Preserves all existing content, only adds new @references.
+ * Marker constants for ACE-managed sections in CLAUDE.md
+ */
+const ACE_MANAGED_START = '<!-- ace:managed:start -->';
+const ACE_MANAGED_END = '<!-- ace:managed:end -->';
+
+/**
+ * Merge CLAUDE.md using marker-based section replacement.
+ *
+ * Strategy:
+ * 1. If both existing and template have ace:managed markers, replace the section
+ *    between markers with template content, while preserving content outside markers.
+ * 2. Clean up any ACE-owned references outside the managed section (obsolete refs).
+ * 3. If markers are missing or incomplete, fall back to append-only strategy for
+ *    backward compatibility.
+ *
+ * @param {string} existingContent - Current CLAUDE.md content
+ * @param {string} templateContent - Template CLAUDE.md content
+ * @returns {{content: string, added: string[], removed: string[]}} Merged content and change list
  */
 export function mergeClaudeMd(existingContent, templateContent) {
+  // Check if both files have complete marker sections
+  const existingHasMarkers = hasCompleteMarkers(existingContent);
+  const templateHasMarkers = hasCompleteMarkers(templateContent);
+
+  if (existingHasMarkers && templateHasMarkers) {
+    return mergeWithMarkers(existingContent, templateContent);
+  }
+
+  // Fall back to legacy append strategy
+  return mergeWithAppend(existingContent, templateContent);
+}
+
+/**
+ * Check if content has both start and end markers.
+ */
+function hasCompleteMarkers(content) {
+  const hasStart = content.includes(ACE_MANAGED_START);
+  const hasEnd = content.includes(ACE_MANAGED_END);
+  return hasStart && hasEnd;
+}
+
+/**
+ * Merge using marker-based section replacement.
+ * Replaces content between ace:managed markers and cleans up obsolete ACE refs.
+ */
+function mergeWithMarkers(existingContent, templateContent) {
+  // Extract the managed section from template
+  const templateManaged = extractManagedSection(templateContent);
+
+  // Get all ACE-owned refs from template (these are the current/active ones)
+  const templateRefs = extractRefs(templateManaged);
+
+  // Replace the managed section in existing content
+  let result = replaceManagedSection(existingContent, templateManaged);
+
+  // Clean up any obsolete ACE refs outside the managed section
+  const removed = [];
+  const lines = result.split('\n');
+  const cleanedLines = lines.map(line => {
+    const refs = extractRefs(line);
+    const hasObsoleteAceRef = refs.some(ref => {
+      // Check if this is an ACE-owned ref that's NOT in the new template
+      if (isAceOwnedRef(ref)) {
+        const refWithAt = `@${ref}`;
+        if (!templateRefs.includes(refWithAt)) {
+          removed.push(ref);
+          return true; // This line has an obsolete ref
+        }
+      }
+      return false;
+    });
+
+    // Return null to mark for removal, otherwise keep line
+    return hasObsoleteAceRef ? null : line;
+  }).filter(line => line !== null);
+
+  result = cleanedLines.join('\n');
+
+  // Get the new refs that were added (in the managed section)
+  const existingRefs = extractRefs(existingContent);
+  const added = templateRefs
+    .map(ref => ref.replace(/^@/, ''))
+    .filter(ref => !existingRefs.includes(ref));
+
+  return { content: result, added, removed };
+}
+
+/**
+ * Extract content between ace:managed markers.
+ */
+function extractManagedSection(content) {
+  const startIdx = content.indexOf(ACE_MANAGED_START);
+  const endIdx = content.indexOf(ACE_MANAGED_END);
+
+  if (startIdx === -1 || endIdx === -1 || endIdx <= startIdx) {
+    return content;
+  }
+
+  return content.slice(startIdx, endIdx + ACE_MANAGED_END.length);
+}
+
+/**
+ * Replace the managed section in existing content with new managed content.
+ */
+function replaceManagedSection(existingContent, newManagedContent) {
+  const startIdx = existingContent.indexOf(ACE_MANAGED_START);
+  const endIdx = existingContent.indexOf(ACE_MANAGED_END);
+
+  if (startIdx === -1 || endIdx === -1) {
+    return existingContent;
+  }
+
+  const before = existingContent.slice(0, startIdx);
+  const after = existingContent.slice(endIdx + ACE_MANAGED_END.length);
+
+  // Normalize whitespace: ensure single newline separation
+  return before.trimEnd() + '\n' + newManagedContent + '\n' + after.trimStart();
+}
+
+/**
+ * Legacy merge strategy: append missing @references from template.
+ * Used for backward compatibility when markers are not present.
+ */
+function mergeWithAppend(existingContent, templateContent) {
   const existingRefs = extractRefs(existingContent);
   const templateRefs = extractRefs(templateContent);
 
-  const missingRefs = templateRefs.filter(ref => !existingRefs.includes(ref));
+  // Filter out ACE-owned refs from existing (we'll add current ones from template)
+  // This provides some cleanup even in legacy mode
+  const userRefs = existingRefs.filter(ref => !isAceOwnedRef(ref));
+  const templateRefsBare = templateRefs.map(ref => ref.replace(/^@/, ''));
+
+  // Find refs in template but not in user's refs
+  const missingRefs = templateRefsBare.filter(ref => !userRefs.includes(ref));
 
   if (missingRefs.length === 0) {
-    return { content: existingContent, added: [] };
+    return { content: existingContent, added: [], removed: [] };
   }
 
   // Append missing references at the end with a section marker
@@ -32,15 +159,22 @@ export function mergeClaudeMd(existingContent, templateContent) {
   return {
     content: existingContent.trimEnd() + '\n' + appendSection,
     added: missingRefs,
+    removed: [],
   };
 }
 
+/**
+ * Extract @reference paths from content.
+ */
 function extractRefs(content) {
   const refPattern = /@~?\/?\.?claude\/[^\s)]+/g;
   const matches = content.match(refPattern) || [];
-  return matches.map(ref => ref.replace(/^@/, ''));
+  return matches;
 }
 
+/**
+ * Find the full line containing a reference.
+ */
 function findRefLine(content, ref) {
   const lines = content.split('\n');
   return lines.find(line => line.includes(ref));

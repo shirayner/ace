@@ -67,6 +67,36 @@ export const SPEC_TEMPLATE_FILES = [
   'retrospective-template.md',
 ];
 
+/**
+ * Patterns for files owned by ACE - these are overwritten directly on init without prompting.
+ * Used to identify ACE-owned content in rules/, hooks/, and hookify/.
+ */
+export const ACE_OWNED_PATTERNS = [
+  /^rules\/ace\//,          // rules/ace/*.md
+  /^hooks\/ace\./,          // hooks/ace.*.sh
+  /^hookify\.ace\./,        // hookify.ace.*.local.md
+];
+
+/**
+ * Check if a file path (relative to ~/.claude/) is owned by ACE.
+ * @param {string} relativePath - Path like 'rules/ace/thinking.md' or 'hooks/ace.java-compile-check.sh'
+ * @returns {boolean}
+ */
+export function isAceOwnedFile(relativePath) {
+  return ACE_OWNED_PATTERNS.some(pattern => pattern.test(relativePath));
+}
+
+/**
+ * Check if an @reference path is owned by ACE.
+ * @param {string} refPath - Reference path like '~/.claude/rules/ace/thinking.md' or '~/.claude/hooks/ace.java-compile-check.sh'
+ * @returns {boolean}
+ */
+export function isAceOwnedRef(refPath) {
+  // Remove the ~/.claude/ prefix if present
+  const relativePath = refPath.replace(/^~\/\.claude\//, '');
+  return isAceOwnedFile(relativePath);
+}
+
 export const COMPONENTS = {
   core: {
     description: 'Core config (CLAUDE.md + settings.json)',
@@ -97,13 +127,13 @@ export const COMPONENTS = {
     description: 'Safety guard rules (block dangerous ops, protect secrets, safe git, code quality, require verification)',
     required: false,
     files: [
-      { src: 'hookify/ace.hookify.block-dangerous-ops.local.md', dest: 'hooks/ace.hookify.block-dangerous-ops.local.md' },
-      { src: 'hookify/ace.hookify.protect-secrets.local.md', dest: 'hooks/ace.hookify.protect-secrets.local.md' },
-      { src: 'hookify/ace.hookify.safe-git-commands.local.md', dest: 'hooks/ace.hookify.safe-git-commands.local.md' },
-      { src: 'hookify/ace.hookify.code-quality-gate.local.md', dest: 'hooks/ace.hookify.code-quality-gate.local.md' },
-      { src: 'hookify/ace.hookify.require-verification.local.md', dest: 'hooks/ace.hookify.require-verification.local.md' },
-      { src: 'hookify/hookify.dangerous-commands.local.md', dest: 'hooks/hookify.dangerous-commands.local.md' },
-      { src: 'hookify/hookify.sensitive-data.local.md', dest: 'hooks/hookify.sensitive-data.local.md' },
+      { src: 'hookify/hookify.ace.block-dangerous-ops.local.md', dest: 'hookify.ace.block-dangerous-ops.local.md' },
+      { src: 'hookify/hookify.ace.protect-secrets.local.md', dest: 'hookify.ace.protect-secrets.local.md' },
+      { src: 'hookify/hookify.ace.safe-git-commands.local.md', dest: 'hookify.ace.safe-git-commands.local.md' },
+      { src: 'hookify/hookify.ace.code-quality-gate.local.md', dest: 'hookify.ace.code-quality-gate.local.md' },
+      { src: 'hookify/hookify.ace.require-verification.local.md', dest: 'hookify.ace.require-verification.local.md' },
+      { src: 'hookify/hookify.ace.dangerous-commands.local.md', dest: 'hookify.ace.dangerous-commands.local.md' },
+      { src: 'hookify/hookify.ace.sensitive-data.local.md', dest: 'hookify.ace.sensitive-data.local.md' },
     ],
   },
   memory: {

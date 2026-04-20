@@ -2,7 +2,7 @@ import * as p from '@clack/prompts';
 import path from 'path';
 import fs from 'fs-extra';
 import { createRequire } from 'module';
-import { PRESETS, COMPONENTS, CLAUDE_DIR, TEMPLATES_DIR } from '../core/constants.js';
+import { PRESETS, COMPONENTS, CLAUDE_DIR, TEMPLATES_DIR, isAceOwnedFile } from '../core/constants.js';
 import { Installer } from '../core/installer.js';
 import { mergeClaudeMd } from '../core/merger.js';
 
@@ -196,8 +196,10 @@ async function buildInstallPreview(installer, components) {
       if (await fs.pathExists(srcDir)) {
         const files = (await fs.readdir(srcDir)).filter(f => f.endsWith('.md'));
         for (const f of files) {
-          if (await fs.pathExists(path.join(destDir, f))) {
-            preview.conflict.push(path.join(component.rulesDir, f).replace(/\\/g, '/'));
+          const relativePath = path.join(component.rulesDir, f).replace(/\\/g, '/');
+          // ACE-owned files are overwritten directly, not shown as conflicts
+          if (await fs.pathExists(path.join(destDir, f)) && !isAceOwnedFile(relativePath)) {
+            preview.conflict.push(relativePath);
           }
         }
       }
@@ -207,7 +209,8 @@ async function buildInstallPreview(installer, components) {
       for (const file of component.conditional) {
         if (file.roles?.includes(installer.role)) {
           const destPath = path.join(installer.targetDir, file.dest);
-          if (await fs.pathExists(destPath)) {
+          // ACE-owned files are overwritten directly, not shown as conflicts
+          if (await fs.pathExists(destPath) && !isAceOwnedFile(file.dest)) {
             preview.conflict.push(file.dest);
           }
         }

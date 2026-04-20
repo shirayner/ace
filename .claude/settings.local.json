@@ -54,7 +54,12 @@
       "Skill(update-config)",
       "Bash(openspec*)",
       "Bash(opc*)",
-      "Skill(openspec:*)"
+      "Skill(openspec:*)",
+      "Bash(mv \"ace.hookify.block-dangerous-ops.local.md\" \"hookify.ace.block-dangerous-ops.local.md\")",
+      "Bash(mv \"ace.hookify.code-quality-gate.local.md\" \"hookify.ace.code-quality-gate.local.md\")",
+      "Bash(mv \"ace.hookify.protect-secrets.local.md\" \"hookify.ace.protect-secrets.local.md\")",
+      "Bash(mv \"ace.hookify.require-verification.local.md\" \"hookify.ace.require-verification.local.md\")",
+      "Bash(mv \"ace.hookify.safe-git-commands.local.md\" \"hookify.ace.safe-git-commands.local.md\")"
     ]
   }
 }

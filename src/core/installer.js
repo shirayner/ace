@@ -3,7 +3,7 @@ import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
 import {
-  CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS,
+  CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS, isAceOwnedFile,
   PLUGIN_SRC_DIR, PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE,
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
   PLUGIN_KEY, PLUGIN_NAME,
@@ -255,22 +255,25 @@ export class Installer {
     }
 
     if (exists && !this.force) {
-      if (fileSpec.merge === 'claude-md') {
+      // ACE-owned files are always overwritten (no user prompt needed)
+      if (isAceOwnedFile(fileSpec.dest)) {
+        // fall through to install (overwrite)
+      } else if (fileSpec.merge === 'claude-md') {
         await this.mergeClaudeMdFile(srcPath, destPath, fileSpec);
         return;
-      }
-      if (fileSpec.merge === 'settings-json') {
+      } else if (fileSpec.merge === 'settings-json') {
         await this.mergeSettingsJsonFile(srcPath, destPath, fileSpec);
         return;
-      }
-      // Check per-component resolution
-      const resolution = this.resolutions[componentName];
-      if (resolution === 'overwrite') {
-        // fall through to install
       } else {
-        // default: skip
-        this.results.skipped.push(fileSpec.dest);
-        return;
+        // Check per-component resolution
+        const resolution = this.resolutions[componentName];
+        if (resolution === 'overwrite') {
+          // fall through to install
+        } else {
+          // default: skip
+          this.results.skipped.push(fileSpec.dest);
+          return;
+        }
       }
     }
 

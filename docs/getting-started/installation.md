@@ -120,11 +120,14 @@ ACE 在以下位置安装文件：
             ├── skill-creator/
             └── skill-optimize/
 
-~/.claude/hooks/              # Hookify 规则配置（通过 hookify 插件启用）
-├── ace.hookify.block-dangerous-ops.local.md
-├── ace.hookify.protect-secrets.local.md
-├── ace.hookify.safe-git-commands.local.md
-└── ace.hookify.code-quality-gate.local.md
+~/.claude/                    # Hookify 规则配置（通过 hookify 插件启用）
+├── hookify.ace.block-dangerous-ops.local.md
+├── hookify.ace.protect-secrets.local.md
+├── hookify.ace.safe-git-commands.local.md
+├── hookify.ace.code-quality-gate.local.md
+├── hookify.ace.require-verification.local.md
+├── hookify.ace.dangerous-commands.local.md
+└── hookify.ace.sensitive-data.local.md
 
 你的项目目录/               # 执行 ace spec init 的项目
 └── openspec/               # 规范驱动工作流文件
@@ -248,7 +251,7 @@ ACE 自动配置 `settings.json`，包含权限管理和 Hookify 插件集成：
 }
 ```
 
-> **注意**：ACE 使用 **Hookify 插件**（而非原生 hooks）实现安全守卫。规则文件位于 `~/.claude/hooks/*.local.md`，由 hookify 插件自动加载。
+> **注意**：ACE 使用 **Hookify 插件**（而非原生 hooks）实现安全守卫。规则文件位于 `~/.claude/hookify.ace.*.local.md`，由 hookify 插件自动加载。
 
 **权限配置说明**：
 
