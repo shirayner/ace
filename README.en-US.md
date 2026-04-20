@@ -16,15 +16,20 @@
 
 ```
 $ ace init
-? Your role: Fullstack Developer
-? Preset: full
-✔ core installed
-✔ rules installed
-✔ plugin installed (ace:auto-goal, ace:coding, ...)
-✔ hookify installed
-✔ hooks installed
-✔ memory installed
-Done! Your AI coding environment is ready.
+◇  ace v0.1.2
+│
+◇  Installed to ~/.claude/
+│
+│  ◆ Core Config     2 files
+│  ◆ Rules           8 files
+│  ◆ Plugin          installed
+│  ◆ Hooks           1 file
+│  ◆ Safety Guards   7 files
+│  ◆ Memory          2 files
+│
+◆  20 installed
+│
+└  Done. Go to your project and run ace spec init.
 ```
 
 ### Spec 驱动开发

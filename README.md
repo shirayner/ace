@@ -45,15 +45,31 @@ ace init
 
 ```bash
 $ ace init
-? 选择你的角色: Fullstack Developer
-? 选择安装预设: full (完整功能)
-✓ Core 核心配置已安装
-✓ 8 条认知规则已部署
-✓ 4 个 AI Skills 已激活 (ace:auto-goal, ace:coding, ...)
-✓ Hookify 安全守卫已启用
-✓ 角色钩子脚本已配置
-✓ 记忆系统已初始化
-Done! 你的 AI 开发环境已就绪。
+◇  ace v0.1.2
+│
+◇  Installed to ~/.claude/
+│
+│  ◆ Core Config     2 files
+│  ◆ Rules           8 files
+│  ◆ Plugin          installed
+│  ◆ Hooks           1 file
+│  ◆ Safety Guards   7 files
+│  ◆ Memory          2 files
+│
+◆  20 installed
+│
+┌  Next steps
+│  Get started
+│    1. cd <your-project> && ace spec init
+│    2. Open Claude Code, type: /opsx:propose
+│
+│  Customize
+│    Change role      edit ~/.claude/memory/user_profile.md
+│    Adjust rules     edit ~/.claude/rules/ace/
+│    Safety guards    edit ~/.claude/hookify.ace.*.local.md
+│    Verify setup     ace doctor
+└
+└  Done. Go to your project and run ace spec init.
 ```
 
 ### Spec Coding 完整流程
@@ -142,30 +158,6 @@ All systems operational.
 │  └─────────────┘  └─────────────┘  └─────────────┘         │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 📦 安装预设
-
-| 组件                                       | `full` | `safe` | `minimal` |
-| ------------------------------------------ | :------: | :------: | :---------: |
-| **Core** (CLAUDE.md + settings.json) |    ✅    |    ✅    |     ✅     |
-| **Rules** (8 条认知与代码质量规则)   |    ✅    |    ✅    |     ✅     |
-| **Plugin** (4 个 Skills)             |    ✅    |    ✅    |     ✅     |
-| **Hooks** (角色相关脚本)             |    ✅    |    ❌    |     ❌     |
-| **Hookify** (3 个安全守卫)           |    ✅    |    ✅    |     ❌     |
-| **Memory** (模板 + 开发者画像)       |    ✅    |    ✅    |     ❌     |
-
-```bash
-# 完整功能（推荐）
-ace init --preset full
-
-# 安全优先（适合团队协作）
-ace init --preset safe
-
-# 最小安装（仅核心功能）
-ace init --preset minimal
 ```
 
 ---
@@ -283,7 +275,8 @@ claude
 
 ACE 遵循**零侵入**原则：
 
-- **智能合并** — 与现有配置共存，从不覆盖
+- **智能合并** — CLAUDE.md 使用标记区块替换，settings.json 深度合并，用户配置始终保留
+- **ACE 文件自动覆盖** — rules/ace/*、hooks/* 等 ACE 自有文件升级时自动更新，无需用户决策
 - **自动备份** — 首次安装前创建完整快照
 - **干净卸载** — `ace uninstall` 一键恢复原始状态
 - **命名空间隔离** — 所有文件使用 `ace/` 前缀，避免冲突

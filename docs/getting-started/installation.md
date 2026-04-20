@@ -57,37 +57,26 @@ npm link  # 创建全局链接
 ace init
 ```
 
-向导会询问：
-1. **角色** — 决定哪些 Hooks 脚本被安装
-2. **预设** — 决定组件组合
+ACE 采用**零配置**设计，首次安装无需回答任何问题。系统会自动：
+- 安装所有组件（Core、Rules、Plugin、Hooks、Hookify、Memory）
+- 使用 `fullstack` 作为默认角色（安装后可编辑修改）
 
 ### 命令行参数
 
-跳过交互，直接指定：
-
 ```bash
-# 指定角色和预设
-ace init --role backend --preset full
-
 # 强制覆盖现有配置（会创建备份）
 ace init --force
 
 # 预览将要执行的操作，不实际修改
 ace init --dry-run
-
-# 无交互模式，使用默认值
-ace init --no-interaction
 ```
 
 ### 完整参数列表
 
 | 参数 | 简写 | 说明 | 默认值 |
 |------|------|------|--------|
-| `--preset` | `-p` | 安装预设：`full`/`safe`/`minimal` | `full` |
-| `--role` | `-r` | 开发者角色 | 交互式 |
 | `--force` | `-f` | 覆盖现有文件 | `false` |
 | `--dry-run` | - | 预览模式 | `false` |
-| `--no-interaction` | - | 跳过所有提示 | `false` |
 
 ---
 
