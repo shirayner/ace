@@ -2,7 +2,6 @@
 
 import { createRequire } from 'module';
 import { Command } from 'commander';
-import chalk from 'chalk';
 import { initCommand } from '../src/commands/init.js';
 import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
@@ -22,10 +21,8 @@ program
 program
   .command('init')
   .description('Initialize AI coding environment')
-  .option('-p, --preset <name>', 'Installation preset: full, minimal, safe', 'full')
   .option('-f, --force', 'Overwrite existing files', false)
   .option('--dry-run', 'Show what would be done without making changes', false)
-  .option('--no-interaction', 'Skip interactive prompts, use defaults')
   .action(initCommand);
 
 program

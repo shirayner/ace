@@ -1,6 +1,6 @@
 {
   "name": "@shirayner/ace",
-  "version": "0.1.1-snapshot.3",
+  "version": "0.1.1-snapshot.4",
   "description": "AI Coding Environment - One command to set up your Claude Code harness",
   "bin": {
     "ace": "./bin/ace.js"
@@ -25,11 +25,12 @@
   },
   "type": "module",
   "dependencies": {
-    "commander": "^12.0.0",
+    "@clack/prompts": "^1.2.0",
     "chalk": "^5.3.0",
-    "inquirer": "^9.2.0",
-    "fs-extra": "^11.2.0",
+    "commander": "^12.0.0",
     "deepmerge": "^4.3.1",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^9.2.0",
     "js-yaml": "^4.1.0",
     "ora": "^8.0.0"
   },
