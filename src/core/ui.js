@@ -23,11 +23,26 @@ export const colors = {
   blue:    chalk.hex('#3B82F6'),
 };
 
+// ─── Screen control ─────────────────────────────────────────
+export function clearScreen() {
+  process.stdout.write('\x1B[2J\x1B[3J\x1B[H');
+}
+
 // ─── Banner (single line) ───────────────────────────────────
 export function printBanner(version) {
   console.log();
   console.log(`  ${colors.brand.bold('◆ ace')} ${colors.dim(`v${version}`)}`);
   console.log();
+}
+
+// ─── Step-by-step screen (clear + banner + previous answers) ─
+export function renderScreen(version, completedSteps = []) {
+  clearScreen();
+  printBanner(version);
+  for (const step of completedSteps) {
+    console.log(step);
+  }
+  if (completedSteps.length > 0) console.log();
 }
 
 // ─── Step indicators ────────────────────────────────────────
