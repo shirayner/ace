@@ -1,25 +1,20 @@
 ---
 name: coding
 description: |
-  代码域认知协议。覆盖三种意图：
+  编写、修改、测试和审查项目代码。用户需要产出代码变更或评估代码质量时触发。
 
-  **实现** — 当用户需要编写代码、修复bug、重构、添加功能时触发。
-  关键词："实现"、"开发"、"修复"、"重构"、"添加功能"、"coding"、"implement"、"fix bug"。
+  三种意图及触发信号：
+  **实现** — 修 bug、加功能、重构、处理报错或编译/测试失败。
+  **测试** — 生成、修复或补充单元测试，提升覆盖率。
+  **审查** — Code review，检查质量，发现潜在问题。
 
-  **测试** — 当用户需要生成或修复单元测试时触发。
-  关键词："生成单测"、"写测试"、"补测试"、"UT"、"unit test"、"测试覆盖率"。
-
-  **审查** — 当用户需要代码审查时触发。
-  关键词："review"、"审查"、"code review"、"检查代码"、"帮我看看这段代码"。
-
-  **不触发（留给 auto-goal）**：纯分析、调研、非代码产出任务。
-  **不触发（直接工具）**：单文件几行代码的简单修改。
+  DO NOT TRIGGER: 学习概念/调研方案/制定计划（→ auto-goal）；优化 skill 指令（→ skill-optimize / skill-creator）；极简改动且位置明确（→ 直接 Edit）。
 allowed-tools: Read, Write, Edit, Bash, Agent, Glob, Grep, Skill, TaskCreate, TaskUpdate, TaskList, EnterPlanMode, ExitPlanMode, AskUserQuestion
 ---
 
 # Coding Skill — 代码域认知协议
 
-继承 auto-goal 的六字原则（序验深广辨简）和 OODA 循环，适配代码域特性：
+代码域的核心特性：
 **编译和测试是天然证伪器；代码变更即假设检验；版本控制提供安全回退。**
 
 ---
@@ -67,7 +62,7 @@ allowed-tools: Read, Write, Edit, Bash, Agent, Glob, Grep, Skill, TaskCreate, Ta
 
 ## 3. 代码域 OODA 循环
 
-在 auto-goal 的 OODA 基础上，注入代码域特有认知：
+代码域的感知-定位-决策-行动循环：
 
 ### Sense — 感知代码现状
 - **读代码前先建假设**：从命名、结构、上下文推测行为，再读代码验证
