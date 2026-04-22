@@ -156,7 +156,16 @@ export class Installer {
       return;
     }
 
+    // Use package.json version as single source of truth, sync to plugin.json
+    const pkgJsonPath = path.join(PLUGIN_SRC_DIR, '..', 'package.json');
     const pluginJson = await fs.readJson(pluginJsonPath);
+    if (await fs.pathExists(pkgJsonPath)) {
+      const pkgJson = await fs.readJson(pkgJsonPath);
+      if (pkgJson.version && pkgJson.version !== pluginJson.version) {
+        pluginJson.version = pkgJson.version;
+        await fs.writeJson(pluginJsonPath, pluginJson, { spaces: 2 });
+      }
+    }
     const version = pluginJson.version || '0.0.0';
     const destDir = path.join(PLUGIN_CACHE_DIR, version);
 
