@@ -203,7 +203,7 @@ Claude 按 `spec/tasks.md` 逐项执行，严格遵循 proposal 阶段的澄清�
 验证: mvn test 全部通过，行覆盖率 85%
 ```
 
-每步完成后自动标记 `- [x]`，并将实施观察记录到 `spec/retrospective-notes.md`。
+每步完成后自动标记 `- [x]`，并将实施观察记录到 `spec/notes.md`。
 
 ---
 
@@ -237,11 +237,11 @@ Claude 按 `spec/tasks.md` 逐项执行，严格遵循 proposal 阶段的澄清�
 
 ### 知识库更新
 
-**Layer A 立即更新**：
-- **ADR 决策账本**：记录 JWT 认证方案选择
-- **领域词汇表**：Task、Status、Priority 等术语
+**知识进化**（apply 阶段已完成）：
+- **技术决策**：记录 JWT 认证方案选择
+- **领域词汇**：Task、Status、Priority 等术语
 - **风险图谱**：TaskRepository 自定义查询需索引优化
-- **效率指标**：本次开发数据
+- **复盘记录**：本次开发效率数据
 
 ---
 
@@ -253,7 +253,7 @@ Claude 按 `spec/tasks.md` 逐项执行，严格遵循 proposal 阶段的澄清�
 |------|----------|
 | `/opsx:proposal` | 需求澄清 → 提案 → 技术澄清 → 设计 + 任务 |
 | `/opsx:apply` | 按任务逐项实现，每步验证 |
-| `/opsx:archive` | 复盘总结，知识库三层进化 |
+| `/opsx:archive` | 归档收敛，知识超阈值时合并/淘汰 |
 
 ---
 
@@ -298,6 +298,5 @@ Claude 按 `spec/tasks.md` 逐项执行，严格遵循 proposal 阶段的澄清�
 
 ```bash
 ls openspec/
-# evolution/  — ADR 技术决策、领域词汇表、风险图谱
-# retrospectives/ — 复盘记录
+# experience.md — 技术决策、领域词汇、风险图谱、复盘记录
 ```

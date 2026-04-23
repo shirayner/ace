@@ -282,36 +282,17 @@ ACE 在 OpenSpec 基础上增加了 **aspec** 工作流，采用"寄生模式"�
 **核心特点**：
 - **寄生模式**：不改变 OpenSpec schema，在关键阶段注入检查
 - **门禁机制**：不满足澄清条件时强制阻断，避免基于假设的实施
-- **知识累积**：每次 archive 自动沉淀 ADR、词汇表、风险图谱
+- **知识累积**：每次 apply 完成后自动复盘，沉淀经验到 experience.md
 
 > 详见 [aspec 完整文档](aspec.md)
 
-#### OpenSpec 基础结构
+#### aspec 模板文件
 
 ```
 openspec/
-├── config.yaml              # OpenSpec 配置
-├── taxonomy/                # 问题分类学
-│   ├── requirement-issue-taxonomy.md   # 需求问题分类学（6 维度）
-│   └── design-issue-taxonomy.md        # 技术设计问题分类学（7 维度）
-├── issues/                  # 问题跟踪
-│   ├── requirements/        # 需求文档
-│   │   ├── REQ-001-user-login.md
-│   │   └── REQ-002-payment.md
-│   ├── designs/             # 设计文档
-│   │   ├── DES-001-auth-flow.md
-│   │   └── DES-002-db-schema.md
-│   └── bugs/                # Bug 报告
-├── procedures/              # 流程规范
-│   ├── clarification-flow.md
-│   ├── review-checklist.md
-│   └── release-process.md
-└── evolution/               # 演进记录
-    ├── adr/                 # 架构决策记录
-    │   ├── ADR-001-use-jwt.md
-    │   └── ADR-002-postgres.md
-    ├── glossary.md          # 术语表
-    └── risk-map.md          # 风险地图
+├── config.yaml              # 中枢配置（context + rules 注入）
+├── dimensions.md            # 澄清维度 + 项目已知盲区
+└── experience-template.md   # 项目经验库（ADR/词汇/风险/复盘）
 ```
 
 #### 工作流集成

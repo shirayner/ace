@@ -45,7 +45,7 @@ ace init
 
 ```bash
 $ ace init
-◇  ace v0.1.2
+◇  ace v0.1.5
 │
 ◇  Installed to ~/.claude/
 │
@@ -104,9 +104,8 @@ Claude:
 > /opsx:archive
 
 Claude:
-spec 归档
-复盘总结，知识库三层进化
-✓ ADR/术语表/风险图谱 已更新
+spec 归档，收敛检查
+✓ 归档完成
 ```
 
 ### 健康检查
@@ -151,10 +150,10 @@ All systems operational.
 │  │ (角色脚本)   │  │  (记忆系统)  │  │ (规范驱动)   │         │
 │  ├─────────────┤  ├─────────────┤  ├─────────────┤         │
 │  │ • Java 编译 │  │ • MEMORY.md │  │ • config    │         │
-│  │   检查      │  │ • user_     │  │ • taxonomy/ │         │
-│  │ • TypeScript│  │   profile   │  │ • issues/   │         │
-│  │   检查      │  │ • roles/    │  │ • procedures│         │
-│  │ • 更多...   │  │             │  │ • evolution │         │
+│  │   检查      │  │ • user_     │  │   .yaml     │         │
+│  │ • TypeScript│  │   profile   │  │ • dimensions│         │
+│  │   检查      │  │ • roles/    │  │   .md       │         │
+│  │ • 更多...   │  │             │  │ • experience│         │
 │  └─────────────┘  └─────────────┘  └─────────────┘         │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘

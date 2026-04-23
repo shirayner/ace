@@ -127,17 +127,9 @@ ace spec init
 ```
 my-project/
 ├── openspec/
-│   ├── config.yaml                          # OpenSpec 配置
-│   ├── taxonomy/                            # 问题分类学
-│   │   ├── requirement-issue-taxonomy.md    # 需求问题分类学（6 维度）
-│   │   └── design-issue-taxonomy.md         # 技术设计问题分类学（7 维度）
-│   ├── issues/                              # 问题跟踪
-│   │   ├── requirements/                    # 需求文档
-│   │   └── designs/                         # 设计文档
-│   ├── procedures/                          # 流程规范
-│   └── evolution/                           # 演进记录
-│       ├── adr/                             # 架构决策记录
-│       └── glossary.md                      # 术语表
+│   ├── config.yaml              # aspec 配置（流程/约束/协议/门禁）
+│   ├── dimensions.md            # 澄清维度（需求 6 维 + 设计 7 维 + 盲区）
+│   └── experience-template.md   # 项目经验库模板
 ```
 
 ---

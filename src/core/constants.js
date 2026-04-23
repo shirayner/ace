@@ -52,19 +52,8 @@ export const ROLES = {
 // Spec (project-level) constants
 export const OPENSPEC_TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates', 'openspec');
 export const SPEC_TEMPLATE_FILES = [
-  'taxonomy/requirement-issue-taxonomy.md',
-  'taxonomy/design-issue-taxonomy.md',
-  'issues/requirement-issues.md',
-  'issues/design-issues.md',
-  'issues/retrospective-notes.md',
-  'evolution/adr.md',
-  'evolution/glossary.md',
-  'evolution/risk-map.md',
-  'procedures/requirement-clarification-flow.md',
-  'procedures/design-clarification-flow.md',
-  'procedures/interactive-clarification-protocol.md',
-  'procedures/evolution-system.md',
-  'retrospective-template.md',
+  'dimensions.md',
+  'experience-template.md',
 ];
 
 /**

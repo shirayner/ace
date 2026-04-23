@@ -60,9 +60,6 @@ Installed as a Claude Code plugin under the `ace:` namespace:
 
 Installed to project directory via `ace spec init`:
 
-- **config.yaml** — OpenSpec configuration file
-- **taxonomy/** — Requirement and design issue taxonomies
-- **issues/** — Requirement issues, design issues, retrospective notes
-- **procedures/** — Clarification flows, evolution system
-- **evolution/** — ADR, glossary, risk map
-- **retrospective-template.md** — Retrospective template
+- **config.yaml** — OpenSpec 配置文件（aspec v9：context 注入流程/约束/协议，rules 注入阶段门禁）
+- **dimensions.md** — 澄清维度（需求 6 维度 + 设计 7 维度 + 项目已知盲区）
+- **experience-template.md** — 项目经验库（技术决策/领域词汇/风险图谱/复盘记录）

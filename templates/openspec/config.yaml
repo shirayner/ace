@@ -1,150 +1,152 @@
 schema: spec-driven
-
-# =============================================================================
-# aspec (ace-spec) 增强配置 v5 — 寄生模式
-# =============================================================================
-# aspec 通过 context 和 rules 注入 OpenSpec 工作流，不改变 OpenSpec schema。
-# 核心目标：捕获需求/设计中的不确定性，避免基于假设实施带来的返工。
-# =============================================================================
-
-version: "5.0.3"
-language: zh
-
+version: 9.0.0
 context: |
+  ## 语言
+  所有交互、思考链、文档内容一律使用中文。OpenSpec 模板的英文标题保留（结构标记），标题下的内容用中文填充。
+
   ## 工作模式
+  aspec 寄生于 OpenSpec 工作流，通过 context 和 rules 注入增强能力，不修改 OpenSpec 本身。
+  核心理念：对齐优先于效率。准确完成用户真正想要的，胜过高效完成 AI 以为的。
 
-  aspec (ace-spec) 采用"寄生模式"增强 OpenSpec 核心流程：在关键阶段注入前置/后置检查，
-  不改变 OpenSpec schema。跳过澄清 = AI 基于假设实施 = 大概率返工。
+  ## 流程概览
+  [需求澄清 → 对齐] → proposal → specs
+  → [设计澄清 → 对齐] → design.md → [设计审批] → tasks
+  → [确认实施?] → apply → [经验提取] → [确认归档?] → archive
 
-  ## 门禁条件（强制，不满足时禁止继续）
+  ## 通用原则：惊讶测试
+  替用户做选择时，如果用户此刻看到该决策会惊讶 → 暂停，展示选项等待确认。
 
-  | 阶段 | 前置条件 | 触发动作 |
-  |------|----------|----------|
-  | proposal 前 | spec/requirement-issues.md 状态为 `clarified` | 执行需求澄清流程 |
-  | tasks 前 | spec/design-issues.md 状态为 `clarified` 或 `resolved` | 执行设计澄清流程 |
+  ## 门禁条件
 
-  澄清流程文档（含详细执行步骤）：
-  - 需求澄清：openspec/templates/procedures/requirement-clarification-flow.md
-  - 设计澄清：openspec/templates/procedures/design-clarification-flow.md
-  - 交互式提问通用协议：openspec/templates/procedures/interactive-clarification-protocol.md
+  | 阶段 | 前置条件 |
+  |------|----------|
+  | proposal | 需求澄清完成 + 对齐确认通过 |
+  | design.md | 设计澄清完成 + 对齐确认通过 |
+  | tasks | 用户审批 design.md |
 
   ## 澄清状态机
+  - 需求：discovering → clarifying → clarified → superseded
+  - 设计：analyzing → clarifying → clarified → resolved
 
-  需求澄清：discovering → clarifying → clarified → superseded
-  设计澄清：analyzing → clarifying → clarified → resolved
+  ## 严重度
+  - High：阻塞性，必须澄清 / Medium：建议澄清 / Low：可选
 
-  ## 问题严重程度
+  ## Spec 质量标准
+  - proposal：每个 Capability 有明确边界和验收条件
+  - specs：场景覆盖核心路径 + 已知边界条件
+  - design：每个 High 决策有选择、理由、备选方案
+  - tasks：可独立验证，粒度适合单次实现
 
-  - 🔴 High：阻塞性，必须澄清后才能继续
-  - 🟡 Medium：重要，建议澄清
-  - 🟢 Low：建议性，可后续补充
+  ## Issue Schema
+  - 需求问题：id (R{功能序号}-{编号}), description, severity, status, answer
+  - 设计问题：id (D{维度序号}-{编号}), description, severity, status, decision, rationale
+  - 按功能点或维度分组，含统计汇总。格式自行组织。
 
-  ## 知识库索引
+  ## 实施观察笔记
+  apply 阶段记录到 spec/notes.md，分四类：需求意外 / 设计意外 / 好的实践 / 风险事件
 
-  - 需求问题分类学（6维度）：openspec/templates/taxonomy/requirement-issue-taxonomy.md
-  - 设计问题分类学（7维度）：openspec/templates/taxonomy/design-issue-taxonomy.md
-  - 问题清单模板：openspec/templates/issues/（requirement-issues.md / design-issues.md）
+  ## 澄清与对齐协议
 
-  ## 进化体系（v5）
+  需求澄清（proposal 前）和设计澄清（design.md 前）共用此协议，分两个独立步骤：
 
-  aspec 在 archive 时自动积累项目知识，**使用越久，流程越精准**：
-  - Layer A（每次立即）：ADR 技术决策 / 词汇表 / 风险图谱
-  - Layer B（积累 3+ 复盘后触发）：问题分类学优化 / 任务模板 / 用户偏好
-  - Layer C（长期）：规格演化历史 / 效率指标
+  ### 步骤一：澄清
+  通过 AskUserQuestion 工具批量提问所有 High/Medium 问题，标注总数和严重度分布。
+  用户可中途退出（q），进度保存到问题清单。收到完整回答后统一更新问题清单。
+  差异：需求澄清无问题时可跳过；设计澄清即使无问题也须展示决策摘要。
 
-  完整说明及 archive 操作步骤：openspec/templates/procedures/evolution-system.md
+  ### 步骤二：对齐确认
+  澄清完成后，AI 用 markdown 文本向用户呈现 4 要素：
+  1. 我的理解 — 复述核心需求/设计意图
+  2. 计划方向 — 接下来文档将包含什么
+  3. 关键假设 — 不确定的假设
+  4. 完成标准 — 产出合格条件
+  呈现完毕后，调用 AskUserQuestion 让用户确认或调整。
+  注意：对齐内容用普通 markdown 文本输出，不放在 AskUserQuestion 中（大段内容显示异常）。
 
-  ## AI 知识库消费速查
+  ### 设计额外要求
+  design.md 创建后、tasks 前，须展示设计核心摘要，通过 AskUserQuestion 获得审批。
 
-  每个阶段开始前读取对应知识库，避免重复已有决策：
-  - explore / propose：ADR + Glossary + Task Patterns
-  - specs：Glossary + Spec CHANGELOG
-  - design：ADR + Risk Map + 问题分类学
-  - tasks：Task Patterns + Risk Map
-  - apply：ADR + Risk Map
-  - archive：全部 → 更新全部 → 触发进化分析
+  ## 知识进化
 
-# =============================================================================
-# 阶段规则
-# =============================================================================
+  ### 生命周期：提取 → 存储 → 主动应用 → 验证 → 收敛
 
+  ### 提取（每次 apply 完成后）
+
+  | 复盘章节 | 目标 | 更新内容 |
+  |----------|------|----------|
+  | 技术决策 | experience.md 技术决策段 | 选择 + 理由 + 备选 + 状态 |
+  | 新术语 | experience.md 领域词汇段 | 定义 + 首次出现 |
+  | 风险事件 | experience.md 风险图谱段 | 描述 + 区域 + 类型 |
+  | 澄清漏检 | dimensions.md 盲区段 | 新盲区 |
+  | 复盘记录 | experience.md 复盘记录段 | 变更概述·澄清质量·过程经验·效率信号 |
+
+  ### 主动应用（每次新 change 开始）
+  读取 openspec/experience.md 和 dimensions.md 盲区段，主动告知用户相关知识。
+
+  ### 收敛
+  条目超阈值时合并/淘汰（需用户确认）。
+
+  ## 阶段规则（非 schema artifact）
+
+  ### explore 阶段
+  [PRE] **知识主动应用**
+  读取 openspec/experience.md 和 dimensions.md 盲区段，告知用户与当前 change 相关的已有知识。
+
+  ### apply 阶段
+  [CONSTRAINT] 实施前读取所有澄清决策。新问题暂停评估，记录到 spec/notes.md。
+  [CONSTRAINT] Spec-Code 一致性：偏差须记录理由。
+  [POST] **复盘与知识进化**
+  1. 回顾本次实施过程，按 experience-template.md 复盘记录段的结构追加复盘
+  2. 提取知识更新 openspec/experience.md（技术决策/术语/风险）
+  3. 漏检问题更新 dimensions.md 盲区段
+  4. 展示 5-8 行摘要供用户确认
+  [POST] **流程衔接 → 归档**
+  经验提取完成后，通过 AskUserQuestion 询问用户："是否立即归档？"
+  选项：立即归档（推荐）/ 稍后手动归档
+  用户确认后，调用 Skill 工具执行 opsx:archive。
+
+  ### archive 阶段
+  [POST] **收敛检查**
+  experience.md 条目超阈值时提议合并/淘汰（需用户确认）。
 rules:
-  # ===========================================================================
-  # proposal — 需求澄清门禁
-  # ===========================================================================
   proposal:
     - |
-      BEFORE creating proposal：
-      1. 检查 spec/requirement-issues.md 是否存在且状态为 clarified
-      2. 不满足 → 执行 openspec/templates/procedures/requirement-clarification-flow.md 中的完整流程
-      3. 通过后创建 proposal，在 Why / Capabilities / Impact 中引用澄清决策
-    - "🚫 禁止跳过：requirement-issues.md 不存在或状态非 clarified 时，禁止创建 proposal"
+      [PRE] **需求澄清 + 对齐确认**
+      1. 读取 dimensions.md 作为参考维度和已知盲区，同时自主探索需求中的新不确定性
+      2. 创建/更新 spec/requirement-issues.md
+      3. 步骤一（澄清）：AskUserQuestion 批量提问
+      4. 步骤二（对齐确认）：markdown 展示 4 要素 → AskUserQuestion 确认
+      5. 确认后标记 clarified，创建 proposal
 
-  # ===========================================================================
-  # specs — 与澄清结果保持一致
-  # ===========================================================================
   specs:
     - |
-      创建 specs 时：
-      - 参考 requirement-issues.md 中的功能点定义，确保规格与澄清结果一致
-      - 需求有变更（MODIFIED/REMOVED/RENAMED）时，在问题清单中记录变更原因
+      [CONSTRAINT] specs 必须与已澄清的需求一致。
+      需求有变更时，在问题清单中记录变更原因。
 
-  # ===========================================================================
-  # design — 技术决策四要素 + 设计澄清门禁
-  # ===========================================================================
   design:
     - |
-      创建 design.md 时，每个技术决策必须包含：
-      - 选择了什么方案
-      - 为什么选择（决策理由）
-      - 考虑过哪些备选方案
-      - 为什么放弃备选方案
-      注意体现 requirement-issues.md 中澄清的约束条件。
+      [PRE] **设计澄清 + 对齐确认**
+      1. 自主探索设计中的不确定性，结合 proposal 和 specs 分析技术决策点
+      2. 创建/更新 spec/design-issues.md
+      3. 步骤一（澄清）：AskUserQuestion 批量提问（设计阶段即使无问题也须展示决策摘要）
+      4. 步骤二（对齐确认）：markdown 展示 4 要素 → AskUserQuestion 确认
+      5. 确认后创建 design.md
     - |
-      AFTER creating design.md：
-      1. 检查 spec/design-issues.md 是否存在且状态为 clarified 或 resolved
-      2. 不满足 → 执行 openspec/templates/procedures/design-clarification-flow.md 中的完整流程
-      3. 根据澄清结果更新 design.md，通过后创建 tasks
-    - "🚫 禁止跳过：design-issues.md 不存在或状态不在 {clarified, resolved} 时，禁止创建 tasks"
+      [CONSTRAINT] 技术决策四要素：
+      - 决策内容（选择了什么方案）
+      - 选择理由（为什么选择）
+      - 备选方案（考虑过哪些）
+      - 排除原因（为什么放弃备选）
 
-  # ===========================================================================
-  # tasks — 基于最终方案创建任务
-  # ===========================================================================
   tasks:
     - |
-      创建 tasks 时：
-      - 基于最终确定的技术方案（已经过设计澄清）
-      - 确保任务覆盖 design-issues.md 中所有 🔴 High 决策
-      - 设计澄清导致 design.md 重大变更时，相应调整任务列表
-      - 任务描述中引用相关设计决策（方便追溯）
-
-  # ===========================================================================
-  # apply — 严格遵循澄清决策
-  # ===========================================================================
-  apply:
+      [PRE] **设计文档审批**
+      展示 design.md 核心摘要（关键决策、目标/非目标、风险），通过 AskUserQuestion 获得审批后创建任务。
     - |
-      实施前：读取 spec/requirement-issues.md 和 spec/design-issues.md，了解所有澄清决策。
+      [CONSTRAINT] 任务必须基于已审批的设计。
+      所有 High 决策须在任务中体现。
     - |
-      实施中：严格遵循澄清决策。发现新问题时：
-      暂停 → 评估问题类型（需求/设计）→ 更新对应问题清单 → 可选启动澄清补充 → 继续
-      完成每个任务后立即用 "- [x]" 标记完成。
-    - |
-      轻量观察（选做，记录到 spec/retrospective-notes.md，供归档时汇入复盘报告）：
-      - 澄清未覆盖但实际重要的问题 → 【需求层面的意外】
-      - 设计不明确需临时决策的问题 → 【设计层面的意外】
-      - 澄清有效避免返工的案例 → 【好的实践】
-      - 高风险代码区域或意外技术问题 → 【风险事件】
-
-  # ===========================================================================
-  # archive — 复盘 + 知识库更新 + 进化分析
-  # ===========================================================================
-  archive:
-    - |
-      BEFORE archiving — 生成复盘报告：
-      1. 读取 spec/requirement-issues.md、design-issues.md、retrospective-notes.md（如存在）、design.md、proposal.md
-      2. 在 openspec/retrospectives/{YYYY-MM-DD}-{change-name}.md 创建复盘报告
-         格式参见 openspec/templates/retrospective-template.md
-      3. 向用户展示复盘摘要（5-8 行），然后继续归档
-    - |
-      AFTER archiving — 执行进化体系更新（Layer A 立即 + Layer B 条件触发）：
-      完整操作步骤参见 openspec/templates/procedures/evolution-system.md
+      [POST] **流程衔接 → 实施**
+      Tasks 创建完成后，通过 AskUserQuestion 询问用户："是否立即开始实施？"
+      选项：立即执行（推荐）/ 稍后手动执行
+      用户确认后，调用 Skill 工具执行 opsx:apply。

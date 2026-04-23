@@ -165,16 +165,9 @@ Claude 执行了 rm -rf /（幸亏有权限限制）
 
 ```
 openspec/
-├── taxonomy/        # 问题分类学
-│   ├── requirement-issue-taxonomy.md   # 需求问题分类学
-│   └── design-issue-taxonomy.md        # 技术设计问题分类学
-├── issues/          # 问题跟踪
-│   ├── requirements/# 需求文档
-│   └── designs/     # 设计文档
-├── procedures/      # 流程规范
-└── evolution/       # 演进记录
-    ├── adr/         # 架构决策
-    └── glossary.md  # 术语表
+├── config.yaml              # 流程控制与约束注入
+├── dimensions.md            # 澄清维度 + 项目盲区
+└── experience-template.md   # 知识沉淀（ADR/词汇/风险/复盘）
 ```
 
 **需求-代码可追溯**
