@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-04-23
+
+### Changed
+- Reorganized reports directory: moved auto-goal related reports to `reports/auto-goal-evolution/`
+- Added ASPEC optimization analysis document
+- Added agent design philosophy research (2025-2026)
+
 ## [0.1.3] - 2026-04-23
 
 ### Changed
