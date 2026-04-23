@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-23
+
+### Changed
+- Redesigned auto-goal skill: streamlined instruction set, mandatory alignment protocol, tiered state management, experience evolution system
+- Updated coding skill with refined instructions
+- Permission mode default set to `auto` in settings template
+- Simplified interactive-clarify rule (unified tool guidance)
+
+### Fixed
+- ACE-owned file detection logic in installer
+
+## [0.1.2] - 2026-04-21
+
+### Added
+- Hookify safety guard system with 7 built-in rules: `block-dangerous-ops`, `code-quality-gate`, `dangerous-commands`, `protect-secrets`, `require-verification`, `safe-git-commands`, `sensitive-data`
+- ACE-owned files auto-overwrite with marker-based CLAUDE.md merge strategy
+- UI module (`src/core/ui.js`) for improved CLI interaction
+- Complete documentation library: architecture, getting-started, theory, reference, why-ace sections
+- English README (`README.en-US.md`)
+- RELEASE_NOTES.md for release highlights
+
+### Changed
+- Enhanced `ace init` command with improved preset/role selection UX
+- Expanded installer with auto-overwrite logic for ACE-managed files
+- Improved merger with marker-based CLAUDE.md merge strategy
+- Updated `settings.json` template with expanded permissions and hookify integration
+- Refined auto-goal skill instructions
+- Updated hookify rule naming convention (`hookify.ace.*`)
+
+### Removed
+- Deprecated spec-installer stub methods
+
 ## [0.1.0] - 2026-04-16
 
 ### Added

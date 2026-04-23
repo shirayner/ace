@@ -1,17 +1,16 @@
-## ace v0.1.0
+## ace v0.1.3
 
-One command to set up your Claude Code harness.
+AI Coding Environment — smarter harness, smoother workflow.
 
 ### Highlights
 
-- **5 CLI commands**: `ace init`, `ace doctor`, `ace list`, `ace uninstall`, `ace spec`
-- **8 rules**: thinking, clean-code, code-quality, reporting, task-recovery, context-hygiene, memory-policy, interactive-clarify
-- **4 AI skills**: auto-goal, coding, skill-creator, skill-optimize
-- **3 safety guards**: block-dangerous-ops, protect-secrets, require-verification
-- **Spec workflow**: `ace spec init/doctor/update` with OpenSpec templates
-- **Non-destructive**: smart merge preserves existing config, uninstall restores original state
+- **Auto-goal redesign**: streamlined instruction set with mandatory alignment protocol, tiered state management (lazy-loaded Tier 2), and experience evolution system for cross-task learning
+- **Permission mode `auto`**: default settings now enable auto mode for smoother autonomous execution
+- **Hookify matured** (v0.1.2): 7 built-in safety guards — dangerous ops blocking, secret protection, git safety, code quality gate, and more
+- **ACE-owned file management** (v0.1.2): auto-overwrite for ACE-managed files with marker-based CLAUDE.md merge preserving user content
+- **Full documentation library** (v0.1.2): architecture, getting-started, theory, reference, and comparison docs
 
-### Install
+### Install / Upgrade
 
 ```bash
 npm install -g @shirayner/ace
