@@ -1,6 +1,6 @@
 {
   "name": "@shirayner/ace",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "AI Coding Environment - One command to set up your Claude Code harness",
   "bin": {
     "ace": "./bin/ace.js"

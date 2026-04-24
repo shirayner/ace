@@ -72,13 +72,13 @@ context: |
 
   ### 提取（每次 apply 完成后）
 
-  | 复盘章节 | 目标 | 更新内容 |
-  |----------|------|----------|
-  | 技术决策 | experience.md 技术决策段 | 选择 + 理由 + 备选 + 状态 |
-  | 新术语 | experience.md 领域词汇段 | 定义 + 首次出现 |
-  | 风险事件 | experience.md 风险图谱段 | 描述 + 区域 + 类型 |
-  | 澄清漏检 | dimensions.md 盲区段 | 新盲区 |
-  | 复盘记录 | experience.md 复盘记录段 | 变更概述·澄清质量·过程经验·效率信号 |
+  | 复盘章节 | 目标 | 来源 | 更新内容 |
+  |----------|------|------|----------|
+  | 技术决策 | experience.md 技术决策段 | issues/design-issues.md | 选择 + 理由 + 备选 + 状态 |
+  | 新术语 | experience.md 领域词汇段 | 实施过程发现 | 定义 + 首次出现 |
+  | 风险事件 | experience.md 风险图谱段 | spec/notes.md 风险事件 | 描述 + 区域 + 类型 |
+  | 澄清漏检 | dimensions.md 盲区段 | 对比 issues/ 下问题文件与实际偏差 | 新盲区 |
+  | 复盘记录 | experience.md 复盘记录段 | 全程记录 | 变更概述·澄清质量·过程经验·效率信号 |
 
   ### 主动应用（每次新 change 开始）
   读取 openspec/experience.md 和 dimensions.md 盲区段，主动告知用户相关知识。
@@ -113,10 +113,14 @@ rules:
     - |
       [PRE] **需求澄清 + 对齐确认**
       1. 读取 dimensions.md 作为参考维度和已知盲区，同时自主探索需求中的新不确定性
-      2. 创建/更新 spec/requirement-issues.md
-      3. 步骤一（澄清）：AskUserQuestion 批量提问
-      4. 步骤二（对齐确认）：markdown 展示 4 要素 → AskUserQuestion 确认
-      5. 确认后标记 clarified，创建 proposal
+      2. **必须写入文件**：将 High/Medium 问题写入 issues/requirement-issues.md（初始状态: clarifying）
+         格式遵循 Issue Schema：id, description, severity, status, answer
+      3. **步骤一（澄清）**：通过 AskUserQuestion 向用户批量提问
+      4. **必须更新文件**：收到回答后，立即更新 issues/requirement-issues.md 标注每个问题的 status 和 answer
+      5. **步骤二（对齐确认）**：markdown 展示 4 要素 → AskUserQuestion 确认
+      6. 确认后将文件状态标记为 clarified，然后创建 proposal
+    - |
+      🚫 禁止跳过门禁：issues/requirement-issues.md 不存在或状态非 clarified 时，禁止创建 proposal
 
   specs:
     - |
@@ -127,10 +131,14 @@ rules:
     - |
       [PRE] **设计澄清 + 对齐确认**
       1. 自主探索设计中的不确定性，结合 proposal 和 specs 分析技术决策点
-      2. 创建/更新 spec/design-issues.md
-      3. 步骤一（澄清）：AskUserQuestion 批量提问（设计阶段即使无问题也须展示决策摘要）
-      4. 步骤二（对齐确认）：markdown 展示 4 要素 → AskUserQuestion 确认
-      5. 确认后创建 design.md
+      2. **必须写入文件**：将 High/Medium 设计问题写入 issues/design-issues.md（初始状态: clarifying）
+         格式遵循 Issue Schema：id, description, severity, status, decision, rationale
+      3. **步骤一（澄清）**：通过 AskUserQuestion 向用户批量提问（即使无问题也须展示决策摘要）
+      4. **必须更新文件**：收到回答后，立即更新 issues/design-issues.md 标注每个问题的 decision 和 rationale
+      5. **步骤二（对齐确认）**：markdown 展示 4 要素 → AskUserQuestion 确认
+      6. 确认后将文件状态标记为 clarified，然后创建 design.md
+    - |
+      🚫 禁止跳过门禁：issues/design-issues.md 不存在或状态不在 {clarifying, clarified, resolved} 时，禁止创建 design.md
     - |
       [CONSTRAINT] 技术决策四要素：
       - 决策内容（选择了什么方案）

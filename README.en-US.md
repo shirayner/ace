@@ -16,7 +16,7 @@
 
 ```
 $ ace init
-◇  ace v0.1.5
+◇  ace v0.1.6
 │
 ◇  Installed to ~/.claude/
 │
