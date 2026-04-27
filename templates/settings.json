@@ -1,58 +1,50 @@
 {
   "permissions": {
-    "defaultMode": "auto",
     "allow": [
-      "Bash(git:*)",
-      "Bash(ls*)",
-      "Bash(cat*)",
-      "Bash(echo*)",
-      "Bash(pwd)",
-      "Bash(cd*)",
-      "Bash(find*)",
-      "Bash(grep*)",
-      "Bash(sed*)",
-      "Bash(mkdir*)",
-      "Bash(touch*)",
-      "Bash(npm*)",
-      "Bash(node*)",
-      "Bash(jq*)",
-      "Bash(openspec*)",
-      "Bash(opc*)",
-      "Bash(gh *)",
-      "Bash(where:*)",
-      "Bash(npx*)",
-      "Bash(python*)",
-      "Bash(pip*)",
+      "Bash(*)",
       "Read",
-      "Write",
-      "Edit",
-      "NotebookEdit",
       "Glob",
       "Grep",
-      "Skill(openspec:*)",
+      "Skill(*)",
       "WebSearch",
       "WebFetch",
       "mcp__context7__resolve_library_id",
       "mcp__context7__query_docs",
-      "Skill(report)",
-      "Skill(ace:report)"
+      "Write",
+      "Edit",
+      "NotebookEdit"
     ],
     "deny": [
       "Bash(rm -rf*)",
+      "Bash(rm -r*)",
+      "Bash(rm -f -r*)",
+      "Bash(rm --recursive*)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/*)",
+      "Bash(rm -rf /usr*)",
+      "Bash(rm -rf /opt*)",
+      "Bash(rmdir /s /q*)",
+      "Bash(rd /s /q*)",
+      "Bash(del /f /s /q*)",
+      "Bash(deltree*)",
+      "Bash(git clean -fd*)",
+      "Bash(git clean -ffd*)",
+      "Bash(git reset --hard*)",
       "Bash(sudo*)",
-      "Bash(curl*--data*)",
       "Write(*.env)",
       "Write(*id_rsa*)"
     ],
+    "defaultMode": "auto",
     "hooks": {
       "PostToolUse": []
     }
   },
-  "autoMemoryDirectory": "~/.claude/memory/",
+  "hooks": {},
   "enabledPlugins": {
     "hookify@claude-plugins-official": true,
     "revealjs@revealjs-skill": true,
     "ace@ace-local": true
   },
-  "hooks": {}
+  "autoMemoryDirectory": "~/.claude/memory/",
+  "skipAutoPermissionPrompt": true
 }

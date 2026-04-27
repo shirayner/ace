@@ -1,160 +1,93 @@
 schema: spec-driven
-version: 9.0.0
+version: 10.0.0
 context: |
   ## 语言
-  所有交互、思考链、文档内容一律使用中文。OpenSpec 模板的英文标题保留（结构标记），标题下的内容用中文填充。
+  所有交互、思考链、文档一律使用中文。OpenSpec 英文标题保留。
 
   ## 工作模式
-  aspec 寄生于 OpenSpec 工作流，通过 context 和 rules 注入增强能力，不修改 OpenSpec 本身。
-  核心理念：对齐优先于效率。准确完成用户真正想要的，胜过高效完成 AI 以为的。
+  aspec 寄生于 OpenSpec，通过 context 和 rules 注入增强，不修改 OpenSpec 本身。
+  核心理念：对齐优先于效率。
 
-  ## 流程概览
-  [需求澄清 → 对齐] → proposal → specs
-  → [设计澄清 → 对齐] → design.md → [设计审批] → tasks
-  → [确认实施?] → apply → [经验提取] → [确认归档?] → archive
+  ## 流程
+  [需求澄清→对齐] → proposal → specs → [设计澄清→对齐] → design.md → [审批] → tasks → [确认?] → apply → [经验提取] → [确认?] → archive
 
-  ## 通用原则：惊讶测试
-  替用户做选择时，如果用户此刻看到该决策会惊讶 → 暂停，展示选项等待确认。
+  ## 门禁（不可跳过）
 
-  ## 门禁条件
-
-  | 阶段 | 前置条件 |
+  | 产物 | 前置条件 |
   |------|----------|
-  | proposal | 需求澄清完成 + 对齐确认通过 |
-  | design.md | 设计澄清完成 + 对齐确认通过 |
+  | proposal | issues/requirement-issues.md 存在且已澄清 + 对齐确认通过 |
+  | design.md | issues/design-issues.md 存在且已澄清 + 对齐确认通过 |
   | tasks | 用户审批 design.md |
 
-  ## 澄清状态机
-  - 需求：discovering → clarifying → clarified → superseded
-  - 设计：analyzing → clarifying → clarified → resolved
+  ## 元规则
+  - 惊讶测试：替用户做选择时，若用户看到会惊讶 → 暂停展示选项
+  - 对齐内容用 markdown 文本输出（大段内容在 AskUserQuestion 中显示异常），确认通过 AskUserQuestion
 
-  ## 严重度
-  - High：阻塞性，必须澄清 / Medium：建议澄清 / Low：可选
+  ## 深度探索
+  不要遍历维度清单做表面扫描。聚焦于：
+  - 哪些部分让你最不确定？为什么？
+  - 哪些误解的返工成本最高？
+  - dimensions.md 的已知盲区是否相关？
+
+  ## 文件约定
+  - 需求问题：issues/requirement-issues.md（id, description, severity, status, answer）
+  - 设计问题：issues/design-issues.md（id, description, severity, status, decision, rationale）
+  - 实施观察：spec/notes.md（需求意外 / 设计意外 / 好的实践 / 风险事件）
+  - 项目经验：experience.md（结构见 experience-template.md）
 
   ## Spec 质量标准
-  - proposal：每个 Capability 有明确边界和验收条件
-  - specs：场景覆盖核心路径 + 已知边界条件
-  - design：每个 High 决策有选择、理由、备选方案
-  - tasks：可独立验证，粒度适合单次实现
+  - proposal：每个 Capability 有明确边界和可测试验收条件
+  - design：每个 High 决策含选择、理由、备选方案、排除原因
+  - tasks：可独立验证，可追溯到 design 决策
 
-  ## Issue Schema
-  - 需求问题：id (R{功能序号}-{编号}), description, severity, status, answer
-  - 设计问题：id (D{维度序号}-{编号}), description, severity, status, decision, rationale
-  - 按功能点或维度分组，含统计汇总。格式自行组织。
+  ## 经验进化
+  跨会话知识积累体系。钩子在 rules 中声明，结构由 experience-template.md 定义。
+  应用经验时告知用户（"基于经验 EX，建议..."）。验证：✓有效 / ✗无效 / —不适用。
 
-  ## 实施观察笔记
-  apply 阶段记录到 spec/notes.md，分四类：需求意外 / 设计意外 / 好的实践 / 风险事件
-
-  ## 澄清与对齐协议
-
-  需求澄清（proposal 前）和设计澄清（design.md 前）共用此协议，分两个独立步骤：
-
-  ### 步骤一：澄清
-  通过 AskUserQuestion 工具批量提问所有 High/Medium 问题，标注总数和严重度分布。
-  用户可中途退出（q），进度保存到问题清单。收到完整回答后统一更新问题清单。
-  差异：需求澄清无问题时可跳过；设计澄清即使无问题也须展示决策摘要。
-
-  ### 步骤二：对齐确认
-  澄清完成后，AI 用 markdown 文本向用户呈现 4 要素：
-  1. 我的理解 — 复述核心需求/设计意图
-  2. 计划方向 — 接下来文档将包含什么
-  3. 关键假设 — 不确定的假设
-  4. 完成标准 — 产出合格条件
-  呈现完毕后，调用 AskUserQuestion 让用户确认或调整。
-  注意：对齐内容用普通 markdown 文本输出，不放在 AskUserQuestion 中（大段内容显示异常）。
-
-  ### 设计额外要求
-  design.md 创建后、tasks 前，须展示设计核心摘要，通过 AskUserQuestion 获得审批。
-
-  ## 知识进化
-
-  ### 生命周期：提取 → 存储 → 主动应用 → 验证 → 收敛
-
-  ### 提取（每次 apply 完成后）
-
-  | 复盘章节 | 目标 | 来源 | 更新内容 |
-  |----------|------|------|----------|
-  | 技术决策 | experience.md 技术决策段 | issues/design-issues.md | 选择 + 理由 + 备选 + 状态 |
-  | 新术语 | experience.md 领域词汇段 | 实施过程发现 | 定义 + 首次出现 |
-  | 风险事件 | experience.md 风险图谱段 | spec/notes.md 风险事件 | 描述 + 区域 + 类型 |
-  | 澄清漏检 | dimensions.md 盲区段 | 对比 issues/ 下问题文件与实际偏差 | 新盲区 |
-  | 复盘记录 | experience.md 复盘记录段 | 全程记录 | 变更概述·澄清质量·过程经验·效率信号 |
-
-  ### 主动应用（每次新 change 开始）
-  读取 openspec/experience.md 和 dimensions.md 盲区段，主动告知用户相关知识。
-
-  ### 收敛
-  条目超阈值时合并/淘汰（需用户确认）。
-
-  ## 阶段规则（非 schema artifact）
-
-  ### explore 阶段
-  [PRE] **知识主动应用**
-  读取 openspec/experience.md 和 dimensions.md 盲区段，告知用户与当前 change 相关的已有知识。
-
-  ### apply 阶段
-  [CONSTRAINT] 实施前读取所有澄清决策。新问题暂停评估，记录到 spec/notes.md。
-  [CONSTRAINT] Spec-Code 一致性：偏差须记录理由。
-  [POST] **复盘与知识进化**
-  1. 回顾本次实施过程，按 experience-template.md 复盘记录段的结构追加复盘
-  2. 提取知识更新 openspec/experience.md（技术决策/术语/风险）
-  3. 漏检问题更新 dimensions.md 盲区段
-  4. 展示 5-8 行摘要供用户确认
-  [POST] **流程衔接 → 归档**
-  经验提取完成后，通过 AskUserQuestion 询问用户："是否立即归档？"
-  选项：立即归档（推荐）/ 稍后手动归档
-  用户确认后，调用 Skill 工具执行 opsx:archive。
-
-  ### archive 阶段
-  [POST] **收敛检查**
-  experience.md 条目超阈值时提议合并/淘汰（需用户确认）。
 rules:
   proposal:
+    - "[PRE] 读取 experience.md 需求相关经验，告知用户"
     - |
-      [PRE] **需求澄清 + 对齐确认**
-      1. 读取 dimensions.md 作为参考维度和已知盲区，同时自主探索需求中的新不确定性
-      2. **必须写入文件**：将 High/Medium 问题写入 issues/requirement-issues.md（初始状态: clarifying）
-         格式遵循 Issue Schema：id, description, severity, status, answer
-      3. **步骤一（澄清）**：通过 AskUserQuestion 向用户批量提问
-      4. **必须更新文件**：收到回答后，立即更新 issues/requirement-issues.md 标注每个问题的 status 和 answer
-      5. **步骤二（对齐确认）**：markdown 展示 4 要素 → AskUserQuestion 确认
-      6. 确认后将文件状态标记为 clarified，然后创建 proposal
+      [PRE] 需求澄清流程（三步顺序执行，每步完成后再进入下一步）：
+      1. **分析→写入** — 自主分析需求不确定性（参考 dimensions.md 盲区），结果写入 issues/requirement-issues.md
+      2. **澄清** — 通过 AskUserQuestion 批量澄清 High/Medium 问题
+      3. **对齐确认** — 用 markdown 展示需求理解摘要，再通过 AskUserQuestion 确认
     - |
-      🚫 禁止跳过门禁：issues/requirement-issues.md 不存在或状态非 clarified 时，禁止创建 proposal
+      🚫 GATE: 满足以下全部条件前，禁止创建 proposal：
+      - issues/requirement-issues.md 已创建且 High/Medium 问题已澄清
+      - 对齐确认已通过
 
   specs:
-    - |
-      [CONSTRAINT] specs 必须与已澄清的需求一致。
-      需求有变更时，在问题清单中记录变更原因。
+    - "[CONSTRAINT] 须与已澄清需求一致，变更须记录原因"
 
   design:
+    - "[PRE] 读取 experience.md 技术相关经验，告知用户"
     - |
-      [PRE] **设计澄清 + 对齐确认**
-      1. 自主探索设计中的不确定性，结合 proposal 和 specs 分析技术决策点
-      2. **必须写入文件**：将 High/Medium 设计问题写入 issues/design-issues.md（初始状态: clarifying）
-         格式遵循 Issue Schema：id, description, severity, status, decision, rationale
-      3. **步骤一（澄清）**：通过 AskUserQuestion 向用户批量提问（即使无问题也须展示决策摘要）
-      4. **必须更新文件**：收到回答后，立即更新 issues/design-issues.md 标注每个问题的 decision 和 rationale
-      5. **步骤二（对齐确认）**：markdown 展示 4 要素 → AskUserQuestion 确认
-      6. 确认后将文件状态标记为 clarified，然后创建 design.md
+      [PRE] 设计澄清流程（三步顺序执行，每步完成后再进入下一步）：
+      1. **分析→写入** — 自主分析设计不确定性，结果写入 issues/design-issues.md
+      2. **澄清** — 通过 AskUserQuestion 批量澄清 High/Medium 决策（即使无问题也须展示决策摘要）
+      3. **对齐确认** — 用 markdown 展示技术方案摘要，再通过 AskUserQuestion 确认
     - |
-      🚫 禁止跳过门禁：issues/design-issues.md 不存在或状态不在 {clarifying, clarified, resolved} 时，禁止创建 design.md
-    - |
-      [CONSTRAINT] 技术决策四要素：
-      - 决策内容（选择了什么方案）
-      - 选择理由（为什么选择）
-      - 备选方案（考虑过哪些）
-      - 排除原因（为什么放弃备选）
+      🚫 GATE: 满足以下全部条件前，禁止创建 design.md：
+      - issues/design-issues.md 已创建且 High/Medium 决策已澄清
+      - 对齐确认已通过
 
   tasks:
+    - "[PRE] 展示 design.md 核心摘要，通过 AskUserQuestion 获得审批后创建任务"
     - |
-      [PRE] **设计文档审批**
-      展示 design.md 核心摘要（关键决策、目标/非目标、风险），通过 AskUserQuestion 获得审批后创建任务。
-    - |
-      [CONSTRAINT] 任务必须基于已审批的设计。
-      所有 High 决策须在任务中体现。
-    - |
-      [POST] **流程衔接 → 实施**
-      Tasks 创建完成后，通过 AskUserQuestion 询问用户："是否立即开始实施？"
-      选项：立即执行（推荐）/ 稍后手动执行
-      用户确认后，调用 Skill 工具执行 opsx:apply。
+      [CONSTRAINT] tasks.md 末尾必须包含"收尾"段落，包含以下门禁 checkbox：
+      ## 收尾（代码任务全部完成后执行）
+      > 经验提取规范见 experience-template.md。重点：反直觉发现、踩坑经验、可复用模式。
+      - [ ] 复盘：对照 design.md 检查实施偏差，将发现记录到 spec/notes.md
+      - [ ] 经验提取：按 experience-template.md 格式从实施过程提取经验写入 experience.md
+      - [ ] 经验验证：验证本次应用的历史经验（标记 ✓有效/✗无效/—不适用）
+      - [ ] 经验收敛：检查 experience.md 条目数量，若 >20 条则提议合并/淘汰（需用户确认）
+      - [ ] 归档确认：通过 AskUserQuestion 询问用户是否归档
+      这些 checkbox 必须排在所有代码实施任务之后
+    - "[POST] 通过 AskUserQuestion 询问是否立即实施，确认后调用 Skill 执行 opsx:apply"
+
+  apply:
+    - "[PRE] 读取 issues/ 下决策文件，遵循所有已澄清决策"
+    - "[CONSTRAINT] 新问题暂停评估记录到 spec/notes.md；代码与 design.md 偏差须记录理由"
+
+  archive: []
