@@ -31,6 +31,12 @@ ACE 是一个**AI 开发环境配置工具**，基于 Claude Code 官方最佳�
 - 📝 **规范驱动工作流** — OpenSpec 集成的需求管理体系
 - 🧩 **跨会话记忆系统** — 持久化的开发者画像与项目记忆
 
+### 视频教程
+
+从下载安装到实际使用的完整演示：
+
+<video src="assets/ace使用示例.mp4" controls width="100%"></video>
+
 ```bash
 # 一键安装，即刻拥有专业级 AI 开发环境
 npm install -g @shirayner/ace
@@ -188,12 +194,6 @@ ACE 的设计融合了多学科的深层洞察：
 ---
 
 ## 🚀 快速开始
-
-### 视频教程
-
-从下载安装到实际使用的完整演示：
-
-<video src="assets/ace使用示例.mp4" controls width="100%"></video>
 
 ### 1. 安装 ACE
 
