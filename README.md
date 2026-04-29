@@ -35,19 +35,23 @@ ACE 是一个**AI 开发环境配置工具**，基于 Claude Code 官方最佳�
 
 从下载安装到实际使用的完整演示：
 
-<video src="assets/ace使用示例.mp4" controls width="100%"></video>
+![ACE 使用示例](assets/ace-demo.gif)
 
-```bash
-# 一键安装，即刻拥有专业级 AI 开发环境
-npm install -g @shirayner/ace
-ace init
-```
+动图速度过快，另有示例视频：[ACE 使用示例](assets/ace-demo.mp4)
 
 ---
 
 ## ✨ 一分钟速览
 
-### 初始化向导
+### 安装
+
+```bash
+# 一键安装，即刻拥有专业级 AI 开发环境
+npm install -g @shirayner/ace
+```
+
+
+### 初始化
 
 ```bash
 $ ace init
@@ -80,38 +84,64 @@ $ ace init
 
 ### Spec Coding 完整流程
 
+进入工作目录
+
 ```bash
 # 进入工作目录
 $ mkdir my-project 
 $ cd my-project
 
+```
+
+Spec 初始化
+
+```bash
 # 执行 aspec 初始化
 $ ace spec init
 ✓ aspec 工作流已初始化
 Done! 规范驱动开发已就绪。
 
-# 在 Claude Code 中体验三命令开发流程：
+```
+
+Spec驱动开发
+
+```bash
+# 在 Claude Code 中体验Spec开发流程：
+# 输入 /opsx:proposal 命令后，一路交互式澄清、确认，然后需求完成，Spec归档
 $ claude
 
 > /opsx:proposal 帮我实现用户积分系统
 
-Claude:
-【需求澄清】积分获取规则？消费规则？过期策略？→ 3 个问题确认
-【创建提案】proposal.md
-【技术澄清】并发扣减方案？积分流水存储？→ 2 个问题确认
-【确定方案】design.md + tasks.md（8 个可执行任务）
+Claude: 【需求澄清】对需求不确定的地方提出疑问？→  请求人工澄清
+人工：选择选项，或者进行纠正，然后点击submit
 
-> /opsx:apply
+Claude: 【需求对齐】Claude输出自己对本需求的理解 → 请求人工确认
+人工：选择确认，或者纠正信息，然后点击submit
 
-Claude:
-按 tasks.md 逐项实现，每步验证
-✓ 所有任务完成，测试通过
+-- 人工确认之后，Cluade会创建提案
 
-> /opsx:archive
+Claude: 【技术设计澄清】对技术不确定的地方提出疑问 → 请求人工确认
+人工：选择确认，或者纠正信息，然后点击submit
 
-Claude:
-spec 归档，收敛检查
-✓ 归档完成
+Claude: 【技术设计对齐】Claude输出自己对本需求的技术方案设计的理解 → 请求人工确认
+人工：选择确认，或者纠正信息，然后点击submit
+
+-- 人工确认之后，Cluade会创建Design
+
+Claude: 【Design审批并创建Tasks】Claude请求人工确认Design设计，然后创建Tasks → 请求人工审批
+人工：选择确认，或者纠正信息，然后点击submit
+
+-- 人工确认之后，Cluade会创建tasks
+
+Claude: 【执行】Claude 请求按规划的任务进行代码实现 → 请求人工审批
+人工：选择确认，或者纠正信息，然后点击submit
+
+-- 人工确认之后，Cluade会进行代码实现，然后进行经验收集
+
+Claude: 【归档同步】Claude 会请求进行归档同步→ 请求人工审批
+人工：选择确认，或者纠正信息，然后点击submit
+
+-- 人工确认之后，Cluade会对Spec进行归档同步
 ```
 
 ### 健康检查
