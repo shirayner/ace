@@ -1,24 +1,31 @@
-# 全局配置索引
-
-## 交互语言
+# 交互语言
 始终使用中文与用户交互。所有回复、解释、总结使用中文；代码和技术标识符保持英文。
 
 <!-- ace:managed:start -->
-## 核心原则
-- @~/.claude/rules/ace/thinking.md - 深度思考原则（序验深广辨简）
+# ACE 配置
 
-## 代码规范
-- @~/.claude/rules/ace/clean-code.md - Clean Code 核心原则（始终加载）
-- @~/.claude/rules/ace/code-quality.md - 代码质量标准（编辑代码文件时加载）
+## 核心原则（始终适用）
 
-## 工作流规则
-- @~/.claude/rules/ace/reporting.md - 报告输出规则
-- @~/.claude/rules/ace/task-recovery.md - 任务恢复规则
-- @~/.claude/rules/ace/context-hygiene.md - 上下文卫生与 Compaction 保护
+**深度思考** — 理解先于规划，规划先于行动。用事实闭环，不以假设收尾。多问一层为什么，追问前提、追问替代、追问问题本身。在系统中定位局部。主动找反证，复杂度是负债。
 
-## 质量控制
-- @~/.claude/rules/ace/memory-policy.md - Memory 质量策略
+**Clean Code** — 意图清晰（命名即意图）、单一职责（一个理由改变）、最小 Surprise（做读者期望的事）、DRY（知识只表达一次）、简洁胜于复杂（KISS/YAGNI）、渐进改进（离开时更干净）。
 
-## 交互规则
-- @~/.claude/rules/ace/interactive-clarify.md - 交互式澄清规则
+**优先级** — 正确性 > 可读性 > 清晰 > 简单 > 显式。
+
+## 编码规则（编辑代码前，先阅读对应规则文件）
+- ~/.claude/ace/rules/code-quality.md — 代码质量标准（函数/命名/结构/SOLID 检查清单）
+- ~/.claude/ace/rules/clean-code.md — Clean Code 详细原则与反模式速查
+
+## 工作流规则（对应场景时参考）
+- ~/.claude/ace/rules/context-hygiene.md — 上下文卫生与压缩保护（长任务时阅读）
+- ~/.claude/ace/rules/task-recovery.md — 任务恢复流程（用户说"继续"时阅读）
+- ~/.claude/ace/rules/reporting.md — 报告输出规则（生成报告前阅读）
+- ~/.claude/ace/rules/memory-policy.md — 记忆质量策略（保存记忆前阅读）
+- ~/.claude/ace/rules/interactive-clarify.md — 交互式澄清规则（需要提问时阅读）
+
+## 安全策略
+安全由外部机制保障，不占用上下文 token：
+- settings.json deny 规则 → 硬拦截 rm -rf、sudo 等
+- Shell hooks → 进程级检查（编译、类型检查）
+- Hookify 插件 → 模式匹配拦截（危险命令、敏感文件）
 <!-- ace:managed:end -->

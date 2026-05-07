@@ -60,27 +60,39 @@ function mergeWithMarkers(existingContent, templateContent) {
   let result = replaceManagedSection(existingContent, templateManaged);
 
   // Clean up any obsolete ACE refs outside the managed section
+  // This includes old @~/.claude/rules/ace/ refs AND hookify @refs
   const removed = [];
   const lines = result.split('\n');
   const cleanedLines = lines.map(line => {
     const refs = extractRefs(line);
     const hasObsoleteAceRef = refs.some(ref => {
-      // Check if this is an ACE-owned ref that's NOT in the new template
       if (isAceOwnedRef(ref)) {
         const refWithAt = `@${ref}`;
         if (!templateRefs.includes(refWithAt)) {
           removed.push(ref);
-          return true; // This line has an obsolete ref
+          return true;
         }
       }
       return false;
     });
 
-    // Return null to mark for removal, otherwise keep line
+    // Also remove lines with hookify @ references (these should not be in CLAUDE.md)
+    const hasHookifyRef = refs.some(ref => /hookify\.ace\./.test(ref));
+    if (hasHookifyRef) {
+      const refBare = refs.find(ref => /hookify\.ace\./.test(ref));
+      if (refBare) removed.push(refBare);
+      return null;
+    }
+
     return hasObsoleteAceRef ? null : line;
   }).filter(line => line !== null);
 
   result = cleanedLines.join('\n');
+
+  // Clean up empty "## Added by ace" section if all its refs were removed
+  result = result.replace(/\n## Added by ace\n*(?=\n|$)/g, '\n');
+  // Normalize multiple blank lines
+  result = result.replace(/\n{3,}/g, '\n\n');
 
   // Get the new refs that were added (in the managed section)
   const existingRefs = extractRefs(existingContent);

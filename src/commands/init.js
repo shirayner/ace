@@ -91,6 +91,11 @@ export async function initCommand(options) {
 
   s.start('Installing...');
 
+  // Prepare: migrate legacy directory structure if needed
+  if (!options.dryRun) {
+    await installer.prepare();
+  }
+
   for (const componentName of components) {
     const component = COMPONENTS[componentName];
     if (!component) continue;
@@ -149,7 +154,7 @@ export async function initCommand(options) {
       '',
       'Customize',
       '  Change role      edit ~/.claude/memory/user_profile.md',
-      '  Adjust rules     edit ~/.claude/rules/ace/',
+      '  Adjust rules     edit ~/.claude/ace/rules/',
       '  Safety guards    edit ~/.claude/hookify.ace.*.local.md',
       '  Verify setup     ace doctor',
     ].join('\n'),
@@ -224,8 +229,8 @@ async function buildInstallPreview(installer, components) {
       try {
         const existing = await fs.readFile(path.join(installer.targetDir, item.dest), 'utf-8');
         const template = await fs.readFile(path.join(installer.templatesDir, item.src), 'utf-8');
-        const { added } = mergeClaudeMd(existing, template);
-        item.detail = added.length > 0 ? `adds ${added.length} new @references` : 'up to date';
+        const { content } = mergeClaudeMd(existing, template);
+        item.detail = content !== existing ? 'will update managed section' : 'up to date';
       } catch {
         item.detail = 'will merge';
       }

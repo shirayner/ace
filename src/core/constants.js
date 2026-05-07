@@ -58,10 +58,12 @@ export const SPEC_TEMPLATE_FILES = [
 
 /**
  * Patterns for files owned by ACE - these are overwritten directly on init without prompting.
- * Used to identify ACE-owned content in rules/, hooks/, and hookify/.
+ * Used to identify ACE-owned content in ace/, hooks/, and hookify/.
  */
 export const ACE_OWNED_PATTERNS = [
-  /^rules\/ace\//,          // rules/ace/*.md
+  /^ace\/rules\//,          // ace/rules/*.md (v2.0+)
+  /^ace\/team\//,           // ace/team/*.md (v2.0+)
+  /^rules\/ace\//,          // rules/ace/*.md (legacy, for migration detection)
   /^hooks\/ace\./,          // hooks/ace.*.sh
   /^hookify\.ace\./,        // hookify.ace.*.local.md
 ];
@@ -77,12 +79,12 @@ export function isAceOwnedFile(relativePath) {
 
 /**
  * Check if an @reference path is owned by ACE.
- * @param {string} refPath - Reference path like '~/.claude/rules/ace/thinking.md' or '~/.claude/hooks/ace.java-compile-check.sh'
+ * @param {string} refPath - Reference path like '@~/.claude/rules/ace/thinking.md' or '~/.claude/hooks/ace.java-compile-check.sh'
  * @returns {boolean}
  */
 export function isAceOwnedRef(refPath) {
-  // Remove the ~/.claude/ prefix if present
-  const relativePath = refPath.replace(/^~\/\.claude\//, '');
+  // Remove the @~/.claude/ or ~/.claude/ prefix if present
+  const relativePath = refPath.replace(/^@?~\/\.claude\//, '');
   return isAceOwnedFile(relativePath);
 }
 
@@ -98,7 +100,7 @@ export const COMPONENTS = {
   rules: {
     description: 'Cognitive & code quality rules',
     required: true,
-    rulesDir: 'rules/ace',
+    rulesDir: 'ace/rules',
   },
   plugin: {
     description: 'Ace plugin (skills: auto-goal, coding, skill-creator, skill-optimize; commands: report)',

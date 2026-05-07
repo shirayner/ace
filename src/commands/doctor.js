@@ -27,10 +27,10 @@ export async function doctorCommand() {
       const ruleFiles = await fs.readdir(templateRulesDir);
       for (const file of ruleFiles) {
         if (!file.endsWith('.md')) continue;
-        checks.push(await check(`rules/ace/${file}`, fs.pathExists(path.join(CLAUDE_DIR, rulesDir, file))));
+        checks.push(await check(`ace/rules/${file}`, fs.pathExists(path.join(CLAUDE_DIR, rulesDir, file))));
       }
     } catch {
-      checks.push({ name: 'rules/ace/ directory', ok: false });
+      checks.push({ name: 'ace/rules/ directory', ok: false });
     }
   }
 
@@ -91,13 +91,20 @@ export async function doctorCommand() {
     checks.push({ name: 'settings.json parseable', ok: false });
   }
 
-  // 8. Validate CLAUDE.md @references
+  // 8. Validate CLAUDE.md references (both @refs and path-index style)
   try {
     const claudeMd = await fs.readFile(path.join(CLAUDE_DIR, 'CLAUDE.md'), 'utf-8');
-    const refs = claudeMd.match(/@~?\/?\.?claude\/[^\s)]+/g) || [];
-    for (const ref of refs) {
+    // Check @references (legacy format)
+    const atRefs = claudeMd.match(/@~?\/?\.?claude\/[^\s)]+/g) || [];
+    for (const ref of atRefs) {
       const refPath = ref.replace(/^@/, '').replace(/^~/, process.env.HOME || process.env.USERPROFILE);
       checks.push(await check(`@ref: ${path.basename(refPath)}`, fs.pathExists(refPath)));
+    }
+    // Check path-index style references (new format: lines starting with "- ~/.claude/...")
+    const pathRefs = claudeMd.match(/(?:^|\n)-\s+(~\/.claude\/[^\s—]+)/g) || [];
+    for (const match of pathRefs) {
+      const refPath = match.replace(/(?:^|\n)-\s+/, '').replace(/^~/, process.env.HOME || process.env.USERPROFILE);
+      checks.push(await check(`path: ${path.basename(refPath)}`, fs.pathExists(refPath)));
     }
   } catch {
     checks.push({ name: 'CLAUDE.md readable', ok: false });

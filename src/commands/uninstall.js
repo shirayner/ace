@@ -30,16 +30,35 @@ export async function uninstallCommand(options) {
   const skipped = [];
   const errors = [];
 
-  // 1. Remove rules/ace/ directory
+  // 1. Remove ace/rules/ directory (and legacy rules/ace/ if still present)
   const spinner1 = ora('Removing rules...').start();
   try {
-    const rulesDir = path.join(CLAUDE_DIR, 'rules', 'ace');
-    if (await fs.pathExists(rulesDir)) {
-      await fs.remove(rulesDir);
-      removed.push('rules/ace/');
-    } else {
-      skipped.push('rules/ace/ (not found)');
+    const newRulesDir = path.join(CLAUDE_DIR, 'ace', 'rules');
+    const newTeamDir = path.join(CLAUDE_DIR, 'ace', 'team');
+    const aceDir = path.join(CLAUDE_DIR, 'ace');
+    const legacyRulesDir = path.join(CLAUDE_DIR, 'rules', 'ace');
+
+    if (await fs.pathExists(newRulesDir)) {
+      await fs.remove(newRulesDir);
+      removed.push('ace/rules/');
     }
+    if (await fs.pathExists(newTeamDir)) {
+      await fs.remove(newTeamDir);
+      removed.push('ace/team/');
+    }
+    // Remove ace/ parent if empty
+    if (await fs.pathExists(aceDir)) {
+      const remaining = await fs.readdir(aceDir);
+      if (remaining.length === 0) {
+        await fs.remove(aceDir);
+      }
+    }
+    // Also clean legacy directory if still exists
+    if (await fs.pathExists(legacyRulesDir)) {
+      await fs.remove(legacyRulesDir);
+      removed.push('rules/ace/ (legacy)');
+    }
+
     spinner1.succeed('rules removed');
   } catch (err) {
     spinner1.fail('rules removal failed');
@@ -126,17 +145,31 @@ export async function uninstallCommand(options) {
       await fs.remove(claudeBackup);
       removed.push('CLAUDE.md (restored pre-ace backup)');
     } else if (await fs.pathExists(claudeMdPath)) {
-      // Fallback: surgically remove ace @references
+      // Fallback: surgically remove ace @references and managed section
       const content = await fs.readFile(claudeMdPath, 'utf-8');
-      const lines = content.split('\n');
-      const filtered = lines.filter(line => !line.includes('@~/.claude/rules/ace/'));
-      const cleaned = filtered.join('\n')
+      let cleaned = content;
+      // Remove the entire managed section if present
+      const managedStart = '<!-- ace:managed:start -->';
+      const managedEnd = '<!-- ace:managed:end -->';
+      const startIdx = cleaned.indexOf(managedStart);
+      const endIdx = cleaned.indexOf(managedEnd);
+      if (startIdx !== -1 && endIdx !== -1) {
+        cleaned = cleaned.slice(0, startIdx) + cleaned.slice(endIdx + managedEnd.length);
+      }
+      // Remove any remaining ace @references (legacy or new format)
+      const lines = cleaned.split('\n');
+      const filtered = lines.filter(line =>
+        !line.includes('@~/.claude/rules/ace/') &&
+        !line.includes('@~/.claude/ace/') &&
+        !line.includes('hookify.ace.')
+      );
+      cleaned = filtered.join('\n')
         .replace(/\n## Added by ace\n*/g, '\n')
         .replace(/\n{3,}/g, '\n\n')
         .trim() + '\n';
       if (cleaned !== content) {
         await fs.writeFile(claudeMdPath, cleaned, 'utf-8');
-        removed.push('CLAUDE.md ace @references (surgical)');
+        removed.push('CLAUDE.md ace content (surgical)');
       }
     }
 

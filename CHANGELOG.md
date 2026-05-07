@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0-SNAPSHOT] - 2026-05-07
+
+### Changed
+- **Breaking**: Rule files moved from `~/.claude/rules/ace/` to `~/.claude/ace/rules/` (unified namespace)
+- **Breaking**: CLAUDE.md template rewritten — replaced `@` eager-loading references with inline essentials + path-index lazy-loading (~77% token reduction)
+- Removed hookify `@` references from CLAUDE.md (security now fully zero-token via external mechanisms)
+- Enhanced "深" thinking principle with Socratic questioning techniques (追问前提/替代/问题本身)
+
+### Added
+- Auto-migration from legacy `rules/ace/` to new `ace/rules/` directory on `ace init`
+- `ace/team/` directory creation for Layer 2 team conventions (placeholder for future `ace spec init`)
+- `Installer.prepare()` public method for pre-installation setup
+- Doctor check for path-index style references in CLAUDE.md
+
+### Fixed
+- `isAceOwnedRef` now correctly handles `@` prefix in reference paths
+- `mergeClaudeMdFile` skip logic: uses content comparison instead of ref count (works with new template format)
+- Uninstall surgically removes managed section and hookify references
+
 ## [0.1.4] - 2026-04-23
 
 ### Changed

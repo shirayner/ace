@@ -94,6 +94,7 @@ export class Installer {
   async run() {
     if (!this.dryRun) {
       await fs.ensureDir(this.targetDir);
+      await this.prepare();
     }
 
     for (const componentName of this.components) {
@@ -112,6 +113,57 @@ export class Installer {
     }
 
     return this.results;
+  }
+
+  /**
+   * Prepare the target directory: migrate legacy structure and ensure new layout.
+   * Call this before installComponent() if not using run().
+   */
+  async prepare() {
+    await fs.ensureDir(this.targetDir);
+    await this.migrateFromLegacy();
+    await this.ensureAceStructure();
+  }
+
+  /**
+   * Migrate from legacy directory structure (rules/ace/) to new (ace/rules/).
+   * Only runs if old directory exists.
+   */
+  async migrateFromLegacy() {
+    const legacyDir = path.join(this.targetDir, 'rules', 'ace');
+    const newDir = path.join(this.targetDir, 'ace', 'rules');
+
+    if (!await fs.pathExists(legacyDir)) return;
+
+    // Move contents from legacy to new location
+    await fs.ensureDir(newDir);
+    const files = await fs.readdir(legacyDir);
+    for (const file of files) {
+      const src = path.join(legacyDir, file);
+      const dest = path.join(newDir, file);
+      await fs.move(src, dest, { overwrite: true });
+    }
+
+    // Remove empty legacy directory
+    await fs.remove(legacyDir);
+    // Clean up parent if empty
+    const rulesParent = path.join(this.targetDir, 'rules');
+    if (await fs.pathExists(rulesParent)) {
+      const remaining = await fs.readdir(rulesParent);
+      if (remaining.length === 0) {
+        await fs.remove(rulesParent);
+      }
+    }
+
+    this.results.merged.push({ file: 'ace/rules/ (migrated from rules/ace/)' });
+  }
+
+  /**
+   * Ensure the ace/ namespace directory structure exists.
+   */
+  async ensureAceStructure() {
+    await fs.ensureDir(path.join(this.targetDir, 'ace', 'rules'));
+    await fs.ensureDir(path.join(this.targetDir, 'ace', 'team'));
   }
 
   async installComponent(name, component) {
@@ -330,15 +382,16 @@ export class Installer {
   async mergeClaudeMdFile(srcPath, destPath, fileSpec) {
     const existing = await fs.readFile(destPath, 'utf-8');
     const template = await fs.readFile(srcPath, 'utf-8');
-    const { content, added } = mergeClaudeMd(existing, template);
+    const { content, added, removed } = mergeClaudeMd(existing, template);
 
-    if (added.length === 0) {
+    // Skip if content is unchanged (no refs added/removed, managed section identical)
+    if (content === existing) {
       this.results.skipped.push(fileSpec.dest);
       return;
     }
 
     if (this.dryRun) {
-      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would merge CLAUDE.md, adding ${added.length} references`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would merge CLAUDE.md`));
       this.results.merged.push({ file: fileSpec.dest, added });
       return;
     }
@@ -346,7 +399,7 @@ export class Installer {
     await backupPreInstall(destPath);
     await backupFile(destPath);
     await fs.writeFile(destPath, content, 'utf-8');
-    this.results.merged.push({ file: fileSpec.dest, added });
+    this.results.merged.push({ file: fileSpec.dest, added, removed });
   }
 
   async mergeSettingsJsonFile(srcPath, destPath, fileSpec) {
