@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [0.2.0-SNAPSHOT] - 2026-05-07
+## [0.1.8-SNAPSHOT] - 2026-05-07
 
 ### Changed
 - **Breaking**: Rule files moved from `~/.claude/rules/ace/` to `~/.claude/ace/rules/` (unified namespace)
