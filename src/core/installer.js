@@ -57,6 +57,9 @@ export class Installer {
         }
       }
 
+      // Check recursiveDir files (ACE-owned, no conflict prompt)
+      // Skip conflict detection — these are always overwritten via ACE_OWNED_PATTERNS
+
       // Check regular files
       if (component.files) {
         for (const file of component.files) {
@@ -174,6 +177,10 @@ export class Installer {
 
     if (component.rulesDir) {
       await this.installRulesDir(component.rulesDir, name);
+    }
+
+    if (component.recursiveDir) {
+      await this.installRecursiveDir(component.recursiveDir, name);
     }
 
     if (component.files) {
@@ -296,6 +303,27 @@ export class Installer {
         src: path.join(rulesDir, file),
         dest: path.join(rulesDir, file),
       }, componentName);
+    }
+  }
+
+  async installRecursiveDir(dir, componentName) {
+    const srcDir = path.join(this.templatesDir, dir);
+    if (!await fs.pathExists(srcDir)) {
+      this.results.errors.push({ file: dir, error: 'Directory not found in templates' });
+      return;
+    }
+    await this._walkAndInstall(srcDir, dir, componentName);
+  }
+
+  async _walkAndInstall(baseDir, relativeBase, componentName) {
+    const entries = await fs.readdir(baseDir, { withFileTypes: true });
+    for (const entry of entries) {
+      const srcRel = path.join(relativeBase, entry.name);
+      if (entry.isDirectory()) {
+        await this._walkAndInstall(path.join(baseDir, entry.name), srcRel, componentName);
+      } else if (entry.name.endsWith('.md')) {
+        await this.installFile({ src: srcRel, dest: srcRel }, componentName);
+      }
     }
   }
 

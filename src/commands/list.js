@@ -67,6 +67,11 @@ async function getComponentStatus(component) {
     } catch { /* ignore */ }
   }
 
+  if (component.recursiveDir) {
+    const collected = await collectMdFiles(path.join(TEMPLATES_DIR, component.recursiveDir), component.recursiveDir);
+    allPaths.push(...collected.map(f => path.join(CLAUDE_DIR, f)));
+  }
+
   if (component.files) {
     allPaths.push(...component.files.map(f => path.join(CLAUDE_DIR, f.dest)));
   }
@@ -101,6 +106,11 @@ async function getComponentDetails(component) {
     } catch { /* ignore */ }
   }
 
+  if (component.recursiveDir) {
+    const collected = await collectMdFiles(path.join(TEMPLATES_DIR, component.recursiveDir), component.recursiveDir);
+    allFiles.push(...collected);
+  }
+
   allFiles.push(
     ...(component.files || []).map(f => f.dest),
     ...(component.directories || []),
@@ -114,4 +124,20 @@ async function getComponentDetails(component) {
   }
 
   return { missing, installed };
+}
+
+async function collectMdFiles(dir, relBase) {
+  const results = [];
+  try {
+    const entries = await fs.readdir(dir, { withFileTypes: true });
+    for (const entry of entries) {
+      const rel = path.join(relBase, entry.name);
+      if (entry.isDirectory()) {
+        results.push(...await collectMdFiles(path.join(dir, entry.name), rel));
+      } else if (entry.name.endsWith('.md')) {
+        results.push(rel);
+      }
+    }
+  } catch { /* ignore */ }
+  return results;
 }

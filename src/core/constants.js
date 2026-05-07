@@ -17,9 +17,9 @@ export const MARKETPLACE_DIR = path.join(CLAUDE_DIR, 'plugins', 'marketplaces', 
 export const PLUGIN_KEY = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
 
 export const PRESETS = {
-  full: ['core', 'rules', 'plugin', 'hooks', 'hookify', 'memory'],
+  full: ['core', 'rules', 'team', 'plugin', 'hooks', 'hookify', 'memory'],
   minimal: ['core', 'rules', 'plugin'],
-  safe: ['core', 'rules', 'plugin', 'hookify', 'memory'],
+  safe: ['core', 'rules', 'team', 'plugin', 'hookify', 'memory'],
 };
 
 export const ROLES = {
@@ -74,7 +74,8 @@ export const ACE_OWNED_PATTERNS = [
  * @returns {boolean}
  */
 export function isAceOwnedFile(relativePath) {
-  return ACE_OWNED_PATTERNS.some(pattern => pattern.test(relativePath));
+  const normalized = relativePath.replace(/\\/g, '/');
+  return ACE_OWNED_PATTERNS.some(pattern => pattern.test(normalized));
 }
 
 /**
@@ -101,6 +102,11 @@ export const COMPONENTS = {
     description: 'Cognitive & code quality rules',
     required: true,
     rulesDir: 'ace/rules',
+  },
+  team: {
+    description: 'Team conventions (languages & frameworks)',
+    required: false,
+    recursiveDir: 'ace/team',
   },
   plugin: {
     description: 'Ace plugin (skills: auto-goal, coding, skill-creator, skill-optimize; commands: report)',

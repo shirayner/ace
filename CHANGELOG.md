@@ -17,12 +17,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Added
 - Auto-migration from legacy `rules/ace/` to new `ace/rules/` directory on `ace init`
-- `ace/team/` directory creation for Layer 2 team conventions (placeholder for future `ace spec init`)
+- `ace/team/` directory with team conventions: languages (java.md) and frameworks (ctrip-frameworks, dal, soa, member-common)
+- `team` component in PRESETS (full, safe) with recursive directory installation
+- Git workflow rules: `git.md` (commit conventions) and `gitflow.md` (branch management)
+- CLAUDE.md template adds "团队规范" path-index section for `ace/team/`
 - `Installer.prepare()` public method for pre-installation setup
+- `Installer.installRecursiveDir()` for nested directory tree installation
 - Doctor check for path-index style references in CLAUDE.md
 
 ### Fixed
 - `isAceOwnedRef` now correctly handles `@` prefix in reference paths
+- `isAceOwnedFile` normalizes Windows backslashes for cross-platform regex matching
 - `mergeClaudeMdFile` skip logic: uses content comparison instead of ref count (works with new template format)
 - Uninstall surgically removes managed section and hookify references
 
