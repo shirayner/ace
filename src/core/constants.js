@@ -17,7 +17,7 @@ export const MARKETPLACE_DIR = path.join(CLAUDE_DIR, 'plugins', 'marketplaces', 
 export const PLUGIN_KEY = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
 
 export const PRESETS = {
-  full: ['core', 'rules', 'plugin', 'hooks', 'memory'],
+  full: ['core', 'rules', 'plugin', 'hooks', 'scripts', 'memory'],
   minimal: ['core', 'rules', 'plugin'],
   safe: ['core', 'rules', 'plugin', 'memory'],
 };
@@ -64,6 +64,7 @@ export const ACE_OWNED_PATTERNS = [
   /^ace\/rules\//,          // ace/rules/*.md (v2.0+)
   /^rules\/ace\//,          // rules/ace/*.md (legacy, for migration detection)
   /^hooks\/ace\./,          // hooks/ace.*.sh
+  /^scripts\/statusline/,   // scripts/statusline*
 ];
 
 /**
@@ -117,6 +118,14 @@ export const COMPONENTS = {
     ],
     conditional: [
       { src: 'hooks/ace.java-compile-check.sh', dest: 'hooks/ace.java-compile-check.sh', roles: ['backend', 'fullstack'] },
+    ],
+  },
+  scripts: {
+    description: 'Utility scripts (status line)',
+    required: false,
+    files: [
+      { src: 'scripts/statusline-command.sh', dest: 'scripts/statusline-command.sh' },
+      { src: 'scripts/statusline.py', dest: 'scripts/statusline.py' },
     ],
   },
   memory: {

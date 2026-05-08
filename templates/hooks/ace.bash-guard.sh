@@ -4,11 +4,13 @@
 # exit 0 = 允许（stdout 作为警告信息传递给模型）
 # exit 2 = 阻止执行
 
-set -euo pipefail
+# NOTE: 不使用 set -e — grep 无匹配返回 1 会导致脚本崩溃
+set -uo pipefail
 
 INPUT=$(cat)
 
-COMMAND=$(echo "$INPUT" | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
+# 提取命令：替换转义引号为占位符，用 grep -o 精确匹配 JSON value，再还原
+COMMAND=$(echo "$INPUT" | sed 's/\\"/\x01/g' | grep -o '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"command"[[:space:]]*:[[:space:]]*"//;s/"$//' | sed 's/\x01/\\"/g' || true)
 
 [[ -z "$COMMAND" ]] && exit 0
 
@@ -18,8 +20,8 @@ BLOCK_PATTERNS=(
     'rm\s+-rf'
     'rm\s+-r\s'
     'rm\s+.*--recursive'
-    'git\s+push\s+.*(-f|--force)[^-]'
-    'git\s+push\s+.*--force$'
+    'git\s+push\s+(.*\s)?-f(\s|$)'
+    'git\s+push\s+.*--force(\s|$)'
     'DROP\s+TABLE'
     'TRUNCATE\s+TABLE'
     'git\s+reset\s+--hard'

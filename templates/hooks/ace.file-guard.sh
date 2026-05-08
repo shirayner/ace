@@ -4,11 +4,12 @@
 # 检测对敏感文件的编辑操作，输出警告
 # exit 0 + stdout = 警告（不阻止）
 
-set -euo pipefail
+# NOTE: 不使用 set -e — grep 无匹配返回 1 会导致脚本崩溃
+set -uo pipefail
 
 INPUT=$(cat)
 
-FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//;s/"$//')
+FILE_PATH=$(echo "$INPUT" | grep -o '"file_path"[[:space:]]*:[[:space:]]*"[^"]*"' | head -1 | sed 's/.*"file_path"[[:space:]]*:[[:space:]]*"//;s/"$//' || true)
 
 [[ -z "$FILE_PATH" ]] && exit 0
 
