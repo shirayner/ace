@@ -108,8 +108,14 @@ export const COMPONENTS = {
     isPlugin: true,
   },
   hooks: {
-    description: 'Hook scripts (optional, role-dependent)',
+    description: 'Hook scripts (safety guards + compile checks)',
     required: false,
+    files: [
+      { src: 'hooks/ace.bash-guard.sh', dest: 'hooks/ace.bash-guard.sh' },
+      { src: 'hooks/ace.content-guard.sh', dest: 'hooks/ace.content-guard.sh' },
+      { src: 'hooks/ace.file-guard.sh', dest: 'hooks/ace.file-guard.sh' },
+      { src: 'hooks/ace.stop-verify.sh', dest: 'hooks/ace.stop-verify.sh' },
+    ],
     conditional: [
       { src: 'hooks/ace.java-compile-check.sh', dest: 'hooks/ace.java-compile-check.sh', roles: ['backend', 'fullstack'] },
     ],

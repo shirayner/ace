@@ -92,7 +92,8 @@ COMPILE_OUTPUT=$(timeout 30 bash -c "$COMPILE_CMD" 2>&1) || {
         echo "⏱ Java 编译超时（30s），跳过本次检查。请手动验证。"
         exit 0
     fi
-    # 编译失败 — 喧嚣输出
+    # 编译失败 — 喧嚣输出 + 留下标记供 Stop hook 检查
+    touch /tmp/.claude-java-compile-failed
     echo "❌ Java 编译失败！修改文件: $(basename "$FILE_PATH")"
     echo "项目: $PROJECT_ROOT"
     echo ""
@@ -102,5 +103,6 @@ COMPILE_OUTPUT=$(timeout 30 bash -c "$COMPILE_CMD" 2>&1) || {
     exit 1
 }
 
-# 编译成功 — 静默退出
+# 编译成功 — 静默退出，清除失败标记
+rm -f /tmp/.claude-java-compile-failed
 exit 0
