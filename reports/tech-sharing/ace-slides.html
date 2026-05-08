@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ace — AI Coding Environment</title>
+
+  <!-- Reveal.js core -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reset.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom styles -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- SLIDE 1: Title -->
+      <section id="title" class="section-divider" data-state="is-section-divider">
+        <h1 style="font-size: 44pt; margin-bottom: 20px;">Ace <span style="color: var(--muted-color); font-weight: 300;">—</span> AI Coding Environment</h1>
+        <p class="text-xl" style="color: var(--primary-color); margin-bottom: 40px;">一条命令，部署专业级 AI 开发 Harness</p>
+        <p style="color: var(--muted-color); font-size: 14pt;">r.shi &nbsp;|&nbsp; 2026</p>
+        <aside class="notes">
+          开场白：简短自我介绍，引入今天的主题。时间控制：30秒。
+        </aside>
+      </section>
+
+      <!-- SLIDE 2: Pain Points -->
+      <section id="pain-points">
+        <h2><i class="fa-solid fa-triangle-exclamation" style="color: var(--warning-color);"></i> Claude Code 的四个痛点</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px;">
+            <div class="fragment" style="background: #161b22; border-left: 4px solid var(--warning-color); padding: 20px; border-radius: var(--box-radius);">
+              <p><strong style="color: var(--warning-color);">思考深度波动</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">简单任务过度分析，复杂任务浅尝辄止<br><em>缺乏元认知</em></p>
+            </div>
+            <div class="fragment" style="background: #161b22; border-left: 4px solid var(--danger-color); padding: 20px; border-radius: var(--box-radius);">
+              <p><strong style="color: var(--danger-color);">代码质量不一致</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">上午优雅，下午意面代码<br><em>无持久规则</em></p>
+            </div>
+            <div class="fragment" style="background: #161b22; border-left: 4px solid var(--secondary-color); padding: 20px; border-radius: var(--box-radius);">
+              <p><strong style="color: var(--secondary-color);">复杂任务迷失</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">上下文压缩后丢失决策，重复工作<br><em>工作记忆有限</em></p>
+            </div>
+            <div class="fragment" style="background: #161b22; border-left: 4px solid var(--danger-color); padding: 20px; border-radius: var(--box-radius);">
+              <p><strong style="color: var(--danger-color);">没有安全护栏</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">一个 rm -rf 就可能闯祸<br><em>缺乏防护</em></p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          用自身经历讲痛点，让听众产生共鸣。时间：3分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 3: Paradigm Evolution -->
+      <section id="paradigm-evolution">
+        <h2><i class="fa-solid fa-timeline" style="color: var(--primary-color);"></i> 三代范式演进</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 20px;">
+            <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); border-top: 3px solid var(--muted-color);">
+              <p style="font-size: 12pt; color: var(--muted-color);">2020-2023</p>
+              <p><strong style="font-size: 18pt;">Prompt Engineering</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">优化单次交互的措辞</p>
+            </div>
+            <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); border-top: 3px solid var(--secondary-color);">
+              <p style="font-size: 12pt; color: var(--muted-color);">2024-2025</p>
+              <p><strong style="font-size: 18pt;">Context Engineering</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">管理模型看到的全部信息</p>
+            </div>
+            <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); border-top: 3px solid var(--primary-color);">
+              <p style="font-size: 12pt; color: var(--primary-color);">2025-2026 ← 我们在这里</p>
+              <p><strong style="font-size: 18pt; color: var(--primary-color);">Harness Engineering</strong></p>
+              <p style="color: var(--muted-color); font-size: 14pt;">设计 Agent 的完整运行时系统</p>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 30px; color: var(--muted-color); font-size: 14pt;">
+            包含关系：<strong style="color: var(--primary-color);">Harness</strong> ⊃ <strong style="color: var(--secondary-color);">Context</strong> ⊃ <strong>Prompt</strong>
+          </p>
+        </div>
+        <aside class="notes">
+          强调这三代是包含关系，不是替代。Harness 是当前最完整的思考框架。时间：1.5分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 4: Core Formula -->
+      <section id="core-formula">
+        <h2><i class="fa-solid fa-flask" style="color: var(--secondary-color);"></i> Harness Engineering 核心公式</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="background: #161b22; padding: 35px; border-radius: var(--box-radius); text-align: center; margin: 20px 0;">
+            <p style="font-size: 24pt; font-family: 'JetBrains Mono', monospace; color: var(--primary-color);">Agent 表现 = 模型能力 × Harness 质量</p>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-top: 20px;">
+            <div style="background: #1c2128; padding: 20px; border-radius: var(--box-radius);">
+              <p style="color: var(--success-color); font-size: 14pt;"><i class="fa-solid fa-chart-line"></i> 定量证据</p>
+              <p style="font-size: 15pt;">LangChain 仅修改 Harness<br><strong style="color: var(--primary-color);">52.8% → 66.5%</strong> (Terminal Bench)<br>Top 30 → <strong style="color: var(--success-color);">Top 5</strong></p>
+            </div>
+            <div style="background: #1c2128; padding: 20px; border-radius: var(--box-radius);">
+              <p style="color: var(--secondary-color); font-size: 14pt;"><i class="fa-solid fa-quote-left"></i> 核心理念</p>
+              <p style="font-size: 15pt;">"当 AI 犯错，<strong style="color: var(--primary-color);">改环境</strong>让它不可能再犯 — 而不是改 prompt"</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          强调 Harness 的杠杆效应。模型能力已经很强，差距在 Harness。时间：1.5分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 5: Guides vs Sensors -->
+      <section id="guides-sensors">
+        <h2><i class="fa-solid fa-scale-balanced" style="color: var(--primary-color);"></i> Guides vs Sensors</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px;">
+            <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); border-left: 4px solid var(--secondary-color);">
+              <p style="font-size: 20pt;"><strong style="color: var(--secondary-color);">Guides</strong> <span style="color: var(--muted-color); font-size: 14pt;">前馈/指导</span></p>
+              <p style="font-size: 15pt; margin-top: 10px;">概率性遵守 ~95%</p>
+              <p style="color: var(--muted-color); font-size: 14pt;">CLAUDE.md、Rules、Skills、Memory</p>
+              <p style="font-size: 14pt; margin-top: 10px;">比喻：<strong>路标</strong> 🪧</p>
+            </div>
+            <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); border-left: 4px solid var(--success-color);">
+              <p style="font-size: 20pt;"><strong style="color: var(--success-color);">Sensors</strong> <span style="color: var(--muted-color); font-size: 14pt;">反馈/检测</span></p>
+              <p style="font-size: 15pt; margin-top: 10px;">确定性执行 100%</p>
+              <p style="color: var(--muted-color); font-size: 14pt;">Hooks、CI/CD、Linter、编译器</p>
+              <p style="font-size: 14pt; margin-top: 10px;">比喻：<strong>围栏</strong> 🧱</p>
+            </div>
+          </div>
+          <div class="fragment" style="background: linear-gradient(135deg, #1c2128, #161b22); padding: 20px; border-radius: var(--box-radius); margin-top: 25px; text-align: center;">
+            <p style="font-size: 17pt;"><i class="fa-solid fa-key" style="color: var(--primary-color);"></i> &nbsp;生产级架构 = <strong style="color: var(--success-color);">确定性系统</strong> 包裹 <strong style="color: var(--secondary-color);">概率性系统</strong></p>
+          </div>
+        </div>
+        <aside class="notes">
+          这是 Harness Engineering 最重要的分类框架。关键洞察：大多数人 Guides 很多但 Sensors 几乎没有。时间：1.5分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 6: Ace Positioning -->
+      <section id="ace-positioning">
+        <h2><i class="fa-solid fa-bullseye" style="color: var(--primary-color);"></i> Ace 的定位</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="background: #161b22; padding: 30px; border-radius: var(--box-radius); font-family: 'JetBrains Mono', monospace; font-size: 15pt; line-height: 2;">
+            <p><span style="color: var(--primary-color);">Ace</span> = <span style="color: var(--secondary-color);">Guides</span> (Rules + Skills + Memory)</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp; + <span style="color: var(--success-color);">Sensors</span> (Hooks + Hookify)</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp; + 认知科学 + 软件工程</p>
+            <p>&nbsp;&nbsp;&nbsp;&nbsp; + <strong style="color: var(--primary-color);">一键部署</strong></p>
+          </div>
+          <div style="text-align: center; margin-top: 30px;">
+            <p style="background: #1c2128; display: inline-block; padding: 12px 30px; border-radius: var(--box-radius); font-family: 'JetBrains Mono', monospace; font-size: 15pt;">
+              npm install -g @shirayner/ace && ace init
+            </p>
+          </div>
+        </div>
+        <aside class="notes">
+          过渡到 Demo。"概念讲完了，让我们看看实际效果。"时间：1分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 7: Demo Install -->
+      <section id="demo-install">
+        <h2><i class="fa-solid fa-terminal" style="color: var(--success-color);"></i> Demo 1: 一键安装</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="background: #161b22; padding: 30px; border-radius: var(--box-radius); font-family: 'JetBrains Mono', monospace;">
+            <p style="color: var(--muted-color); font-size: 13pt;">$</p>
+            <p style="font-size: 18pt; color: var(--success-color);">npx @shirayner/ace init</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 30px; text-align: center;">
+            <div style="background: #1c2128; padding: 20px; border-radius: var(--box-radius);">
+              <p style="font-size: 28pt; color: var(--primary-color); font-weight: 700;">8</p>
+              <p style="font-size: 13pt; color: var(--muted-color);">认知规则</p>
+            </div>
+            <div style="background: #1c2128; padding: 20px; border-radius: var(--box-radius);">
+              <p style="font-size: 28pt; color: var(--secondary-color); font-weight: 700;">4</p>
+              <p style="font-size: 13pt; color: var(--muted-color);">AI Skills</p>
+            </div>
+            <div style="background: #1c2128; padding: 20px; border-radius: var(--box-radius);">
+              <p style="font-size: 28pt; color: var(--success-color); font-weight: 700;">7</p>
+              <p style="font-size: 13pt; color: var(--muted-color);">安全守卫</p>
+            </div>
+          </div>
+          <p style="text-align: center; color: var(--muted-color); margin-top: 15px; font-size: 14pt;">5 秒完成配置，从零到专业级</p>
+        </div>
+        <aside class="notes">
+          现场演示 ace init。展示 preset 和 role 选择。时间：2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 8: Demo auto-goal -->
+      <section id="demo-auto-goal">
+        <h2><i class="fa-solid fa-brain" style="color: var(--secondary-color);"></i> Demo 2: auto-goal 首轮对齐</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 40px 1fr; gap: 15px; align-items: start; margin-top: 15px;">
+            <div class="fragment" style="text-align: center;"><p style="background: var(--primary-color); color: #0d1117; width: 32px; height: 32px; border-radius: 50%; line-height: 32px; font-size: 14pt; font-weight: 700; margin: 0 auto;">1</p></div>
+            <div class="fragment"><p style="font-size: 16pt;"><strong>初步分析</strong> — 探索目标上下文，形成理解</p></div>
+            <div class="fragment" style="text-align: center;"><p style="background: var(--secondary-color); color: #0d1117; width: 32px; height: 32px; border-radius: 50%; line-height: 32px; font-size: 14pt; font-weight: 700; margin: 0 auto;">2</p></div>
+            <div class="fragment"><p style="font-size: 16pt;"><strong>澄清</strong> — 批量提问消除歧义</p></div>
+            <div class="fragment" style="text-align: center;"><p style="background: var(--success-color); color: #0d1117; width: 32px; height: 32px; border-radius: 50%; line-height: 32px; font-size: 14pt; font-weight: 700; margin: 0 auto;">3</p></div>
+            <div class="fragment"><p style="font-size: 16pt;"><strong>对齐确认</strong> — 我的理解 + 计划 + 假设 + 完成标准</p></div>
+            <div class="fragment" style="text-align: center;"><p style="background: var(--warning-color); color: #0d1117; width: 32px; height: 32px; border-radius: 50%; line-height: 32px; font-size: 14pt; font-weight: 700; margin: 0 auto;">4</p></div>
+            <div class="fragment"><p style="font-size: 16pt;"><strong>用户确认</strong> → 才开始执行</p></div>
+          </div>
+          <div class="fragment" style="background: #161b22; padding: 15px 20px; border-radius: var(--box-radius); margin-top: 25px; text-align: center;">
+            <p style="font-size: 16pt; color: var(--primary-color);"><i class="fa-solid fa-lightbulb"></i> &nbsp;核心信念：<strong>对齐优先于效率</strong></p>
+          </div>
+        </div>
+        <aside class="notes">
+          现场演示 auto-goal。给一个复杂目标，展示首轮对齐过程。时间：4-5分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 9: Demo Safety -->
+      <section id="demo-safety">
+        <h2><i class="fa-solid fa-shield-halved" style="color: var(--danger-color);"></i> Demo 3: Hookify 安全拦截</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); font-family: 'JetBrains Mono', monospace;">
+            <p style="color: var(--muted-color); font-size: 13pt;">$ claude</p>
+            <p style="font-size: 15pt; color: var(--text-color);">> 帮我清理一下临时文件</p>
+            <p style="font-size: 15pt; color: var(--muted-color); margin-top: 10px;">Claude: rm -rf /tmp/project-data</p>
+            <p style="font-size: 15pt; color: var(--danger-color); margin-top: 10px;">⚠️ <strong>危险操作已阻止!</strong> 检测到高风险命令</p>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 25px; text-align: center;">
+            <div style="background: #1c2128; padding: 15px; border-radius: var(--box-radius);">
+              <p style="font-size: 13pt; color: var(--danger-color);"><i class="fa-solid fa-ban"></i> 命令拦截</p>
+              <p style="font-size: 12pt; color: var(--muted-color);">rm -rf / force push</p>
+            </div>
+            <div style="background: #1c2128; padding: 15px; border-radius: var(--box-radius);">
+              <p style="font-size: 13pt; color: var(--warning-color);"><i class="fa-solid fa-lock"></i> 文件保护</p>
+              <p style="font-size: 12pt; color: var(--muted-color);">.env / 密钥文件</p>
+            </div>
+            <div style="background: #1c2128; padding: 15px; border-radius: var(--box-radius);">
+              <p style="font-size: 13pt; color: var(--success-color);"><i class="fa-solid fa-check-double"></i> 质量门禁</p>
+              <p style="font-size: 12pt; color: var(--muted-color);">代码自检清单</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          快速演示。尝试危险命令，展示拦截效果。时间：1-2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 10: Five Layer Architecture -->
+      <section id="architecture">
+        <h2><i class="fa-solid fa-layer-group" style="color: var(--primary-color);"></i> 五层 Harness 体系</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 15pt; line-height: 2.2;">
+            <p><span style="color: var(--muted-color);">┌───</span> Layer 5: <strong style="color: var(--primary-color);">Skills</strong> <span style="color: var(--muted-color);">───</span> <span style="color: var(--secondary-color);">Guides</span> <span style="color: var(--muted-color);">───</span> 认知协议</p>
+            <p><span style="color: var(--muted-color);">├───</span> Layer 4: <strong style="color: var(--primary-color);">Rules</strong> <span style="color: var(--muted-color);">────</span> <span style="color: var(--secondary-color);">Guides</span> <span style="color: var(--muted-color);">───</span> 行为标准</p>
+            <p><span style="color: var(--muted-color);">├───</span> Layer 3: <strong style="color: var(--primary-color);">Memory</strong> <span style="color: var(--muted-color);">───</span> <span style="color: var(--secondary-color);">Guides</span> <span style="color: var(--muted-color);">───</span> 知识持久化</p>
+            <p><span style="color: var(--muted-color);">├───</span> Layer 2: <strong style="color: var(--success-color);">Hooks</strong> <span style="color: var(--muted-color);">────</span> <span style="color: var(--success-color);">Sensors</span> <span style="color: var(--muted-color);">──</span> 自动化检查</p>
+            <p><span style="color: var(--muted-color);">└───</span> Layer 1: <strong style="color: var(--success-color);">Hookify</strong> <span style="color: var(--muted-color);">──</span> <span style="color: var(--success-color);">Sensors</span> <span style="color: var(--muted-color);">──</span> 危险拦截</p>
+          </div>
+          <p style="text-align: center; margin-top: 25px; font-size: 14pt; color: var(--muted-color);">底部确定性（100%）→ 顶部概率性（~95%）| 每层独立可选</p>
+        </div>
+        <aside class="notes">
+          架构全景。从底部 Sensors 到顶部 Guides，每层解决一个具体问题。时间：2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 11: Rules -->
+      <section id="rules">
+        <h2><i class="fa-solid fa-scroll" style="color: var(--primary-color);"></i> 8 条认知规则</h2>
+        <div class="content">
+          <table style="width: 100%; font-size: 14pt; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--line-color);">
+                <th style="text-align: left; padding: 8px; color: var(--primary-color);">规则</th>
+                <th style="text-align: left; padding: 8px; color: var(--primary-color);">作用</th>
+                <th style="text-align: left; padding: 8px; color: var(--primary-color);">解决问题</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>thinking</strong></td><td style="padding: 8px;">六字原则：序验深广辨简</td><td style="padding: 8px; color: var(--muted-color);">思考深度</td></tr>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>clean-code</strong></td><td style="padding: 8px;">6 条核心原则 + 反模式表</td><td style="padding: 8px; color: var(--muted-color);">代码质量</td></tr>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>code-quality</strong></td><td style="padding: 8px;">函数/命名/结构/SOLID 清单</td><td style="padding: 8px; color: var(--muted-color);">细节质量</td></tr>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>context-hygiene</strong></td><td style="padding: 8px;">上下文压缩保护策略</td><td style="padding: 8px; color: var(--muted-color);">状态丢失</td></tr>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>memory-policy</strong></td><td style="padding: 8px;">记忆保存严格准入门槛</td><td style="padding: 8px; color: var(--muted-color);">记忆噪音</td></tr>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>task-recovery</strong></td><td style="padding: 8px;">任务中断恢复协议</td><td style="padding: 8px; color: var(--muted-color);">无法续做</td></tr>
+              <tr class="fragment" style="border-bottom: 1px solid var(--line-color);"><td style="padding: 8px;"><strong>reporting</strong></td><td style="padding: 8px;">自动报告输出</td><td style="padding: 8px; color: var(--muted-color);">格式规范</td></tr>
+              <tr class="fragment"><td style="padding: 8px;"><strong>interactive-clarify</strong></td><td style="padding: 8px;">批量澄清规则</td><td style="padding: 8px; color: var(--muted-color);">减少打断</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside class="notes">
+          通过 CLAUDE.md 的 @ 引用机制，每次会话启动时自动加载。时间：2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 12: Skills Loading Model -->
+      <section id="skills-loading">
+        <h2><i class="fa-solid fa-cubes" style="color: var(--secondary-color);"></i> Skills 渐进式加载</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="margin-top: 15px;">
+            <div class="fragment" style="display: grid; grid-template-columns: 200px 1fr; gap: 15px; align-items: center; margin-bottom: 12px;">
+              <div style="background: var(--primary-color); padding: 10px 15px; border-radius: var(--box-radius); text-align: center;"><p style="font-size: 13pt; color: #0d1117; margin: 0;"><strong>Metadata</strong> ~100 tok</p></div>
+              <p style="font-size: 14pt; color: var(--muted-color);">始终在上下文 — 用于触发匹配</p>
+            </div>
+            <div class="fragment" style="display: grid; grid-template-columns: 200px 1fr; gap: 15px; align-items: center; margin-bottom: 12px;">
+              <div style="background: var(--secondary-color); padding: 10px 15px; border-radius: var(--box-radius); text-align: center;"><p style="font-size: 13pt; color: #0d1117; margin: 0;"><strong>Trigger</strong> ~50 tok</p></div>
+              <p style="font-size: 14pt; color: var(--muted-color);">始终在上下文 — 判断是否激活</p>
+            </div>
+            <div class="fragment" style="display: grid; grid-template-columns: 200px 1fr; gap: 15px; align-items: center; margin-bottom: 12px;">
+              <div style="background: var(--warning-color); padding: 10px 15px; border-radius: var(--box-radius); text-align: center;"><p style="font-size: 13pt; color: #0d1117; margin: 0;"><strong>Cognitive</strong> SKILL.md</p></div>
+              <p style="font-size: 14pt; color: var(--muted-color);">触发时加载 — 核心认知协议</p>
+            </div>
+            <div class="fragment" style="display: grid; grid-template-columns: 200px 1fr; gap: 15px; align-items: center;">
+              <div style="background: var(--success-color); padding: 10px 15px; border-radius: var(--box-radius); text-align: center;"><p style="font-size: 13pt; color: #0d1117; margin: 0;"><strong>Resource</strong> refs/</p></div>
+              <p style="font-size: 14pt; color: var(--muted-color);">按需加载 — 深度参考文件</p>
+            </div>
+          </div>
+          <div class="fragment" style="text-align: center; margin-top: 25px; padding: 12px; background: #161b22; border-radius: var(--box-radius);">
+            <p style="font-size: 15pt; color: var(--primary-color);"><i class="fa-solid fa-brain"></i> &nbsp;设计哲学：上下文是稀缺资源</p>
+          </div>
+        </div>
+        <aside class="notes">
+          对应 Harness 第一原则"最小充分上下文"。不需要的不加载。时间：1.5分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 13: auto-goal Design -->
+      <section id="auto-goal-design">
+        <h2><i class="fa-solid fa-compass" style="color: var(--secondary-color);"></i> auto-goal 核心设计</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+            <div>
+              <p style="font-size: 15pt; color: var(--primary-color); margin-bottom: 10px;"><strong>三条硬规则</strong></p>
+              <div style="background: #161b22; padding: 15px; border-radius: var(--box-radius); font-size: 14pt; line-height: 2;">
+                <p>1. <strong>首轮对齐不可跳过</strong></p>
+                <p style="color: var(--muted-color); font-size: 12pt; margin-left: 20px;">分析 → 澄清 → 确认</p>
+                <p>2. <strong>Surprise Test</strong></p>
+                <p style="color: var(--muted-color); font-size: 12pt; margin-left: 20px;">用户会惊讶？→ 暂停询问</p>
+                <p>3. <strong>长任务状态外化</strong></p>
+                <p style="color: var(--muted-color); font-size: 12pt; margin-left: 20px;">Tier 1 索引 + Tier 2 按需</p>
+              </div>
+            </div>
+            <div>
+              <p style="font-size: 15pt; color: var(--secondary-color); margin-bottom: 10px;"><strong>五条生成式原则</strong></p>
+              <div style="background: #161b22; padding: 15px; border-radius: var(--box-radius); font-size: 14pt; line-height: 2;">
+                <p>1. 先定义完成，再开始执行</p>
+                <p>2. 承诺计划，卡住换方向</p>
+                <p>3. 永不空手而归</p>
+                <p>4. 上下文是稀缺资源</p>
+                <p>5. 对齐不是一次性事件</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          注意：auto-goal 没有 OODA 循环，那是 coding skill 的。auto-goal 的核心是对齐协议和状态外化。时间：2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 14: coding OODA -->
+      <section id="coding-ooda">
+        <h2><i class="fa-solid fa-code" style="color: var(--success-color);"></i> coding skill: OODA 循环</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-top: 15px; text-align: center;">
+            <div style="background: #161b22; padding: 12px 8px; border-radius: var(--box-radius); border-top: 3px solid var(--primary-color);">
+              <p style="font-size: 13pt; color: var(--primary-color);"><strong>Sense</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">建假设<br>再验证</p>
+            </div>
+            <div style="background: #161b22; padding: 12px 8px; border-radius: var(--box-radius); border-top: 3px solid var(--secondary-color);">
+              <p style="font-size: 13pt; color: var(--secondary-color);"><strong>Orient</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">Clear/<br>Complex</p>
+            </div>
+            <div style="background: #161b22; padding: 12px 8px; border-radius: var(--box-radius); border-top: 3px solid var(--warning-color);">
+              <p style="font-size: 13pt; color: var(--warning-color);"><strong>Decide</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">验证策略<br>选择</p>
+            </div>
+            <div style="background: #161b22; padding: 12px 8px; border-radius: var(--box-radius); border-top: 3px solid var(--success-color);">
+              <p style="font-size: 13pt; color: var(--success-color);"><strong>Act</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">原子变更<br>核心优先</p>
+            </div>
+            <div style="background: #161b22; padding: 12px 8px; border-radius: var(--box-radius); border-top: 3px solid var(--primary-color);">
+              <p style="font-size: 13pt; color: var(--primary-color);"><strong>Observe</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">编译证伪<br>测试证伪</p>
+            </div>
+            <div style="background: #161b22; padding: 12px 8px; border-radius: var(--box-radius); border-top: 3px solid var(--danger-color);">
+              <p style="font-size: 13pt; color: var(--danger-color);"><strong>Adapt</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">分类根因<br>三次熔断</p>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            <div style="background: #161b22; padding: 15px; border-radius: var(--box-radius);">
+              <p style="font-size: 13pt; color: var(--primary-color);"><strong>核心洞察</strong></p>
+              <p style="font-size: 13pt;">每次代码变更 = 一个假设<br>编译/测试 = 天然证伪器</p>
+            </div>
+            <div style="background: #161b22; padding: 15px; border-radius: var(--box-radius);">
+              <p style="font-size: 13pt; color: var(--warning-color);"><strong>复杂度适配</strong></p>
+              <p style="font-size: 13pt;">轻量 → 标准 → 深度<br>升级/降级信号驱动</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          OODA 是 coding skill 专有，不是 auto-goal 的。代码变更即假设检验。时间：2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 15: aspec -->
+      <section id="aspec">
+        <h2><i class="fa-solid fa-clipboard-check" style="color: var(--warning-color);"></i> aspec: 规范驱动开发</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="background: #161b22; padding: 25px; border-radius: var(--box-radius); text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 16pt; margin-top: 15px;">
+            <p><span style="color: var(--primary-color);">/opsx:proposal</span> &nbsp;→&nbsp; <span style="color: var(--success-color);">/opsx:apply</span> &nbsp;→&nbsp; <span style="color: var(--secondary-color);">/opsx:archive</span></p>
+            <p style="font-size: 12pt; color: var(--muted-color); margin-top: 8px;">创建提案 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 代码实现 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 归档复盘</p>
+          </div>
+          <div style="margin-top: 25px;">
+            <div style="background: linear-gradient(135deg, #1c2128, #161b22); padding: 20px; border-radius: var(--box-radius); border-left: 4px solid var(--danger-color);">
+              <p style="font-size: 16pt;"><strong style="color: var(--danger-color);">核心问题</strong></p>
+              <p style="font-size: 15pt; margin-top: 8px;">跳过澄清 = AI 基于假设实现 = <strong style="color: var(--danger-color);">高概率返工</strong></p>
+            </div>
+            <div style="background: linear-gradient(135deg, #1c2128, #161b22); padding: 20px; border-radius: var(--box-radius); border-left: 4px solid var(--success-color); margin-top: 12px;">
+              <p style="font-size: 16pt;"><strong style="color: var(--success-color);">解决方案</strong></p>
+              <p style="font-size: 15pt; margin-top: 8px;">强制澄清，再动手 — 花 5 分钟澄清，省 5 小时返工</p>
+            </div>
+          </div>
+        </div>
+        <aside class="notes">
+          过渡到 aspec 部分。AI 不会犹豫，会自信地基于假设往前冲。时间：1分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 16: Double Gates -->
+      <section id="double-gates">
+        <h2><i class="fa-solid fa-door-closed" style="color: var(--warning-color);"></i> 双重门禁（不可跳过）</h2>
+        <div class="content">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+            <div style="background: #161b22; padding: 20px; border-radius: var(--box-radius); border-top: 3px solid var(--primary-color);">
+              <p style="font-size: 15pt; color: var(--primary-color);"><strong>需求澄清 — 6 维度</strong></p>
+              <ul style="font-size: 13pt; line-height: 2; margin-top: 10px;">
+                <li>功能完整性</li>
+                <li>数据关注</li>
+                <li>用户体验</li>
+                <li>边界/异常</li>
+                <li>集成依赖</li>
+                <li>优先级/范围</li>
+              </ul>
+            </div>
+            <div style="background: #161b22; padding: 20px; border-radius: var(--box-radius); border-top: 3px solid var(--secondary-color);">
+              <p style="font-size: 15pt; color: var(--secondary-color);"><strong>设计澄清 — 7 维度</strong></p>
+              <ul style="font-size: 13pt; line-height: 2; margin-top: 10px;">
+                <li>架构决策</li>
+                <li>技术选型</li>
+                <li>接口设计</li>
+                <li>数据/状态</li>
+                <li>安全/合规</li>
+                <li>性能/可靠性</li>
+                <li>部署/运维</li>
+              </ul>
+            </div>
+          </div>
+          <p style="text-align: center; margin-top: 15px; font-size: 13pt; color: var(--muted-color);">流程：分析不确定性 → 批量提问 → 对齐确认 → <strong style="color: var(--success-color);">通过才进入下一步</strong></p>
+        </div>
+        <aside class="notes">
+          两个门禁都不可跳过。不满足条件不能生成下一个制品。时间：3分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 17: Experience Evolution -->
+      <section id="experience-evolution">
+        <h2><i class="fa-solid fa-dna" style="color: var(--success-color);"></i> 经验进化系统</h2>
+        <div class="content" style="display: flex; flex-direction: column; justify-content: center;">
+          <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; text-align: center; margin-top: 20px;">
+            <div style="background: #161b22; padding: 15px 8px; border-radius: var(--box-radius);">
+              <p style="font-size: 20pt; color: var(--primary-color);"><i class="fa-solid fa-download"></i></p>
+              <p style="font-size: 12pt;"><strong>提取</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">每次 apply 后</p>
+            </div>
+            <div style="background: #161b22; padding: 15px 8px; border-radius: var(--box-radius);">
+              <p style="font-size: 20pt; color: var(--secondary-color);"><i class="fa-solid fa-database"></i></p>
+              <p style="font-size: 12pt;"><strong>存储</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">experience.md</p>
+            </div>
+            <div style="background: #161b22; padding: 15px 8px; border-radius: var(--box-radius);">
+              <p style="font-size: 20pt; color: var(--warning-color);"><i class="fa-solid fa-play"></i></p>
+              <p style="font-size: 12pt;"><strong>应用</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">"基于经验E3..."</p>
+            </div>
+            <div style="background: #161b22; padding: 15px 8px; border-radius: var(--box-radius);">
+              <p style="font-size: 20pt; color: var(--success-color);"><i class="fa-solid fa-check-circle"></i></p>
+              <p style="font-size: 12pt;"><strong>验证</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">✓有效 / ✗无效</p>
+            </div>
+            <div style="background: #161b22; padding: 15px 8px; border-radius: var(--box-radius);">
+              <p style="font-size: 20pt; color: var(--danger-color);"><i class="fa-solid fa-compress"></i></p>
+              <p style="font-size: 12pt;"><strong>收敛</strong></p>
+              <p style="font-size: 11pt; color: var(--muted-color);">>20条合并</p>
+            </div>
+          </div>
+          <div style="background: #161b22; padding: 15px; border-radius: var(--box-radius); margin-top: 25px; text-align: center; border-left: 4px solid var(--warning-color);">
+            <p style="font-size: 15pt;"><strong style="color: var(--warning-color);">交付门控</strong>：不写 experience.md，不交付结果</p>
+            <p style="font-size: 13pt; color: var(--muted-color); margin-top: 5px;">对应 Hashimoto 循环：Agent 犯错 → 永久修复环境 → 验证不再发生</p>
+          </div>
+        </div>
+        <aside class="notes">
+          经验系统是 aspec 最有价值的部分。越用越好。时间：2分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 18: Seven Principles -->
+      <section id="seven-principles">
+        <h2><i class="fa-solid fa-list-ol" style="color: var(--primary-color);"></i> Harness 七大原则 × Ace</h2>
+        <div class="content">
+          <table style="width: 100%; font-size: 14pt; border-collapse: collapse; margin-top: 10px;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--line-color);">
+                <th style="text-align: left; padding: 8px; color: var(--primary-color);">原则</th>
+                <th style="text-align: left; padding: 8px; color: var(--primary-color);">来源</th>
+                <th style="text-align: left; padding: 8px; color: var(--primary-color);">Ace 实践</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--line-color);"><td style="padding: 7px;">最小充分上下文</td><td style="padding: 7px; color: var(--muted-color);">信息论</td><td style="padding: 7px;">渐进式加载（4 层模型）</td></tr>
+              <tr style="border-bottom: 1px solid var(--line-color);"><td style="padding: 7px;">分层反馈循环</td><td style="padding: 7px; color: var(--muted-color);">控制论</td><td style="padding: 7px;">Hookify → Hooks → 经验进化</td></tr>
+              <tr style="border-bottom: 1px solid var(--line-color);"><td style="padding: 7px;">认知分块</td><td style="padding: 7px; color: var(--muted-color);">认知科学</td><td style="padding: 7px;">Sub-agent + 状态外化</td></tr>
+              <tr style="border-bottom: 1px solid var(--line-color);"><td style="padding: 7px;">高杠杆干预</td><td style="padding: 7px; color: var(--muted-color);">系统论</td><td style="padding: 7px;">改范式（Rules）> 调参数</td></tr>
+              <tr style="border-bottom: 1px solid var(--line-color);"><td style="padding: 7px;">延展而非限制</td><td style="padding: 7px; color: var(--muted-color);">心灵哲学</td><td style="padding: 7px;">Skills 赋能 > 规则限制</td></tr>
+              <tr style="border-bottom: 1px solid var(--line-color);"><td style="padding: 7px;">渐进式自主</td><td style="padding: 7px; color: var(--muted-color);">教育心理学</td><td style="padding: 7px;">三层复杂度适配</td></tr>
+              <tr><td style="padding: 7px;">确定性包裹概率性</td><td style="padding: 7px; color: var(--muted-color);">控制论</td><td style="padding: 7px;">Sensors 包裹 Guides</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <aside class="notes">
+          总结性 slide。将全部内容串联回 Harness Engineering 的理论框架。时间：1分钟。
+        </aside>
+      </section>
+
+      <!-- SLIDE 19: Closing -->
+      <section id="closing" class="section-divider" data-state="is-section-divider">
+        <p style="font-size: 14pt; color: var(--muted-color); margin-bottom: 30px;">开始使用</p>
+        <div style="background: #161b22; padding: 15px 30px; border-radius: var(--box-radius); display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 15pt; margin-bottom: 40px;">
+          <p>npm install -g @shirayner/ace && ace init</p>
+        </div>
+        <p style="color: var(--primary-color); font-weight: 700; font-size: 36pt;">"AI 犯错了，改环境让它不可能再犯"</p>
+        <p style="font-size: 14pt; color: var(--muted-color); margin-top: 30px;">Ace — 从 Prompt Engineering 到 Harness Engineering 的工程化实践</p>
+        <aside class="notes">
+          结语。重复核心信息。开放 Q&A。时间：1分钟。
+        </aside>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      width: 1280,
+      height: 720,
+      margin: 0,
+      controls: true,
+      progress: true,
+      slideNumber: true,
+      hash: true,
+      transition: 'slide',
+      center: false,
+      showNotes: false
+    });
+  </script>
+</body>
+</html>
