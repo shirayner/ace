@@ -51,7 +51,7 @@ async function initTeamConventions(targetDir, options) {
 
     const urlInput = await p.text({
       message: 'Enter the Git repository URL for team conventions:',
-      placeholder: 'https://gitlab.example.com/team/conventions.git',
+      placeholder: 'http://git.dev.sh.ctripcorp.com/r.shi/dev-guide.git',
       validate: (value) => {
         if (!value || value.trim().length === 0) return 'URL is required';
         if (!value.match(/^(https?:\/\/|git@)/)) return 'Must be a valid git URL (https:// or git@)';
