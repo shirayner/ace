@@ -27,7 +27,7 @@ ACE 是一个**AI 开发环境配置工具**，基于 Claude Code 官方最佳�
 
 - 🧠 **认知增强规则** — 8 条基于认知科学的深度思考与代码质量原则
 - 🤖 **专业级 AI Skills** — 4 个面向不同开发场景的智能技能
-- 🛡️ **安全防护体系** — Hookify 守卫 + 角色脚本双重保障
+- 🛡️ **安全防护体系** — Shell Hooks 守卫 + Settings Deny 规则双重保障
 - 📝 **规范驱动工作流** — OpenSpec 集成的需求管理体系
 - 🧩 **跨会话记忆系统** — 持久化的开发者画像与项目记忆
 
@@ -76,7 +76,7 @@ $ ace init
 │  Customize
 │    Change role      edit ~/.claude/memory/user_profile.md
 │    Adjust rules     edit ~/.claude/rules/ace/
-│    Safety guards    edit ~/.claude/hookify.ace.*.local.md
+│    Safety guards    edit ~/.claude/settings.json (deny rules)
 │    Verify setup     ace doctor
 └
 └  Done. Go to your project and run ace spec init.
@@ -151,7 +151,7 @@ $ ace doctor
 ✓ CLAUDE.md 配置正常
 ✓ 8 条规则文件完整
 ✓ 4 个 Skills 可正常加载
-✓ Hookify 插件运行中
+✓ Hooks 安全守卫运行中
 ✓ 记忆目录可访问
 All systems operational.
 ```
@@ -166,17 +166,17 @@ All systems operational.
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │   Rules     │  │   Skills    │  │  Hookify    │         │
-│  │  (8 规则)    │  │  (4 技能)    │  │  (3 守卫)    │         │
+│  │   Rules     │  │   Skills    │  │   Hooks   │         │
+│  │  (8 规则)    │  │  (4 技能)    │  │  (Shell守卫) │         │
 │  ├─────────────┤  ├─────────────┤  ├─────────────┤         │
-│  │ • thinking  │  │ • auto-goal │  │ • block-    │         │
-│  │ • clean-code│  │ • coding    │  │   dangerous │         │
-│  │ • code-qual │  │ • skill-    │  │ • protect-  │         │
-│  │ • reporting │  │   creator   │  │   secrets   │         │
-│  │ • task-rec  │  │ • skill-    │  │ • require-  │         │
-│  │ • context-  │  │   optimize  │  │   verify    │         │
-│  │   hygiene   │  │             │  │             │         │
-│  │ • memory-   │  │             │  │             │         │
+│  │ • thinking  │  │ • auto-goal │  │ • bash-     │         │
+│  │ • clean-code│  │ • coding    │  │   guard     │         │
+│  │ • code-qual │  │ • skill-    │  │ • file-     │         │
+│  │ • reporting │  │   creator   │  │   guard     │         │
+│  │ • task-rec  │  │ • skill-    │  │ • content-  │         │
+│  │ • context-  │  │   optimize  │  │   guard     │         │
+│  │   hygiene   │  │             │  │ • java-     │         │
+│  │ • memory-   │  │             │  │   compile   │         │
 │  │   policy    │  │             │  │             │         │
 │  │ • interactive│  │             │  │             │         │
 │  └─────────────┘  └─────────────┘  └─────────────┘         │
@@ -242,7 +242,7 @@ ace init
 - 全局 CLAUDE.md 索引
 - 8 条认知规则
 - 4 个 AI Skills
-- Hookify 安全守卫
+- Shell Hooks 安全守卫
 - 角色特定脚本和开发者画像
 
 ### 3. 验证安装
@@ -284,7 +284,7 @@ claude
 - [8 条规则详解](docs/architecture/rules.md) — 每条规则的用途与设计
 - [4 个 Skills 详解](docs/architecture/skills.md) — 工作原理与最佳实践
 - [aspec 规范驱动](docs/architecture/aspec.md) — spec coding 完整工作流
-- [Hookify 安全体系](docs/architecture/hookify.md)
+- [Shell Hooks 安全体系](docs/architecture/hooks.md)
 - [Hooks 角色脚本](docs/architecture/hooks.md)
 - [记忆系统](docs/architecture/memory.md)
 - [OpenSpec 集成](docs/architecture/spec.md)
