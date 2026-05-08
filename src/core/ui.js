@@ -92,6 +92,5 @@ export const componentLabels = {
   rules:   'Rules',
   plugin:  'Plugin',
   hooks:   'Hooks',
-  hookify: 'Safety Guards',
   memory:  'Memory',
 };

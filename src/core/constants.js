@@ -17,9 +17,9 @@ export const MARKETPLACE_DIR = path.join(CLAUDE_DIR, 'plugins', 'marketplaces', 
 export const PLUGIN_KEY = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
 
 export const PRESETS = {
-  full: ['core', 'rules', 'plugin', 'hooks', 'hookify', 'memory'],
+  full: ['core', 'rules', 'plugin', 'hooks', 'memory'],
   minimal: ['core', 'rules', 'plugin'],
-  safe: ['core', 'rules', 'plugin', 'hookify', 'memory'],
+  safe: ['core', 'rules', 'plugin', 'memory'],
 };
 
 export const ROLES = {
@@ -58,13 +58,12 @@ export const SPEC_TEMPLATE_FILES = [
 
 /**
  * Patterns for files owned by ACE - these are overwritten directly on init without prompting.
- * Used to identify ACE-owned content in ace/, hooks/, and hookify/.
+ * Used to identify ACE-owned content in ace/ and hooks/.
  */
 export const ACE_OWNED_PATTERNS = [
   /^ace\/rules\//,          // ace/rules/*.md (v2.0+)
   /^rules\/ace\//,          // rules/ace/*.md (legacy, for migration detection)
   /^hooks\/ace\./,          // hooks/ace.*.sh
-  /^hookify\.ace\./,        // hookify.ace.*.local.md
 ];
 
 /**
@@ -118,19 +117,6 @@ export const COMPONENTS = {
     ],
     conditional: [
       { src: 'hooks/ace.java-compile-check.sh', dest: 'hooks/ace.java-compile-check.sh', roles: ['backend', 'fullstack'] },
-    ],
-  },
-  hookify: {
-    description: 'Safety guard rules (block dangerous ops, protect secrets, safe git, code quality, require verification)',
-    required: false,
-    files: [
-      { src: 'hookify/hookify.ace.block-dangerous-ops.local.md', dest: 'hookify.ace.block-dangerous-ops.local.md' },
-      { src: 'hookify/hookify.ace.protect-secrets.local.md', dest: 'hookify.ace.protect-secrets.local.md' },
-      { src: 'hookify/hookify.ace.safe-git-commands.local.md', dest: 'hookify.ace.safe-git-commands.local.md' },
-      { src: 'hookify/hookify.ace.code-quality-gate.local.md', dest: 'hookify.ace.code-quality-gate.local.md' },
-      { src: 'hookify/hookify.ace.require-verification.local.md', dest: 'hookify.ace.require-verification.local.md' },
-      { src: 'hookify/hookify.ace.dangerous-commands.local.md', dest: 'hookify.ace.dangerous-commands.local.md' },
-      { src: 'hookify/hookify.ace.sensitive-data.local.md', dest: 'hookify.ace.sensitive-data.local.md' },
     ],
   },
   memory: {

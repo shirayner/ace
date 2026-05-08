@@ -17,7 +17,7 @@ export async function uninstallCommand(options) {
     const { confirm } = await inquirer.prompt([{
       type: 'confirm',
       name: 'confirm',
-      message: 'This will remove all ace-managed files (rules, plugin, hooks, hookify rules). Continue?',
+      message: 'This will remove all ace-managed files (rules, plugin, hooks). Continue?',
       default: false,
     }]);
     if (!confirm) {
@@ -96,27 +96,10 @@ export async function uninstallCommand(options) {
     errors.push({ component: 'plugin', error: err.message });
   }
 
-  // 3. Remove hookify rules
-  const spinner3 = ora('Removing hookify rules...').start();
+  // 3. Remove hook scripts
+  const spinner3 = ora('Removing hooks...').start();
   try {
-    const hookifyFiles = COMPONENTS.hookify.files;
-    for (const file of hookifyFiles) {
-      const destPath = path.join(CLAUDE_DIR, file.dest);
-      if (await fs.pathExists(destPath)) {
-        await fs.remove(destPath);
-        removed.push(file.dest);
-      }
-    }
-    spinner3.succeed('hookify rules removed');
-  } catch (err) {
-    spinner3.fail('hookify rules removal failed');
-    errors.push({ component: 'hookify', error: err.message });
-  }
-
-  // 4. Remove hook scripts
-  const spinner4 = ora('Removing hooks...').start();
-  try {
-    const hookFiles = COMPONENTS.hooks.conditional;
+    const hookFiles = [...(COMPONENTS.hooks.files || []), ...(COMPONENTS.hooks.conditional || [])];
     for (const file of hookFiles) {
       const destPath = path.join(CLAUDE_DIR, file.dest);
       if (await fs.pathExists(destPath)) {
@@ -124,10 +107,33 @@ export async function uninstallCommand(options) {
         removed.push(file.dest);
       }
     }
-    spinner4.succeed('hooks removed');
+    spinner3.succeed('hooks removed');
   } catch (err) {
-    spinner4.fail('hooks removal failed');
+    spinner3.fail('hooks removal failed');
     errors.push({ component: 'hooks', error: err.message });
+  }
+
+  // 4. Remove legacy hookify rules (cleanup from older versions)
+  const spinner4 = ora('Removing legacy hookify rules...').start();
+  try {
+    const hookifyPattern = /^hookify\.ace\..+\.local\.md$/;
+    const claudeFiles = await fs.readdir(CLAUDE_DIR);
+    let hookifyRemoved = 0;
+    for (const file of claudeFiles) {
+      if (hookifyPattern.test(file)) {
+        await fs.remove(path.join(CLAUDE_DIR, file));
+        removed.push(file);
+        hookifyRemoved++;
+      }
+    }
+    if (hookifyRemoved > 0) {
+      spinner4.succeed(`legacy hookify rules removed (${hookifyRemoved})`);
+    } else {
+      spinner4.succeed('no legacy hookify rules found');
+    }
+  } catch (err) {
+    spinner4.fail('legacy hookify removal failed');
+    errors.push({ component: 'hookify-legacy', error: err.message });
   }
 
   // 5. Restore CLAUDE.md and settings.json from pre-install backups

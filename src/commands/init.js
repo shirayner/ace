@@ -14,7 +14,6 @@ const componentLabels = {
   rules: 'Rules',
   plugin: 'Plugin',
   hooks: 'Hooks',
-  hookify: 'Safety Guards',
   memory: 'Memory',
 };
 
@@ -155,7 +154,7 @@ export async function initCommand(options) {
       'Customize',
       '  Change role      edit ~/.claude/memory/user_profile.md',
       '  Adjust rules     edit ~/.claude/ace/rules/',
-      '  Safety guards    edit ~/.claude/hookify.ace.*.local.md',
+      '  Safety guards    edit ~/.claude/hooks/ace.*.sh',
       '  Verify setup     ace doctor',
     ].join('\n'),
     'Next steps'
