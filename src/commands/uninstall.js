@@ -34,17 +34,12 @@ export async function uninstallCommand(options) {
   const spinner1 = ora('Removing rules...').start();
   try {
     const newRulesDir = path.join(CLAUDE_DIR, 'ace', 'rules');
-    const newTeamDir = path.join(CLAUDE_DIR, 'ace', 'team');
     const aceDir = path.join(CLAUDE_DIR, 'ace');
     const legacyRulesDir = path.join(CLAUDE_DIR, 'rules', 'ace');
 
     if (await fs.pathExists(newRulesDir)) {
       await fs.remove(newRulesDir);
       removed.push('ace/rules/');
-    }
-    if (await fs.pathExists(newTeamDir)) {
-      await fs.remove(newTeamDir);
-      removed.push('ace/team/');
     }
     // Remove ace/ parent if empty
     if (await fs.pathExists(aceDir)) {

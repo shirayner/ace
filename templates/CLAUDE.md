@@ -25,10 +25,6 @@
 - ~/.claude/ace/rules/git.md — Git 提交规范与分支命名（Git 操作时阅读）
 - ~/.claude/ace/rules/gitflow.md — GitFlow 工作流（分支管理时阅读）
 
-## 团队规范（项目特定，按需参考）
-- ~/.claude/ace/team/languages/ — 语言开发规范
-- ~/.claude/ace/team/frameworks/ — 框架使用约定
-
 ## 流程门禁优先级
 Auto mode 不覆盖 aspec/OpenSpec 流程门禁。标注"不可跳过"的门禁步骤（需求澄清、设计澄清、审批确认）在任何执行模式下均必须执行，不得以"减少打断"为由跳过。
 

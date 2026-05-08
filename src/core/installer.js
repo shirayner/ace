@@ -166,7 +166,6 @@ export class Installer {
    */
   async ensureAceStructure() {
     await fs.ensureDir(path.join(this.targetDir, 'ace', 'rules'));
-    await fs.ensureDir(path.join(this.targetDir, 'ace', 'team'));
   }
 
   async installComponent(name, component) {

@@ -1,7 +1,9 @@
 import path from 'path';
 import chalk from 'chalk';
 import ora from 'ora';
+import * as p from '@clack/prompts';
 import { SpecInstaller } from '../core/spec-installer.js';
+import { TeamInstaller } from '../core/team-installer.js';
 
 export async function specInitCommand(targetPath, options) {
   const targetDir = targetPath ? path.resolve(targetPath) : process.cwd();
@@ -30,6 +32,61 @@ export async function specInitCommand(targetPath, options) {
   } catch (err) {
     spinner.fail(`Unexpected error: ${err.message}`);
     process.exit(1);
+  }
+
+  // ─── Team conventions initialization ───────────────
+  await initTeamConventions(targetDir, options);
+}
+
+async function initTeamConventions(targetDir, options) {
+  let repoUrl = options.teamRepo;
+
+  if (!repoUrl) {
+    const shouldInit = await p.confirm({
+      message: 'Initialize team conventions from a Git repository?',
+      initialValue: false,
+    });
+
+    if (p.isCancel(shouldInit) || !shouldInit) return;
+
+    const urlInput = await p.text({
+      message: 'Enter the Git repository URL for team conventions:',
+      placeholder: 'https://gitlab.example.com/team/conventions.git',
+      validate: (value) => {
+        if (!value || value.trim().length === 0) return 'URL is required';
+        if (!value.match(/^(https?:\/\/|git@)/)) return 'Must be a valid git URL (https:// or git@)';
+      },
+    });
+
+    if (p.isCancel(urlInput)) return;
+    repoUrl = urlInput.trim();
+  }
+
+  const spinner = ora('Cloning team conventions...').start();
+
+  try {
+    const teamInstaller = new TeamInstaller({
+      targetDir,
+      repoUrl,
+      force: options.force,
+      dryRun: options.dryRun,
+    });
+
+    const results = await teamInstaller.run();
+    spinner.stop();
+
+    if (results.errors.length > 0) {
+      console.log(chalk.red('\n  Team conventions errors:'));
+      results.errors.forEach(e => console.log(chalk.red(`    ! ${e.error}`)));
+    } else if (results.skipped.length > 0) {
+      console.log(chalk.yellow('\n  Team conventions:'));
+      results.skipped.forEach(s => console.log(chalk.yellow(`    - ${s}`)));
+    } else if (results.installed.length > 0) {
+      console.log(chalk.green('\n  Team conventions installed:'));
+      results.installed.forEach(f => console.log(chalk.green(`    + ${f}`)));
+    }
+  } catch (err) {
+    spinner.fail(`Failed to initialize team conventions: ${err.message}`);
   }
 }
 

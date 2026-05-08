@@ -51,6 +51,7 @@ spec
   .option('-f, --force', 'Overwrite existing configuration', false)
   .option('--dry-run', 'Preview without making changes', false)
   .option('--skip-openspec', 'Skip openspec CLI installation', false)
+  .option('--team-repo <url>', 'Git repository URL for team conventions')
   .action(specInitCommand);
 
 spec
