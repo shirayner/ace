@@ -26,11 +26,10 @@
 - ~/.claude/ace/rules/gitflow.md — GitFlow 工作流（分支管理时阅读）
 
 ## 流程门禁优先级
-Auto mode 不覆盖 aspec/OpenSpec 流程门禁。标注"不可跳过"的门禁步骤（需求澄清、设计澄清、审批确认）在任何执行模式下均必须执行，不得以"减少打断"为由跳过。
+Auto mode 不覆盖 auto-goal/aspec/OpenSpec 流程门禁。标注"不可跳过"的门禁步骤（需求澄清、设计澄清、审批确认）在任何执行模式下均必须执行，不得以"减少打断"为由跳过。
 
 ## 安全策略
 安全由外部机制保障，不占用上下文 token：
 - settings.json deny 规则 → 硬拦截 rm -rf、sudo 等
-- Shell hooks → 进程级检查（编译、类型检查）
-- Hookify 插件 → 模式匹配拦截（危险命令、敏感文件）
+- Shell hooks → 进程级检查（编译、类型检查、内容审查）
 <!-- ace:managed:end -->
