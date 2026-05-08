@@ -280,7 +280,7 @@ export class Installer {
 
     // 3. Register in known_marketplaces.json
     const marketplaceEntry = {
-      source: { source: 'local' },
+      source: { source: 'directory', path: MARKETPLACE_DIR },
       installLocation: MARKETPLACE_DIR,
       lastUpdated: new Date().toISOString(),
     };
