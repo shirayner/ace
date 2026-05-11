@@ -100,15 +100,43 @@ AskUserQuestion 仅用于确认（"以上对齐是否正确？"），不放大�
 - 不可逆操作（删除、重写、架构变更）
 - 正在用自己的理解填补用户未说明的部分
 
-### 规则 3：状态外化
+### 规则 3：进度追踪与状态外化
 
-| 任务规模 | 策略                                                                                                                               |
+#### TaskCreate / TaskUpdate（UI 进度 — 始终使用）
+
+执行期间**必须**使用：
+- **TaskCreate**：将工作分解为离散任务，每个任务对应一个可交付的工作单元
+- **TaskUpdate**：标记任务状态（`in_progress` 开始时、`completed` 完成时）
+- **TaskList**：查看当前所有任务状态
+
+这些工具提供用户可见的实时进度 UI，同时 TaskCreate 调用次数作为状态文件的触发信号。
+
+#### 状态文件（持久化恢复 — 按规模触发）
+
+触发信号：**TaskCreate 累计调用次数**（执行中可观测，无需预估）。
+
+**目录结构**：每个目标独立子目录，`{id}` 为目标描述派生的短 slug（2-4 个英文单词，kebab-case）。
+- 状态文件：`.tasks/auto-goal-{id}/state.md`（每个目标独立）
+- 经验文件：`.tasks/experience.md`（跨目标共享，累积）
+
+| 任务数   | 状态文件策略                                                                                                                       |
 | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| ≤5 步   | 无需状态文件，直接执行                                                                                                             |
-| 6-9 步   | 轻量 checkpoint：创建 `.tasks/auto-goal-{id}/state.md`，只写目标+进度+下一步（见 `references/state-template.md` 中的轻量模板） |
-| ≥10 步  | 完整状态管理：Read `references/state-template.md` 获取完整模板后创建，含 Phase 规划、Tier 2 索引、风险追踪                       |
+| ≤2 个   | 无需状态文件，TaskCreate/TaskUpdate 足够                                                                                           |
+| 3-5 个   | 轻量 checkpoint：创建 `.tasks/auto-goal-{id}/state.md`，只写目标+进度+下一步（见 `references/state-template.md` 中的轻量模板） |
+| ≥6 个   | 完整状态管理：Read `references/state-template.md` 获取完整模板后创建，含 Phase 规划、Tier 2 索引、风险追踪                       |
 
-设计目标：让一个全新 agent 读完 state.md 后能定位自己，按需加载 Tier 2 后能以 80% 效率继续。
+**响应式触发**：当第 3 个 TaskCreate 被调用时，立即创建轻量 state.md；当第 6 个被调用时，升级为完整状态管理。不要在开始前预估——观察实际任务数量，按需创建。
+
+**新目标 = 新目录**：接收新目标时，始终创建新的 `auto-goal-{id}/` 子目录，不复用上一个目标的目录。
+
+#### 两者关系
+
+- TaskCreate/TaskUpdate = 用户可见进度（实时 UI）
+- state.md = agent 可恢复进度（持久化，供新 agent 冷启动）
+- TaskCreate/TaskUpdate 始终使用；state.md 按任务规模触发
+- **同步要求**：当 state.md 已存在时，每次 TaskUpdate 变更状态后，同步更新 state.md 中对应任务的进度标记
+
+设计目标：让一个全新 agent 读完 state.md + TaskList 后能定位自己，按需加载 Tier 2 后能以 80% 效率继续。
 
 ---
 
@@ -139,7 +167,7 @@ AskUserQuestion 仅用于确认（"以上对齐是否正确？"），不放大�
 
 **约束**：
 
-- 并行 agent 数量 ≤ 4（避免结果整合复杂度爆炸）
+- 并行 agent 数量 ≤ 8
 - 每个 agent prompt 必须自包含（明确目标、上下文、交付物格式）
 - 结果回收后，主 agent 负责整合、冲突解决、更新 state.md
 - 并行 agent 不应修改同一文件（冲突风险）

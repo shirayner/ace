@@ -16,14 +16,10 @@
       "NotebookEdit"
     ],
     "deny": [
-      "Bash(rm -rf*)",
-      "Bash(rm -r*)",
-      "Bash(rm -f -r*)",
-      "Bash(rm --recursive*)",
+      "Bash(rm -rf /)",
       "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/)",
       "Bash(rm -rf ~/*)",
-      "Bash(rm -rf /usr*)",
-      "Bash(rm -rf /opt*)",
       "Bash(rmdir /s /q*)",
       "Bash(rd /s /q*)",
       "Bash(del /f /s /q*)",

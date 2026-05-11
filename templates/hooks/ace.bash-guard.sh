@@ -1,6 +1,5 @@
 #!/bin/bash
-# Bash Command Guard — PreToolUse Hook
-# 合并规则: block-dangerous-ops, dangerous-commands, safe-git-commands
+# Bash Command Guard — PreToolUse Hook (路径感知型)
 # exit 0 = 允许（stdout 作为警告信息传递给模型）
 # exit 2 = 阻止执行
 
@@ -14,12 +13,68 @@ COMMAND=$(echo "$INPUT" | sed 's/\\"/\x01/g' | grep -o '"command"[[:space:]]*:[[
 
 [[ -z "$COMMAND" ]] && exit 0
 
-# === BLOCK: 高危操作，直接阻止 ===
+# === 辅助函数：判断 rm 目标路径是否安全 ===
+is_rm_safe() {
+    local cmd="$1"
+
+    # 提取 rm 命令中的路径参数（跳过 flags）
+    local paths=()
+    local in_rm=false
+    for word in $cmd; do
+        if [[ "$word" == "rm" ]]; then
+            in_rm=true
+            continue
+        fi
+        if $in_rm; then
+            # 跳过 flags（-rf, -r, -f, --recursive 等）
+            if [[ "$word" == -* ]]; then
+                continue
+            fi
+            # 去除引号
+            word="${word//\"/}"
+            word="${word//\'/}"
+            paths+=("$word")
+        fi
+    done
+
+    for path in "${paths[@]}"; do
+        # 绝对禁止：系统根路径
+        if [[ "$path" == "/" || "$path" == "/*" || "$path" == "/usr"* || "$path" == "/etc"* || \
+              "$path" == "/opt"* || "$path" == "/bin"* || "$path" == "/sbin"* || \
+              "$path" == "/var"* || "$path" == "/lib"* || "$path" == "/boot"* ]]; then
+            return 1
+        fi
+
+        # 绝对禁止：home 目录根
+        if [[ "$path" == "~" || "$path" == "~/" || "$path" == "~/*" || \
+              "$path" == "$HOME" || "$path" == "$HOME/" || "$path" == "$HOME/*" ]]; then
+            return 1
+        fi
+
+        # 绝对禁止：Windows 系统盘根
+        if echo "$path" | grep -qiE '^[A-Z]:[/\\]?$'; then
+            return 1
+        fi
+
+        # 绝对禁止：.git 目录
+        if echo "$path" | grep -qE '(^|/)\.git(/|$)'; then
+            return 1
+        fi
+
+        # 绝对禁止：删除当前目录自身（项目根）
+        if [[ "$path" == "." || "$path" == "./" ]]; then
+            return 1
+        fi
+
+        # 其他路径（项目子目录）→ 允许
+    done
+
+    return 0
+}
+
+# === BLOCK: 系统级高危操作，直接阻止 ===
 
 BLOCK_PATTERNS=(
-    'rm\s+-rf'
-    'rm\s+-r\s'
-    'rm\s+.*--recursive'
     'git\s+push\s+(.*\s)?-f(\s|$)'
     'git\s+push\s+.*--force(\s|$)'
     'DROP\s+TABLE'
@@ -44,6 +99,23 @@ for pattern in "${BLOCK_PATTERNS[@]}"; do
         exit 2
     fi
 done
+
+# === rm 路径感知检查 ===
+
+if echo "$COMMAND" | grep -qE '(^|[;&|]\s*)rm\s'; then
+    if echo "$COMMAND" | grep -qE 'rm\s+(-[a-zA-Z]*r[a-zA-Z]*\s|--recursive)'; then
+        # 递归删除 → 检查路径安全性
+        if ! is_rm_safe "$COMMAND"; then
+            echo "⛔ 危险的递归删除已阻止!"
+            echo ""
+            echo "命令: $COMMAND"
+            echo "原因: 目标路径不在安全范围内（系统路径/.git/项目根）"
+            echo ""
+            echo "如确需执行，请手动在终端中运行。"
+            exit 2
+        fi
+    fi
+fi
 
 # === WARN: 风险操作，允许但警告 ===
 

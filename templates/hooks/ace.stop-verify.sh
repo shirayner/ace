@@ -25,4 +25,14 @@ if [[ -n "$ISSUES" ]]; then
     exit 2
 fi
 
+# === 经验收集提醒（非阻塞） ===
+if [[ -d ".tasks" ]] && [[ ! -f ".tasks/experience.md" ]]; then
+    TASK_COUNT=$(find .tasks -name "*.md" 2>/dev/null | wc -l)
+    if [[ "$TASK_COUNT" -gt 0 ]]; then
+        echo "💡 经验反思提醒：本次任务有 .tasks/ 目录但无 experience.md。"
+        echo "如有意外发现、踩坑或策略转换，请写入 .tasks/experience.md 再结束。"
+        echo "若无新经验则忽略此提醒。"
+    fi
+fi
+
 exit 0
