@@ -1,79 +1,33 @@
 schema: spec-driven
-version: 12.0.0
+version: 13.0.0
 context: |
   ## 语言
-  所有交互、思考链、文档一律使用中文。OpenSpec 英文标题保留。
+  所有交互使用中文。OpenSpec 英文标题保留。
 
   ## 工作模式
-  aspec 寄生于 OpenSpec，通过 context 和 rules 注入增强，不修改 OpenSpec 本身。
+  aspec 寄生于 OpenSpec，通过 context/rules 注入增强。
   核心理念：对齐优先于效率。
 
   ## 流程
-  [需求澄清→对齐] → proposal → specs → [设计澄清→对齐] → design.md → [审批] → tasks → [确认?] → apply → [经验提取] → [确认?] → archive
+  [需求澄清→对齐] → proposal → specs → [设计澄清→对齐] → design.md → [审批] → tasks → apply → [经验提取] → archive
 
   ## 门禁（不可跳过）
-
   | 产物 | 前置条件 |
   |------|----------|
-  | proposal | issues/requirement-issues.md 存在且已澄清 + 对齐确认通过 |
-  | design.md | issues/design-issues.md 存在且已澄清 + 对齐确认通过 |
+  | proposal | issues/requirement-issues.md 已澄清 + 对齐确认通过 |
+  | design.md | issues/design-issues.md 已澄清 + 对齐确认通过 |
   | tasks | 用户审批 design.md |
 
-  ## 元规则
-  - 惊讶测试：替用户做选择时，若用户看到会惊讶 → 暂停展示选项
-  - 对齐内容用 markdown 文本输出（大段内容在 AskUserQuestion 中显示异常），确认通过 AskUserQuestion
+  ## 对齐协议
+  需求澄清和设计澄清均引用 shared/alignment-protocol.md 执行。
+  额外输入：Read dimensions.md 获取维度深度提问和盲区表。
 
-  ## 深度认知方法论
+  ## 惊讶测试
+  替用户做选择时，若用户看到会惊讶 → 暂停展示选项（AskUserQuestion）。
 
-  ### 苏格拉底式分析（AI 内部推理，不直接展示给用户）
-  这是 AI 的思维方法，不是输出格式。分析时在内部执行以下追问，形成深层理解后再转化为对用户的具体问题。
-  - **追问目的**：用户为什么要这个？解决什么根本问题？做了之后谁受益？
-  - **追问完整性**：说的是全貌还是冰山一角？关联问题？前置依赖？
-  - **追问前提**：假设成立吗？有更好的问题框架吗？是不是在解决错误的问题？
-  - **追问约束**：什么不能动？硬限制？时间/资源/技术债/团队认知负担？
-
-  输入：Read dimensions.md，用其深度提问启发分析方向，用盲区表验证覆盖完整性。
-  输出：不是追问本身，而是经分析后识别出的具体问题列表（写入 issues 文件）。
-  目标：不只理解用户说了什么，而是理解用户**真正需要**什么——包括他们没意识到的部分。
-
-  ### 引导性提问（澄清时面向用户）
-  基于内部苏格拉底分析的结论，设计面向用户的引导性问题。问题应具体、可行动、关联用户业务场景，而非重复抽象追问。
-  - "你提到了 X，但我注意到这还关联到 Y——这是否也在范围内？"
-  - "如果做了 X 但不处理 Y，后续有什么风险？"
-  - "在这几个约束中，你的首要优先级是什么？"
-
-  ### 对齐确认四要素
-  展示时每个要素独占一段，要素标题单独一行，内容换行后写。列表项用 bullet：
-
-  ```
-  **我的理解**
-  （1-2 句话概括核心意图）
-
-  **方案方向**
-  （1-2 句话概括策略）
-
-  **关键假设**
-  - 假设 1
-  - 假设 2
-
-  **完成标准**
-  - 标准 1
-  - 标准 2
-  ```
-
-  禁止：标题和内容写在同一行（如"我的理解 — xxxxxx"），会导致长行难读。
-  AskUserQuestion 仅用于确认（"以上对齐是否正确？"），不要把对齐内容放入 AskUserQuestion。
-
-  ### 深度聚焦
-  Read dimensions.md 后不逐条遍历，而是主动筛选：哪些维度在当前需求中最不确定？哪些遗漏的返工成本最高？聚焦于这些维度深挖，其余略过。
-
-  ### 并行探索策略
-  分析需求或设计时，通过 Agent 工具并行探索独立维度以提升深度：
-  - 识别独立分析维度（彼此结果不影响），分组后每个 Agent 负责一组（2-3 维度）
-  - 每个 Agent prompt 须自包含：分析目标 + 项目上下文 + 输出格式（问题列表）
-  - 回收后整合：合并发现、识别交叉问题、去重后写入 issues 文件
-  - 触发条件：分析维度 ≥3 个且彼此独立 → 并行；<3 个或强依赖 → 串行
-  - 约束：并行 Agent ≤4 个，不修改同一文件
+  ## 并行探索
+  分析维度 ≥3 个且独立时，引用 shared/parallel-protocol.md 并行探索。
+  约束：并行 Agent ≤4，不修改同一文件。
 
   ## 文件约定
   - 需求问题：issues/requirement-issues.md（id, description, severity, status, answer）
@@ -92,62 +46,44 @@ context: |
 
 rules:
   proposal:
-    - "[PRE] 读取 experience.md 需求相关经验，告知用户"
+    - "[PRE] Read experience.md 需求相关经验，告知用户"
     - |
-      [PRE] 需求澄清流程（三步顺序执行，每步完成后再进入下一步）：
-      1. **内部深度分析** — Read dimensions.md，结合需求维度的深度提问和盲区表，运用苏格拉底式四追问（目的/完整性/前提/约束）在内部深入分析：
-         - 用 dimensions.md 的深度提问启发分析方向（如"数据从哪来？生命周期？""并发竞态？"）
-         - 用盲区表逐项验证是否遗漏高风险不确定性
-         - 若分析维度 ≥3 个且独立，通过 Agent 工具并行探索（见"并行探索策略"）
-         - 分析结论写入 issues/requirement-issues.md，每个问题含：具体风险描述 + 为何重要（返工成本）
-      2. **引导性澄清** — 基于步骤 1 的分析结论，设计面向用户的具体问题，通过 AskUserQuestion 澄清 High/Medium 问题：
-         - 问题应具体、可行动、关联用户业务，而非重复抽象的苏格拉底追问
-         - 主动指出关联："我注意到 X 还涉及 Y，是否在范围内？"
-      3. **结构化对齐** — 用 markdown 按"对齐确认四要素"格式展示（每要素独占一段，列表用 bullet），然后通过 AskUserQuestion 仅确认（不放内容）
-    - |
-      🚫 GATE: 满足以下全部条件前，禁止创建 proposal：
-      - issues/requirement-issues.md 已创建且 High/Medium 问题已澄清
-      - 对齐确认已通过
+      [PRE] 需求澄清（三步）：
+      1. Read dimensions.md + Read shared/alignment-protocol.md
+      2. 内部深度分析（苏格拉底四追问 + 维度深度提问 + 盲区表验证）→ 结论写入 issues/requirement-issues.md
+      3. 按 alignment-protocol Step 2/3 执行引导性澄清和对齐确认
+      若分析维度 ≥3 个且独立 → Read shared/parallel-protocol.md 并行探索
+    - "🚫 GATE: issues 未澄清 + 对齐未通过前，禁止创建 proposal"
 
   specs:
     - "[CONSTRAINT] 须与已澄清需求一致，变更须记录原因"
 
   design:
-    - "[PRE] 读取 experience.md 技术相关经验，告知用户"
+    - "[PRE] Read experience.md 技术相关经验，告知用户"
     - |
-      [PRE] 设计澄清流程（三步顺序执行，每步完成后再进入下一步）：
-      1. **内部深度分析** — Read dimensions.md，结合设计维度的深度提问和盲区表，运用苏格拉底式四追问深入分析技术方案：
-         - 追问目的：架构决策服务什么质量属性？（参考 dimensions.md 架构/性能/安全维度的深度提问）
-         - 追问完整性：遗漏的交互场景或失败模式？（参考盲区表验证）
-         - 追问前提：技术选型的隐含假设（性能、规模、团队能力）是否成立？
-         - 追问约束：现有系统/团队/时间的硬限制？
-         - 若需评估多个备选方案，通过 Agent 工具并行调研（每个 Agent 研究一个方案的可行性）
-         - 分析结论写入 issues/design-issues.md，每个决策含：备选方案 + 排除理由 + 风险
-      2. **引导性澄清** — 基于步骤 1 的分析结论，设计面向用户的具体问题，通过 AskUserQuestion 澄清 High/Medium 决策：
-         - 问题应具体、暴露取舍，而非重复抽象追问
-         - 主动暴露取舍："方案 A 更简单但 X 场景有风险，方案 B 更复杂但覆盖更全——优先级？"
-      3. **结构化对齐** — 用 markdown 按"对齐确认四要素"格式展示（每要素独占一段，列表用 bullet），然后通过 AskUserQuestion 仅确认（不放内容）
-    - |
-      🚫 GATE: 满足以下全部条件前，禁止创建 design.md：
-      - issues/design-issues.md 已创建且 High/Medium 决策已澄清
-      - 对齐确认已通过
+      [PRE] 设计澄清（三步）：
+      1. Read dimensions.md 设计维度 + Read shared/alignment-protocol.md
+      2. 内部深度分析（苏格拉底四追问 + 设计维度深度提问 + 盲区表验证）→ 结论写入 issues/design-issues.md
+      3. 按 alignment-protocol Step 2/3 执行引导性澄清和对齐确认
+      若需评估多个备选方案 → Read shared/parallel-protocol.md 并行调研
+    - "🚫 GATE: issues 未澄清 + 对齐未通过前，禁止创建 design.md"
 
   tasks:
     - "[PRE] 展示 design.md 核心摘要，通过 AskUserQuestion 获得审批后创建任务"
     - |
-      [CONSTRAINT] tasks.md 末尾必须包含"收尾"段落，包含以下门禁 checkbox：
+      [CONSTRAINT] tasks.md 末尾必须包含收尾段：
       ## 收尾（代码任务全部完成后执行）
-      > 经验提取规范见 experience-template.md。重点：反直觉发现、踩坑经验、可复用模式。
-      - [ ] 复盘：对照 design.md 检查实施偏差，将发现记录到 spec/notes.md
-      - [ ] 经验提取：按 experience-template.md 格式从实施过程提取经验写入 experience.md
-      - [ ] 经验验证：验证本次应用的历史经验（标记 ✓有效/✗无效/—不适用）
-      - [ ] 经验收敛：检查 experience.md 条目数量，若 >20 条则提议合并/淘汰（需用户确认）
-      - [ ] 归档确认：通过 AskUserQuestion 询问用户是否归档
-      这些 checkbox 必须排在所有代码实施任务之后
-    - "[POST] 通过 AskUserQuestion 询问是否立即实施，确认后调用 Skill 执行 opsx:apply"
+      > 经验规范见 shared/experience-protocol.md
+      - [ ] 复盘：对照 design.md 检查实施偏差 → spec/notes.md
+      - [ ] 经验提取：Read shared/experience-protocol.md 执行
+      - [ ] 经验验证：标记本次应用的历史经验（✓/✗/—）
+      - [ ] 经验收敛：>20 条则提议合并/淘汰（需用户确认）
+      - [ ] 归档确认：通过 AskUserQuestion 询问用户
+    - "[POST] 通过 AskUserQuestion 询问是否立即实施"
 
   apply:
     - "[PRE] 读取 issues/ 下决策文件，遵循所有已澄清决策"
     - "[CONSTRAINT] 新问题暂停评估记录到 spec/notes.md；代码与 design.md 偏差须记录理由"
+    - "[POST] Read shared/verification-protocol.md 验证 Spec-Code 一致性"
 
   archive: []
