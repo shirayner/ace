@@ -2,7 +2,7 @@ import fs from 'fs-extra';
 import path from 'path';
 import { execSync } from 'child_process';
 import yaml from 'js-yaml';
-import { OPENSPEC_TEMPLATES_DIR, SPEC_TEMPLATE_FILES } from './constants.js';
+import { OPENSPEC_TEMPLATES_DIR, SPEC_TEMPLATE_FILES, PLUGIN_SRC_DIR } from './constants.js';
 import { mergeSpecConfig } from './yaml-merger.js';
 import { backupFile } from './merger.js';
 
@@ -24,6 +24,7 @@ export class SpecInstaller {
     await this.ensureOpenspecCli();
     await this.runOpenspecInit();
     await this.installTemplates();
+    await this.installShared();
     await this.installConfig();
     return this.results;
   }
@@ -109,6 +110,38 @@ export class SpecInstaller {
     }
   }
 
+  async installShared() {
+    const sharedSrcDir = path.join(PLUGIN_SRC_DIR, 'shared');
+    const sharedDestDir = path.join(this.openspecDir, 'shared');
+
+    if (!await fs.pathExists(sharedSrcDir)) {
+      this.results.errors.push({ file: 'shared/', error: 'Shared directory not found in plugin source' });
+      return;
+    }
+
+    const files = (await fs.readdir(sharedSrcDir)).filter(f => f.endsWith('.md'));
+
+    for (const file of files) {
+      const srcPath = path.join(sharedSrcDir, file);
+      const destPath = path.join(sharedDestDir, file);
+
+      const exists = await fs.pathExists(destPath);
+      if (exists && !this.force) {
+        this.results.skipped.push(`openspec/shared/${file}`);
+        continue;
+      }
+
+      if (this.dryRun) {
+        this.results.installed.push(`openspec/shared/${file}`);
+        continue;
+      }
+
+      await fs.ensureDir(sharedDestDir);
+      await fs.copy(srcPath, destPath, { overwrite: this.force });
+      this.results.installed.push(`openspec/shared/${file}`);
+    }
+  }
+
   async installConfig() {
     const srcPath = path.join(this.templatesDir, 'config.yaml');
     const destPath = path.join(this.openspecDir, 'config.yaml');
@@ -187,7 +220,16 @@ export class SpecInstaller {
       });
     }
 
-    // 6. Git
+    // 6. Shared protocol files
+    const sharedDir = path.join(this.openspecDir, 'shared');
+    const sharedExists = await fs.pathExists(sharedDir);
+    checks.push({ name: 'openspec/shared/ directory', ok: sharedExists });
+    if (sharedExists) {
+      const sharedFiles = (await fs.readdir(sharedDir)).filter(f => f.endsWith('.md'));
+      checks.push({ name: `shared protocols: ${sharedFiles.length} files`, ok: sharedFiles.length >= 4 });
+    }
+
+    // 7. Git
     try {
       execSync('git --version', { stdio: 'pipe' });
       checks.push({ name: 'Git available', ok: true });

@@ -29,8 +29,8 @@ description: |
 Read `references/unit-test-guide.md` → 分析依赖注入方式 → 生成 → 验证
 
 ### 批量（10+ 类）
-创建 `.tasks/ut-{slug}/state.md`（参考 `shared/state-template.md`）→ 分批生成 → 每批编译验证
-可并行：Read `shared/parallel-protocol.md`
+创建 `.tasks/ut-{slug}/state.md`（参考 `../../shared/state-template.md`）→ 分批生成 → 每批编译验证
+可并行：Read `../../shared/parallel-protocol.md`
 
 ---
 

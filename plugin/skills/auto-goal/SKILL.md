@@ -30,7 +30,7 @@ description: |
 
 ### 规则 1：首轮对齐（MANDATORY）
 
-Read `shared/alignment-protocol.md`，按其三步流程执行。
+Read `../../shared/alignment-protocol.md`，按其三步流程执行。
 输入源：memory + CLAUDE.md + git status + 会话历史。
 
 ### 规则 2：状态初始化（对齐通过后第一个动作）
@@ -38,7 +38,7 @@ Read `shared/alignment-protocol.md`，按其三步流程执行。
 1. `Bash(pwd)` → 获取 `$ROOT`
 2. `mkdir -p $ROOT/.tasks/auto-goal-{id}`（id = 2-4 英文单词 kebab-case）
 3. TaskCreate 分解为 ≥3 个离散任务
-4. Write `$ROOT/.tasks/auto-goal-{id}/state.md`（参考 `shared/state-template.md`）
+4. Write `$ROOT/.tasks/auto-goal-{id}/state.md`（参考 `../../shared/state-template.md`）
 5. 完成后才进入执行阶段
 
 路径硬规则：禁止 `~`、`$HOME`、裸相对路径。所有 Write/Edit 使用 `$ROOT` 前缀。
@@ -46,7 +46,7 @@ Read `shared/alignment-protocol.md`，按其三步流程执行。
 ### 规则 3：惊讶测试
 
 用户此刻看到我的决策会惊讶 → 暂停 AskUserQuestion。
-（详见 `shared/alignment-protocol.md` 惊讶测试段）
+（详见 `../../shared/alignment-protocol.md` 惊讶测试段）
 
 ---
 
@@ -55,28 +55,32 @@ Read `shared/alignment-protocol.md`，按其三步流程执行。
 1. **先定义完成，再开始执行** — 每个目标需可测试的完成标准
 2. **承诺计划，卡住时换方向** — 三次失败质疑前提
 3. **永不空手而归** — 任意时刻中断都应有可用产出
-4. **上下文是稀缺资源** — Read `shared/context-discipline.md`
+4. **上下文是稀缺资源** — Read `../../shared/context-discipline.md`
 5. **对齐不是一次性事件** — 发现偏差时回到对齐
 
 ---
 
 ## 并行执行
 
-独立子任务识别后，Read `shared/parallel-protocol.md` 按其规则调度。
+独立子任务识别后，Read `../../shared/parallel-protocol.md` 按其规则调度。
 
 ---
 
 ## 验证与交付
 
 标记 TaskUpdate completed 前：
-Read `shared/verification-protocol.md`，按 Gate Function 执行。
+Read `../../shared/verification-protocol.md`，按 Gate Function 执行。
 
 ---
 
 ## 经验进化
 
 交付后检查触发条件（意外/踩坑/反直觉/可复用模式）：
-Read `shared/experience-protocol.md`，满足条件时执行。不满足 → "无新经验"。
+Read `../../shared/experience-protocol.md`，满足条件时执行。
+
+**无论是否有新经验，必须一行式告知用户**：
+- 有经验：`📝 经验提取：E{N} 已写入（简述发现）`
+- 无经验：`📝 经验检查：本次无新发现`
 
 ---
 
@@ -91,7 +95,7 @@ Read `shared/experience-protocol.md`，满足条件时执行。不满足 → "�
 ## 运行时规则
 
 - TaskUpdate 每次变更后同步更新 state.md
-- TaskCreate 累计 ≥6 → 升级为完整状态管理（参考 `shared/state-template.md` 完整模板）
+- TaskCreate 累计 ≥6 → 升级为完整状态管理（参考 `../../shared/state-template.md` 完整模板）
 - 新目标 = 新目录，不复用上一个
 
 ---
@@ -114,10 +118,10 @@ Read `shared/experience-protocol.md`，满足条件时执行。不满足 → "�
 
 | 文件 | 何时加载 |
 |------|---------|
-| `shared/alignment-protocol.md` | 规则 1 执行时 |
-| `shared/verification-protocol.md` | 标记完成前 |
-| `shared/experience-protocol.md` | 交付后 |
-| `shared/parallel-protocol.md` | 识别并行机会时 |
-| `shared/context-discipline.md` | 上下文管理时 |
-| `shared/state-template.md` | 创建状态文件时 |
+| `../../shared/alignment-protocol.md` | 规则 1 执行时 |
+| `../../shared/verification-protocol.md` | 标记完成前 |
+| `../../shared/experience-protocol.md` | 交付后 |
+| `../../shared/parallel-protocol.md` | 识别并行机会时 |
+| `../../shared/context-discipline.md` | 上下文管理时 |
+| `../../shared/state-template.md` | 创建状态文件时 |
 | `references/recovery.md` | 恢复中断任务时 |

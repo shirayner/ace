@@ -64,7 +64,7 @@ Read references → 按文件分析 → 合并输出报告
 
 ### 深度（>500 行 diff / 架构级变更）
 创建 `.tasks/review-{slug}/state.md` → 按模块分批审查
-可并行：Read `shared/parallel-protocol.md`，每个 Agent 审查一个模块
+可并行：Read `../../shared/parallel-protocol.md`，每个 Agent 审查一个模块
 
 ---
 

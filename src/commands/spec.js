@@ -132,8 +132,9 @@ export async function specUpdateCommand(targetPath, options) {
   const spinner = ora('Updating spec templates...').start();
 
   try {
-    // Only run template + config installation (skip openspec init)
+    // Only run template + shared + config installation (skip openspec init)
     await installer.installTemplates();
+    await installer.installShared();
     await installer.installConfig();
     spinner.stop();
 

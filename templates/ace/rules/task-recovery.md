@@ -7,7 +7,8 @@
 1. Glob 搜索 `.tasks/*/state.md`
 2. 读取找到的 state.md 文件头部（前 10 行），提取 `Type` 字段
 3. 路由规则：
-   - `Type: coding` → 通过 Skill 工具调用 `coding` skill，参数传递 `resume`
+   - `Type: ut` → 通过 Skill 工具调用 `ut` skill，参数传递 `resume`
+   - `Type: code-review` → 通过 Skill 工具调用 `code-review` skill，参数传递 `resume`
    - 其他或无 Type 字段 → 通过 Skill 工具调用 `auto-goal` skill，参数传递 `resume`
 4. 多个活跃任务（`Status: in-progress`）时，列出让用户选择
 5. 无活跃任务时，告知用户并询问是否开始新任务

@@ -35,16 +35,15 @@ export async function doctorCommand() {
   }
 
   // 4. Check plugin installation
-  const pluginVersions = await getPluginVersionDirs();
-  if (pluginVersions.length > 0) {
-    const latestDir = pluginVersions[pluginVersions.length - 1];
-    const pluginJsonPath = path.join(latestDir, '.claude-plugin', 'plugin.json');
+  const pluginInstallDir = await getPluginInstallDir();
+  if (pluginInstallDir) {
+    const pluginJsonPath = path.join(pluginInstallDir, '.claude-plugin', 'plugin.json');
     checks.push(await check('plugin: ace directory', Promise.resolve(true)));
     checks.push(await check('plugin: plugin.json', fs.pathExists(pluginJsonPath)));
 
-    const skillNames = ['auto-goal', 'coding', 'skill-creator', 'skill-optimize'];
+    const skillNames = ['auto-goal', 'ut', 'code-review', 'skill-creator', 'skill-optimize'];
     for (const skill of skillNames) {
-      const skillMd = path.join(latestDir, 'skills', skill, 'SKILL.md');
+      const skillMd = path.join(pluginInstallDir, 'skills', skill, 'SKILL.md');
       checks.push(await check(`plugin: skill ace:${skill}`, fs.pathExists(skillMd)));
     }
   } else {
@@ -129,8 +128,20 @@ export async function doctorCommand() {
   }
 }
 
-async function getPluginVersionDirs() {
-  if (!await fs.pathExists(PLUGIN_CACHE_DIR)) return [];
+async function getPluginInstallDir() {
+  // Primary: read registered path from installed_plugins.json
+  try {
+    const installed = await fs.readJson(INSTALLED_PLUGINS_FILE);
+    const entry = installed?.plugins?.[PLUGIN_KEY];
+    // entry can be an object or an array of objects
+    const record = Array.isArray(entry) ? entry[entry.length - 1] : entry;
+    if (record?.installPath && await fs.pathExists(record.installPath)) {
+      return record.installPath;
+    }
+  } catch { /* fall through */ }
+
+  // Fallback: scan cache directory for latest version
+  if (!await fs.pathExists(PLUGIN_CACHE_DIR)) return null;
   const entries = await fs.readdir(PLUGIN_CACHE_DIR);
   const dirs = [];
   for (const entry of entries) {
@@ -139,7 +150,7 @@ async function getPluginVersionDirs() {
       dirs.push(full);
     }
   }
-  return dirs;
+  return dirs.length > 0 ? dirs[dirs.length - 1] : null;
 }
 
 async function check(name, promise) {

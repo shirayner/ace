@@ -19,14 +19,14 @@ context: |
   | tasks | 用户审批 design.md |
 
   ## 对齐协议
-  需求澄清和设计澄清均引用 shared/alignment-protocol.md 执行。
+  需求澄清和设计澄清均引用 openspec/shared/alignment-protocol.md 执行。
   额外输入：Read dimensions.md 获取维度深度提问和盲区表。
 
   ## 惊讶测试
   替用户做选择时，若用户看到会惊讶 → 暂停展示选项（AskUserQuestion）。
 
   ## 并行探索
-  分析维度 ≥3 个且独立时，引用 shared/parallel-protocol.md 并行探索。
+  分析维度 ≥3 个且独立时，引用 openspec/shared/parallel-protocol.md 并行探索。
   约束：并行 Agent ≤4，不修改同一文件。
 
   ## 文件约定
@@ -49,10 +49,10 @@ rules:
     - "[PRE] Read experience.md 需求相关经验，告知用户"
     - |
       [PRE] 需求澄清（三步）：
-      1. Read dimensions.md + Read shared/alignment-protocol.md
+      1. Read dimensions.md + Read openspec/shared/alignment-protocol.md
       2. 内部深度分析（苏格拉底四追问 + 维度深度提问 + 盲区表验证）→ 结论写入 issues/requirement-issues.md
       3. 按 alignment-protocol Step 2/3 执行引导性澄清和对齐确认
-      若分析维度 ≥3 个且独立 → Read shared/parallel-protocol.md 并行探索
+      若分析维度 ≥3 个且独立 → Read openspec/shared/parallel-protocol.md 并行探索
     - "🚫 GATE: issues 未澄清 + 对齐未通过前，禁止创建 proposal"
 
   specs:
@@ -62,10 +62,10 @@ rules:
     - "[PRE] Read experience.md 技术相关经验，告知用户"
     - |
       [PRE] 设计澄清（三步）：
-      1. Read dimensions.md 设计维度 + Read shared/alignment-protocol.md
+      1. Read dimensions.md 设计维度 + Read openspec/shared/alignment-protocol.md
       2. 内部深度分析（苏格拉底四追问 + 设计维度深度提问 + 盲区表验证）→ 结论写入 issues/design-issues.md
       3. 按 alignment-protocol Step 2/3 执行引导性澄清和对齐确认
-      若需评估多个备选方案 → Read shared/parallel-protocol.md 并行调研
+      若需评估多个备选方案 → Read openspec/shared/parallel-protocol.md 并行调研
     - "🚫 GATE: issues 未澄清 + 对齐未通过前，禁止创建 design.md"
 
   tasks:
@@ -73,9 +73,9 @@ rules:
     - |
       [CONSTRAINT] tasks.md 末尾必须包含收尾段：
       ## 收尾（代码任务全部完成后执行）
-      > 经验规范见 shared/experience-protocol.md
+      > 经验规范见 openspec/shared/experience-protocol.md
       - [ ] 复盘：对照 design.md 检查实施偏差 → spec/notes.md
-      - [ ] 经验提取：Read shared/experience-protocol.md 执行
+      - [ ] 经验提取：Read openspec/shared/experience-protocol.md 执行
       - [ ] 经验验证：标记本次应用的历史经验（✓/✗/—）
       - [ ] 经验收敛：>20 条则提议合并/淘汰（需用户确认）
       - [ ] 归档确认：通过 AskUserQuestion 询问用户
@@ -84,6 +84,6 @@ rules:
   apply:
     - "[PRE] 读取 issues/ 下决策文件，遵循所有已澄清决策"
     - "[CONSTRAINT] 新问题暂停评估记录到 spec/notes.md；代码与 design.md 偏差须记录理由"
-    - "[POST] Read shared/verification-protocol.md 验证 Spec-Code 一致性"
+    - "[POST] Read openspec/shared/verification-protocol.md 验证 Spec-Code 一致性"
 
   archive: []

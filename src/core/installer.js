@@ -238,7 +238,8 @@ export class Installer {
     // 1. Setup local marketplace (directory + marketplace.json + known_marketplaces.json)
     await this.setupMarketplace(pluginJson);
 
-    // 2. Copy plugin to cache
+    // 2. Copy plugin to cache (clean first to remove stale files)
+    await fs.remove(destDir);
     await fs.ensureDir(path.dirname(destDir));
     await fs.copy(PLUGIN_SRC_DIR, destDir, { overwrite: true });
 
@@ -257,7 +258,8 @@ export class Installer {
   }
 
   async setupMarketplace(pluginJson) {
-    // 1. Copy plugin files to marketplace directory
+    // 1. Copy plugin files to marketplace directory (clean first to remove stale files)
+    await fs.remove(MARKETPLACE_DIR);
     await fs.ensureDir(MARKETPLACE_DIR);
     await fs.copy(PLUGIN_SRC_DIR, MARKETPLACE_DIR, { overwrite: true });
 

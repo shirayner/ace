@@ -8,7 +8,7 @@
 
 ```markdown
 # {Task Title}
-Type: {auto-goal | coding | ut | review}
+Type: {auto-goal | ut | code-review}
 Status: {pending | in-progress | done}
 Created: {YYYY-MM-DD}
 Updated: {YYYY-MM-DD HH:MM}

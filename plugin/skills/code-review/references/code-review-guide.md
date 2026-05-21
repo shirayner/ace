@@ -112,7 +112,7 @@ git diff --stat master...HEAD
 - 整体评价: ...
 ```
 
-报告保存到 `.tasks/coding-{slug}/code-review-report.md`。
+报告保存到 `.tasks/review-{slug}/code-review-report.md`。
 
 ---
 
