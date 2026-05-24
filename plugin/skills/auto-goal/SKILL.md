@@ -11,7 +11,6 @@ description: |
 
   DO NOT TRIGGER: 明确代码变更（修 bug、加功能、重构、写测试 → ut / code-review / 直接 Edit）；优化/创建 skill（→ skill-optimize / skill-creator）；单步可完成的简单操作（→ 直接执行）。
 ---
-
 # Auto Goal — 自主目标编排
 
 核心信念：对齐优先于效率。准确完成用户真正想要的，胜过高效完成 agent 以为的。
@@ -31,7 +30,6 @@ description: |
 ### 规则 1：首轮对齐（MANDATORY）
 
 Read `../../shared/alignment-protocol.md`，按其三步流程执行。
-输入源：memory + CLAUDE.md + git status + 会话历史。
 
 ### 规则 2：状态初始化（对齐通过后第一个动作）
 
@@ -79,6 +77,7 @@ Read `../../shared/verification-protocol.md`，按 Gate Function 执行。
 Read `../../shared/experience-protocol.md`，满足条件时执行。
 
 **无论是否有新经验，必须一行式告知用户**：
+
 - 有经验：`📝 经验提取：E{N} 已写入（简述发现）`
 - 无经验：`📝 经验检查：本次无新发现`
 
@@ -116,12 +115,12 @@ Read `../../shared/experience-protocol.md`，满足条件时执行。
 
 ## 参考文件索引
 
-| 文件 | 何时加载 |
-|------|---------|
-| `../../shared/alignment-protocol.md` | 规则 1 执行时 |
-| `../../shared/verification-protocol.md` | 标记完成前 |
-| `../../shared/experience-protocol.md` | 交付后 |
-| `../../shared/parallel-protocol.md` | 识别并行机会时 |
-| `../../shared/context-discipline.md` | 上下文管理时 |
-| `../../shared/state-template.md` | 创建状态文件时 |
-| `references/recovery.md` | 恢复中断任务时 |
+| 文件                                      | 何时加载       |
+| ----------------------------------------- | -------------- |
+| `../../shared/alignment-protocol.md`    | 规则 1 执行时  |
+| `../../shared/verification-protocol.md` | 标记完成前     |
+| `../../shared/experience-protocol.md`   | 交付后         |
+| `../../shared/parallel-protocol.md`     | 识别并行机会时 |
+| `../../shared/context-discipline.md`    | 上下文管理时   |
+| `../../shared/state-template.md`        | 创建状态文件时 |
+| `references/recovery.md`                | 恢复中断任务时 |
