@@ -1,5 +1,5 @@
 schema: spec-driven
-version: 13.0.0
+version: 14.0.0
 context: |
   ## 语言
   所有交互使用中文。OpenSpec 英文标题保留。

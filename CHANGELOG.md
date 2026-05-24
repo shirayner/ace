@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.10] - 2025-05-25
+
+### Changed
+- **alignment-protocol**: Rewritten with cognitive complementarity model — AI and human blind spots illuminate each other
+- **alignment-protocol**: Added deep thinking discipline (序验深广辨简), Socratic questioning, problem-driven exploration, and Defeater search
+- **alignment-protocol**: Added depth quality gate (new inference, premise audit, Defeater check, sufficiency)
+- **spec-installer**: Removed `installShared()` — shared protocols now referenced directly from plugin directory (DRY)
+- **config.yaml**: All `openspec/shared/` paths changed to `~/.claude/plugins/marketplaces/ace-local/shared/` (single source of truth)
+- **config.yaml**: Schema version bumped to 14.0.0
+
+### Added
+- Skill split architecture: skills moved to plugin directory with shared protocols
+- Task management optimizations
+
+### Removed
+- `openspec/shared/` directory creation during `ace spec init` (no longer needed)
+
 ## [0.1.8-SNAPSHOT] - 2026-05-07
 
 ### Changed
