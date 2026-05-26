@@ -53,7 +53,6 @@ export const ROLES = {
 export const OPENSPEC_TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates', 'openspec');
 export const SPEC_TEMPLATE_FILES = [
   'dimensions.md',
-  'experience-template.md',
 ];
 
 /**

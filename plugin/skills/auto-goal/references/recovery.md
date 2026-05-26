@@ -7,7 +7,7 @@
 1. **定位** — 读取 `.tasks/auto-goal-{id}/state.md`（Tier 1）
 2. **验证** — Glob/Read 轻量确认声称的产出是否真实存在
 3. **加载上下文** — 根据当前需要加载 Tier 2 文件（context.md / decisions.md / reflections.md）
-4. **读经验** — 读取 `.tasks/experience.md`（如存在）
+4. **读经验** — 读取项目经验文件（优先 `openspec/experience.md`，不存在则尝试 `.tasks/experience.md`）
 5. **重建 UI** — 用 TaskCreate 重建进度显示
 6. **继续** — 从 state.md 的"下一步"继续执行
 
