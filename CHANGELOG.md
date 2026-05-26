@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.1.11] - 2026-05-26
+
+### Changed
+- **parallel-protocol**: Refactored to pure HOW (removed WHEN triggers — each skill declares its own)
+- **auto-goal**: Parallel execution section upgraded to [CONSTRAINT] with mandatory trigger table and violation definition
+- **config.yaml**: proposal/design/apply rules — parallel constraints extracted as independent rule items with specific scenarios and time anchors
+- **config.yaml**: Parallel Agent upper limit unified to ≤8
+
+### Added
+- **config.yaml apply**: New [CONSTRAINT] for parallel implementation (code comprehension ≥3 files → parallel Agent; ≥2 independent tasks → parallel implementation)
+- **parallel-protocol**: Anti-pattern section (serial exploration bombing)
+- **auto-goal**: Dependency analysis requirement during state initialization (mark `⟂` and `depends`)
+
+### Fixed
+- **CLAUDE.md**: Language drift fix — interaction language rule upgraded to HARD RULE with explicit anti-drift clause
+- **config.yaml**: Parallel constraints were hidden as appendix in multi-line blocks, now promoted to standalone rule items
+
 ## [0.1.10] - 2025-05-25
 
 ### Changed
