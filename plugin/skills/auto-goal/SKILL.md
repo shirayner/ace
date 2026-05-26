@@ -58,9 +58,25 @@ Read `../../shared/alignment-protocol.md`，按其三步流程执行。
 
 ---
 
-## 并行执行
+## 并行执行 [CONSTRAINT]
 
-独立子任务识别后，Read `../../shared/parallel-protocol.md` 按其规则调度。
+### 强制并行点（WHEN）
+
+| 阶段 | 条件 | 动作 |
+|------|------|------|
+| 调研/探索 | ≥3 个独立分析维度 | 单条 response 并行 Agent（探索型） |
+| 实现 | ≥2 个任务修改不同文件 | 单条 response 并行 Agent（实现型） |
+| 验证 | ≥2 个独立检查步骤 | 单条 response 并行 Bash |
+
+### 违规定义
+- 可并行但串行执行 = 违规
+- 判据：对 ≥3 个独立目标逐个 Read/Grep/Explore = 串行探索轰炸 → 必须改为并行 Agent
+
+### 执行协议（HOW）
+Read `../../shared/parallel-protocol.md` 获取 prompt 模板和硬约束。
+
+### 状态初始化时
+TaskCreate 后必须做依赖分析，标注 `⟂` 和 `(depends: X)`。存在 ≥2 个 `⟂` 任务时，执行阶段必须并行调度。
 
 ---
 

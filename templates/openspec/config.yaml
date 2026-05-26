@@ -58,7 +58,9 @@ rules:
       1. Read openspec/templates/dimensions.md + Read ~/.claude/plugins/marketplaces/ace-local/shared/alignment-protocol.md
       2. 内部深度分析（苏格拉底四追问 + 维度深度提问 + 盲区表验证）→ 结论写入 issues/requirement-issues.md
       3. 按 alignment-protocol Step 2/3 执行引导性澄清和对齐确认
-      若分析维度 ≥3 个且独立 → [CONSTRAINT] 必须并行探索（Read parallel-protocol.md）
+    - |
+      [CONSTRAINT] 并行探索：步骤 2 内部深度分析探索时，必须在单条 response 中并行发出 多个 SubAgent 调用去并行深度分析和探索。
+      串行逐维度分析 = 违规。HOW → Read parallel-protocol.md。
     - "🚫 GATE: issues 未澄清 + 对齐未通过前，禁止创建 proposal"
 
   specs:
@@ -71,7 +73,9 @@ rules:
       1. Read openspec/templates/dimensions.md 设计维度 + Read ~/.claude/plugins/marketplaces/ace-local/shared/alignment-protocol.md
       2. 内部深度分析（苏格拉底四追问 + 设计维度深度提问 + 盲区表验证）→ 结论写入 issues/design-issues.md
       3. 按 alignment-protocol Step 2/3 执行引导性澄清和对齐确认
-      若需评估多个备选方案 → [CONSTRAINT] 必须并行调研（Read parallel-protocol.md）
+    - |
+      [CONSTRAINT] 并行探索：步骤 2 内部深度分析探索时，必须在单条 response 中并行发出 多个 SubAgent 调用去并行深度分析和探索。
+      串行逐维度分析 = 违规。HOW → Read parallel-protocol.md。
     - "🚫 GATE: issues 未澄清 + 对齐未通过前，禁止创建 design.md"
 
   tasks:
@@ -95,6 +99,12 @@ rules:
   apply:
     - "[PRE] 读取 issues/ 下决策文件，遵循所有已澄清决策"
     - "[CONSTRAINT] 新问题暂停评估记录到 notes.md；代码与 design.md 偏差须记录理由"
+    - |
+      [CONSTRAINT] 并行实施（两个触发点）：
+      1. 代码理解阶段（读取 tasks.md 后、动手实现前）：需分析 ≥3 个独立类/模块时，
+         必须并行 Agent 探索，每个 Agent 分析一个目标并返回结构摘要。
+      2. 任务实现阶段：≥2 个 task 修改不同文件且无依赖时，必须并行 Agent 实现。
+      串行执行可并行的探索或实现 = 违规。HOW → Read parallel-protocol.md。
     - "[POST] Read ~/.claude/plugins/marketplaces/ace-local/shared/verification-protocol.md 验证 Spec-Code 一致性"
 
   archive: []
