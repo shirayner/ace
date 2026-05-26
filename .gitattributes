@@ -1,0 +1,2 @@
+# Force LF for shell scripts — Mac/Linux bash cannot parse CRLF
+*.sh text eol=lf

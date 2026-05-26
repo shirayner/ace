@@ -377,7 +377,15 @@ export class Installer {
       await backupPreInstall(destPath);
     }
     await fs.ensureDir(path.dirname(destPath));
-    await fs.copy(srcPath, destPath);
+
+    // Shell scripts must use LF — Mac/Linux bash cannot parse CRLF
+    if (destPath.endsWith('.sh')) {
+      const content = await fs.readFile(srcPath, 'utf-8');
+      await fs.writeFile(destPath, content.replace(/\r\n/g, '\n'), { mode: 0o755 });
+    } else {
+      await fs.copy(srcPath, destPath);
+    }
+
     this.results.installed.push(fileSpec.dest);
   }
 
