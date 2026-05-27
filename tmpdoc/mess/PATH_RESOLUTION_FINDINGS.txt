@@ -1,0 +1,98 @@
+# OpenSpec Config Path Resolution Investigation
+
+## Executive Summary
+
+OpenSpec's config.yaml rules are NOT directly executed by Claude Code itself.
+
+KEY FINDINGS:
+1. OpenSpec acts as a template/schema provider
+   - The config.yaml is installed to openspec/ directory via @fission-ai/openspec CLI
+   
+2. Claude Code's ACE plugin interprets the rules
+   - The plugin reads config.yaml and injects it into Claude's context
+   - Path resolution is plugin-centric, not OpenSpec-centric
+   
+3. Relative paths like shared/alignment-protocol.md are ambiguous
+   - Plugin resources are at: plugin/shared/alignment-protocol.md
+   - Config.yaml references them as: shared/alignment-protocol.md
+   - Claude Code looks for them in project root: shared/alignment-protocol.md
+   - MISMATCH!
+
+## How Config Gets Loaded
+
+Installation flow:
+  $ ace spec init
+    ├─ Installs @fission-ai/openspec CLI globally
+    ├─ Runs: openspec init
+    ├─ Copies template: templates/openspec/config.yaml → project/openspec/config.yaml
+    └─ Copies template files to project/openspec/templates/
+
+## The Plugin Structure
+
+ace/ (plugin)
+├── plugin/.claude-plugin/plugin.json          # Plugin metadata
+├── plugin/shared/                              # ACTUAL SHARED RESOURCES
+│   ├── alignment-protocol.md
+│   ├── context-discipline.md
+│   ├── experience-protocol.md
+│   ├── parallel-protocol.md
+│   ├── state-template.md
+│   └── verification-protocol.md
+└── plugin/skills/                              # Skills (SKILL.md files)
+    ├── auto-goal/SKILL.md
+    ├── code-review/SKILL.md
+    ├── skill-creator/SKILL.md
+    ├── skill-optimize/SKILL.md
+    └── ut/SKILL.md
+
+## Path Resolution in SKILL Files (Works Correctly)
+
+SKILL files use relative paths from their location:
+  Location: plugin/skills/auto-goal/SKILL.md
+  Reference: Read `../../../../shared/alignment-protocol.md`
+  Resolves to: plugin/shared/alignment-protocol.md ✓
+  
+This works because Claude Code plugin system resolves paths relative to SKILL file location.
+
+## Path Resolution in config.yaml (PROBLEMATIC)
+
+config.yaml references:
+  "Read shared/alignment-protocol.md"
+
+Claude Code interprets this as:
+  - Relative path from project root
+  - Looks for: {project-root}/shared/alignment-protocol.md
+  - But actual file is at: {project-root}/plugin/shared/alignment-protocol.md
+  - FILE NOT FOUND ✗
+
+CRITICAL ISSUE: Mismatch between where files are and where rules reference them!
+
+## Answers to Original Questions
+
+Q1: How does Claude Code discover and use openspec/config.yaml?
+A: 
+- ACE plugin is enabled in settings.json
+- Plugin reads openspec/config.yaml and injects rules into Claude's context
+- Note: NOT automatic from OpenSpec; requires explicit plugin integration
+
+Q2: When config.yaml says "Read shared/xxx.md", what is the base directory?
+A:
+- Plugin resources are at: plugin/shared/xxx.md
+- Config.yaml assumes: shared/xxx.md (at project root)
+- Claude Code interprets: current working directory (project root)
+- ISSUE: Paths don't match! Files are in plugin/shared/ but rules reference shared/
+
+Q3: Is there a mechanism that sets the working context for path resolution?
+A:
+- Plugin system: Uses file location for relative path resolution
+- OpenSpec: No path resolution; paths are just text in YAML
+- GAP: config.yaml paths should be resolved before injection into Claude's context
+
+## Recommended Fixes
+
+1. Rewrite paths on injection: shared/xxx → plugin/shared/xxx
+2. Use absolute paths in config.yaml injection
+3. Create symlinks: project/shared → project/plugin/shared
+4. Clarify config.yaml schema about path semantics
+5. Add validation that all referenced files exist
+

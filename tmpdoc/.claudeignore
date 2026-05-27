@@ -1,0 +1,39 @@
+# Build outputs
+target/
+build/
+dist/
+out/
+
+# Dependencies
+node_modules/
+
+# Build tools
+.gradle/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+.project
+.classpath
+.settings/
+
+# Git internals
+.git/
+
+# Sensitive files
+.env
+.env.*
+*.key
+*.pem
+
+# Binaries & archives
+*.jar
+*.war
+*.zip
+*.tar.gz
+*.class
+
+# Generated sources
+**/generated-sources/
+**/generated-test-sources/
