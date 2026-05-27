@@ -59,7 +59,14 @@
       "Bash(mv \"ace.hookify.code-quality-gate.local.md\" \"hookify.ace.code-quality-gate.local.md\")",
       "Bash(mv \"ace.hookify.protect-secrets.local.md\" \"hookify.ace.protect-secrets.local.md\")",
       "Bash(mv \"ace.hookify.require-verification.local.md\" \"hookify.ace.require-verification.local.md\")",
-      "Bash(mv \"ace.hookify.safe-git-commands.local.md\" \"hookify.ace.safe-git-commands.local.md\")"
+      "Bash(mv \"ace.hookify.safe-git-commands.local.md\" \"hookify.ace.safe-git-commands.local.md\")",
+      "Bash(mkdir -p \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts\")",
+      "Bash(mkdir -p \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/playbooks\")",
+      "Bash(mv \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/pull-bundle.py\" \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-pull-bundle.py\")",
+      "Bash(mv \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/archive-report.py\" \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-archive-report.py\")",
+      "mcp__feishu2md__html_to_image",
+      "Bash(rm /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spec-coding2/SKILL.md)",
+      "Bash(rmdir /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spec-coding2/)"
     ]
   }
 }
