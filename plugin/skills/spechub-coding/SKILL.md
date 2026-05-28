@@ -12,128 +12,137 @@ description: |
 
 核心信念：**SpecHub 产物是输入参考，Spec 是契约，Code 是兑现。** 平台产物不跳过澄清，规范化输出才可累积。
 
-**架构**：输入适配 → 通用引擎（spec-engine.md）→ 输出适配
-
 ---
 
-## 前置检查
+## 输入适配
 
-进入任何阶段前，验证：
-- `openspec/` 目录存在 → 否则提示 `npx @fission-ai/openspec@1.2.0 init`
-- `.claude/project-profile.md` 存在 → 否则提示 `/ace:init`
+### 前置检查
 
----
+- `openspec/` 目录存在 — 否则提示 `npx @fission-ai/openspec@1.2.0 init`
+- `.claude/project-profile.md` 存在 — 否则提示先运行 `/ace:init`
 
-## Phase 0: 需求获取
+### Phase 0: Select + Pull（需求获取）
 
-**目的**：从 SpecHub 拉取产物到本地。
-
+**动作**：
 1. `git remote -v` → 获取 `gitRemoteUrl`
-2. 若无 `requirementId`：运行 inbox 脚本让用户选择
-3. 运行 pull-bundle 脚本拉取产物到 `spechub/{reqId}/artifacts/`
+2. 若无 `requirementId`：
+   ```bash
+   python3 scripts/spechub-pull-bundle.py --inbox <gitRemoteUrl>
+   ```
+   → AskUserQuestion 让用户选择需求
+3. 拉取产物：
+   ```bash
+   python3 scripts/spechub-pull-bundle.py <reqId> <gitRemoteUrl> <repoRoot>
+   ```
+4. 产物写入 `spechub/{reqId}/artifacts/` + `manifest.json`
 
-**脚本位置**：`scripts/spechub-pull-bundle.py`
-**接口契约**：Read `references/api-contract.md`（含错误码与处理策略）
+**脚本路径**：`scripts/spechub-pull-bundle.py`（相对于本 skill 目录）
 
----
+**错误处理**：
+- Exit 1: HTTP/网络错误 → 报错终止
+- Exit 2: 响应解析失败 → 报错终止
+- Exit 3: 业务错误（REQUIREMENT_NOT_FOUND / NO_PROJECT_MATCH / ARTIFACTS_INCOMPLETE）→ 报错终止
 
-## Phase 0.5: 深度理解 → G0 对齐
+### Phase 0.5: Understand + G0（深度理解）
 
-**目的**：形成全面理解，为引擎提供高质量上下文。
+**目的**：形成对需求的全面理解，为引擎提供高质量上下文。
 
-1. Read `.claude/project-profile.md` → 架构分层 + 中间件使用表
+**动作**：
+1. Read `.claude/project-profile.md` → 提取架构分层、中间件使用表
 2. Read `spechub/{reqId}/artifacts/` 全部产物
 3. 分析产出：
-   - **业务目标**（一句话）
-   - **改动范围**（结合 profile 定位目标层）
-   - **infrastructureFootprint**：
-     - `existing`：profile 中间件表自动填充
-     - `newlyRequired`：从产物推断（DDL→dal, 消息→qmq, 缓存→credis...）
+   - 业务目标一句话
+   - 改动范围（结合 profile 架构分层定位目标层）
+   - `infrastructureFootprint` 识别：
+     - `existing`：profile "中间件使用"表（自动填充）
+     - `newlyRequired`：从产物推断的新中间件
      - `effective`：existing∩relevant ∪ newlyRequired
-   - **冲突点/歧义/遗漏**
+   - 产物与现有系统的冲突点 / 歧义 / 遗漏
+
+**G0 门禁**：
 
 <HARD-GATE id="G0" phase="understand">
 **何时**: 进入引擎（Phase 1）之前
 **条件**: AskUserQuestion 展示理解摘要 + infrastructureFootprint + 用户确认
-**无证据**: 禁止进入引擎、禁止调用 openspec new
+**无证据**: 禁止进入引擎
 </HARD-GATE>
 
-**G0 展示格式**：
-```
-业务目标: {一句话}
-改动范围: {定位到架构层}
-基础设施足迹:
-  existing: {dal, soa, qconfig, ...}
-  newlyRequired: {qmq, credis, ...}
-  effective: {本次涉及的全部中间件}
-识别的问题: {冲突/歧义/遗漏列表}
-```
+### Context 准备（交付引擎）
+
+G0 通过后，以下信息已存在于对话上下文中，引擎可直接使用：
+- **userRequest**：manifest.title + 确认的理解摘要
+- **artifacts**：`spechub/{reqId}/artifacts/`（prd.md, architecture.md, contracts/, proposal.md 等）
+- **profile**：`.claude/project-profile.md`
+- **footprint**：`infrastructureFootprint` 结构（含 effective）
+- **playbooks**：`effective` 中为 true 的中间件 → `../../shared/playbooks/{mw}.md`
 
 ---
 
-## 引擎执行（Phase 1-4）
+## 执行
 
-G0 通过后，Read `../../shared/spec-engine.md` — 执行通用 SpecCoding 引擎。
+Read `../../shared/spec-engine.md` — 按通用引擎 Phase 1-4 执行。
 
-### 上下文注入（引擎自动消费）
-
-| 上下文项 | 来源 | 引擎阶段 |
-|----------|------|----------|
-| userRequest | manifest.title + G0 确认摘要 | Phase 1 澄清 |
-| artifacts | `spechub/{reqId}/artifacts/` | Phase 1-2（需求/设计背景） |
-| profile | `.claude/project-profile.md` | Phase 2-3（技术约束） |
-| footprint | G0 确认的 infrastructureFootprint | Phase 2-3（playbook 激活） |
-| playbooks | effective 中间件 → `../../shared/playbooks/{mw}.md` | Phase 2-3 |
-
-### 引擎如何使用产物
-
-- Phase 1：产物 proposal 作为需求基础（但需独立验证和规范化，非直接复制）
-- Phase 2：产物 architecture + contracts 作为设计约束（需本地化适配）
-- Phase 3：playbook 骨架 + profile 模式 = 实现指导
+引擎注入增强（由上下文中已存在的信息自动触发）：
+- **Phase 1/2 澄清**：产物作为澄清背景
+- **Phase 2 设计**：playbook 决策树辅助技术选型
+- **Phase 3 实现**：playbook 骨架 + profile 项目模式 = 实现指导
 
 ---
 
-## 输出适配（引擎 Phase 4 完成后）
+## 输出适配
 
-### Step 1: 交付自检
+引擎 Phase 4 (Archive) 完成后执行以下步骤：
 
-- `git diff --stat` 对照 proposal 涉及文件清单 → 遗漏警告 / 超范围解释
-- 对照 profile 编码约定检查一致性
-- 严重违规 → AskUserQuestion 确认
+### 1. Handoff Check（交付自检）
 
-### Step 2: Git 提交
+1. `git diff` 对照 proposal "涉及文件" 清单 — 是否有遗漏/超出
+2. 对照 profile 编码约定检查生成代码一致性
+3. 输出自检摘要
+4. 若有违规 → AskUserQuestion 确认继续
 
-创建 feature 分支 `feature/spechub-{reqId}-<slug>`，暂存 openspec/ + 业务代码，提交信息包含 requirementId 和关键决策摘要。不 push 到 main/master。
+### 2. Git 操作
 
-### Step 3: SpecHub 上报
+```bash
+# 创建 feature 分支
+git checkout -b feature/spechub-{reqId}-<slug>
 
-运行 `scripts/spechub-archive-report.py` 上报归档结果。失败不阻塞（Git 已提交，上报可稍后重试）。
+# 提交
+git add -A
+git commit -m "feat(spechub-{reqId}): <需求标题简述>"
 
-**完成报告**：
+# 推送
+git push -u origin feature/spechub-{reqId}-<slug>
 ```
-✅ SpecHub Coding 完成
-分支: feature/spechub-{reqId}-<slug>
-提交: {commitHash}
-上报: archiveRecordId = {id}
-下一步建议: 创建 Pull Request
+
+### 3. SpecHub 上报
+
+```bash
+python3 scripts/spechub-archive-report.py <reqId> <gitRemoteUrl> \
+  --branch <branchName> \
+  --commit <commitHash> \
+  --decisions <design decisions markdown>
 ```
+
+**脚本路径**：`scripts/spechub-archive-report.py`（相对于本 skill 目录）
+
+**输出**：archiveRecordId + requirementStatus 更新确认
 
 ---
 
-## 恢复协议
+## 恢复
 
 用户说"继续"时：
-1. 检测 `spechub/` 下活跃的 reqId
-2. 读取 `spechub/{reqId}/manifest.json` → currentPhase + completedGates
-3. 验证前置产物存在性（缺失则回退）
-4. 从断点 phase 继续
-
-每阶段完成后更新 manifest.json（结构见 `references/api-contract.md`）。
+1. Glob `spechub/*/manifest.json` → 找到活跃的 reqId
+2. Read manifest.json → `currentPhase` + `completedGates`
+3. 验证前置产物存在性：
+   - `currentPhase=design` 但 `proposal.md` 不存在 → 回退 Phase 1
+   - `currentPhase=apply` 但 `design.md` 不存在 → 回退 Phase 2
+4. 从断点 Phase 继续引擎执行
 
 ---
 
 ## 运行时规则
 
-- **惊讶测试**：决策让用户惊讶 → 暂停 AskUserQuestion
-- **进度心跳**：Phase 切换报告 / 5+ 工具调用插入说明 / 方向变化立即告知
-- **经验进化**：交付后 Read `../../shared/experience-protocol.md`
+- **惊讶测试**: 决策让用户惊讶 → 暂停 AskUserQuestion
+- **进度心跳**: Phase 切换报告 / 5+ 工具调用插入说明 / 偏离立即告知
+- **经验进化**: 引擎内完成（Phase 4.3）

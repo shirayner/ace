@@ -66,7 +66,10 @@
       "Bash(mv \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/archive-report.py\" \"/d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-archive-report.py\")",
       "mcp__feishu2md__html_to_image",
       "Bash(rm /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spec-coding2/SKILL.md)",
-      "Bash(rmdir /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spec-coding2/)"
+      "Bash(rmdir /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spec-coding2/)",
+      "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-pull-bundle.py\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-pull-bundle.py\")",
+      "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-archive-report.py\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-archive-report.py\")",
+      "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\SKILL.md\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\SKILL.md\")"
     ]
   }
 }

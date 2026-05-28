@@ -5,10 +5,10 @@ archive-report.py — 归档上报到 SpecHub 平台
 用法:
   python3 archive-report.py <requirementId> <gitRemoteUrl> \
     --branch <branchName> --commit <commitHash> \
-    --decisions <decisions_content_or_filepath> --operator <operator>
+    --decisions <decisions_content_or_filepath>
 
 环境变量:
-  SPECHUB_BASE_URL  SOA 服务地址（默认: http://spec-portal-service.ibu.ctripcorp.com）
+  SPECHUB_BASE_URL  SOA 服务地址（默认: http://webapi.soa.fws.qa.nt.ctripcorp.com/api/37639）
 
 退出码:
   0 = 成功
@@ -27,11 +27,12 @@ from urllib.error import HTTPError, URLError
 
 BASE_URL = os.environ.get(
     "SPECHUB_BASE_URL",
-    "http://spec-portal-service.ibu.ctripcorp.com"
+    "http://webapi.soa.fws.qa.nt.ctripcorp.com/api/37639"
 )
 
 
 def post_json(endpoint: str, payload: dict) -> dict:
+    """POST JSON to SOA endpoint, return parsed response."""
     url = f"{BASE_URL}{endpoint}"
     data = json.dumps(payload).encode("utf-8")
     req = Request(url, data=data, headers={"Content-Type": "application/json"})
@@ -47,6 +48,7 @@ def post_json(endpoint: str, payload: dict) -> dict:
 
 
 def resolve_decisions_content(decisions_arg: str) -> str:
+    """Resolve decisions: if it's a file path, read it; otherwise use as-is."""
     path = Path(decisions_arg)
     if path.is_file():
         return path.read_text(encoding="utf-8")
@@ -59,38 +61,46 @@ def main():
     parser.add_argument("git_remote_url", help="Git remote URL")
     parser.add_argument("--branch", required=True, help="Feature branch name")
     parser.add_argument("--commit", required=True, help="Commit hash")
-    parser.add_argument("--decisions", required=True, help="Decisions markdown content or file path")
-    parser.add_argument("--operator", required=True, help="Operator identifier")
+    parser.add_argument("--decisions", required=True,
+                        help="Decisions markdown content or file path")
+
     args = parser.parse_args()
 
+    # Resolve decisions content
     decisions_markdown = resolve_decisions_content(args.decisions)
 
+    # Build request (field names match SOA contract)
     payload = {
-        "requirementId": args.requirement_id,
+        "requirementId": str(args.requirement_id),
         "gitRemoteUrl": args.git_remote_url,
-        "archiveStatus": "COMPLETED",
+        "status": "COMPLETED",
         "branchName": args.branch,
         "commitHash": args.commit,
-        "decisionsMarkdown": decisions_markdown,
-        "operator": args.operator
+        "decisions": decisions_markdown
     }
 
-    resp = post_json("/api/handoff/archive", payload)
+    # Call archive endpoint
+    resp = post_json("/json/archiveHandoff", payload)
 
-    rs = resp.get("responseStatus", {})
-    if rs.get("ack") == "Failure":
-        print(f"Response error: {rs.get('message', 'Unknown')}", file=sys.stderr)
+    # Check response status (uppercase field names from SOA gateway)
+    rs = resp.get("ResponseStatus", resp.get("responseStatus", {}))
+    if rs.get("Ack", rs.get("ack")) == "Failure":
+        msg = rs.get("Message", rs.get("message", "Unknown"))
+        print(f"Response error: {msg}", file=sys.stderr)
         sys.exit(1)
 
+    # Check business status
     brs = resp.get("businessResponsesStatus", {})
-    if brs.get("errorCode"):
-        error_code = brs["errorCode"]
+    status_code = brs.get("statusCode", "")
+    if status_code and status_code != "OK":
         error_msg = brs.get("errorMessage", "Unknown error")
-        print(f"Business error [{error_code}]: {error_msg}", file=sys.stderr)
+        print(f"Business error [{status_code}]: {error_msg}", file=sys.stderr)
         sys.exit(2)
 
+    # Output success result
     result = {
         "archiveRecordId": resp.get("archiveRecordId"),
+        "workspaceProjectId": resp.get("workspaceProjectId"),
         "requirementProjectStatus": resp.get("requirementProjectStatus"),
         "requirementStatus": resp.get("requirementStatus")
     }
