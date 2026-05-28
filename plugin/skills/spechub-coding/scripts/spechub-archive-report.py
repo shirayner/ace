@@ -17,12 +17,17 @@ archive-report.py — 归档上报到 SpecHub 平台
 """
 
 import argparse
+import io
 import json
 import os
 import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
+
+# Force UTF-8 on stdout/stderr to prevent garbled Chinese on Windows (default codepage is GBK)
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
+sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 
 BASE_URL = os.environ.get(
