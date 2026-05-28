@@ -69,6 +69,25 @@ threshold = {insight≥1, assumptions≥2, defeater=mandatory}
      - `newlyRequired`：从产物推断的新中间件
      - `effective`：existing∩relevant ∪ newlyRequired
 
+**并行探索 [CONSTRAINT]**：
+
+理解阶段存在 ≥4 个独立分析维度，**必须**启动多 Agent 并行探索（参照 `../../shared/parallel-protocol.md` 探索型模板）。
+
+| 维度 | 分析目标 | 独立性 |
+|------|---------|--------|
+| D1: 产物语义分析 | 从产物提取业务目标、核心流程、边界场景、隐含约束 | ⟂ |
+| D2: 代码现状验证 | 对产物中 `[新增]`/`[修改]` 声明搜索代码，确认复用性与当前结构 | ⟂ |
+| D3: 架构一致性检查 | 产物选型 vs 项目现有架构模式（分层、命名、依赖方向） | ⟂ |
+| D4: 中间件 footprint 验证 | effective 中间件是否真实可用，新增中间件是否有已有替代 | ⟂ |
+
+**执行协议**：
+- 步骤 1-2（读取 profile + 产物）串行完成，获得并行所需上下文
+- 步骤 3（分析 + grounding）**必须并行**：单条 response 中发出 ≥3 个 Agent（探索型），每个 Agent 负责一个维度
+- 各 Agent prompt 必须自包含（目标 + 已读取的上下文摘要 + 输出格式）
+- 结果回收后整合为 `understanding_result`
+
+**违规定义**：对 D1-D4 逐个串行 Read/Grep = 串行探索轰炸 → 违规。
+
 **G0 对齐确认**：
 
 理解协议执行完毕后（含 artifact-grounding 验证清单），进入对齐确认。
