@@ -69,7 +69,10 @@
       "Bash(rmdir /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spec-coding2/)",
       "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-pull-bundle.py\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-pull-bundle.py\")",
       "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-archive-report.py\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\scripts\\\\spechub-archive-report.py\")",
-      "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\SKILL.md\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\SKILL.md\")"
+      "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\SKILL.md\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\SKILL.md\")",
+      "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/SKILL.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/SKILL.md)",
+      "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/quality-criteria.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/quality-criteria.md)",
+      "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/dimensions.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/dimensions.md)"
     ]
   }
 }
