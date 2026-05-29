@@ -28,12 +28,45 @@
 | 维度 | Agent 任务 | 产出 |
 |------|-----------|------|
 | D1: 语义分析 | 提取业务目标、核心流程、边界场景、隐含约束 | 原始需求理解（Prior） |
-| D2: 代码验证 | 对产物中 [新增]/[修改] 声明搜索代码，确认是否已存在/可复用 | 验证结论 + 冲突清单 |
+| D2: 代码验证 | 对产物中 [新增]/[修改] 声明搜索代码，确认是否已存在/可复用 | 验证结论 + 冲突清单 + **代码插入点** |
 | D3: 架构一致性 | 产物技术选型 vs 现有架构模式（分层/命名/依赖方向） | 架构冲突点 |
 | D4: 中间件 Gap + 校验清单 | 从产物提取所有中间件需求 + 标识符 | artifact-inventory.json + readiness-manifest.json |
 | D5: 必要性审计 | 对每个设计决策：最简实现是什么？差异由何需求驱动？ | 简化建议 |
 
 **违规**：逐个串行执行 D1-D5 = 违规。
+
+#### Agent 输出预算约束 [HARD RULE]
+
+每个 Agent 的 prompt **必须**包含以下指令：
+
+```
+## 输出预算约束（不可违反）
+1. 返回到主 context 的内容 ≤ 20 行
+2. 使用表格格式呈现结论
+3. 详细分析（grep 结果、文件内容、完整推理过程）→ Write 到 {outputFile}
+4. 返回中只引用文件路径，不贴原始代码内容
+5. 你的返回是给主编排 Agent 看的摘要，不是给用户的最终报告
+```
+
+**各维度 outputFile 路径**：
+- D1 → `spechub/{reqId}/analysis/d1-semantic.md`
+- D2 → `spechub/{reqId}/analysis/d2-verification.md`
+- D3 → `spechub/{reqId}/analysis/d3-architecture.md`
+- D4 → `spechub/{reqId}/analysis/d4-infra-gaps.md`
+- D5 → `spechub/{reqId}/analysis/d5-simplification.md`
+
+**D2 Agent 额外要求**：对每个 `should-extend` 或 `conflict` 结论，必须同时输出"代码插入点"信息（类名、方法名、行号、扩展方式），写入 d2-verification.md 中，并在返回摘要中包含一行式插入点引用。
+
+**Agent 返回格式示例**（D2）：
+```
+| 产物声明 | 结论 | 插入点 | 证据文件位置 |
+|---------|------|--------|------------|
+| [新增] 保级Job | should-extend | ExpirationJob.java:89 processGradeExpiration() | d2-verification.md §1 |
+| [新增] 降级Service | should-extend | GradeChangeService.java:45 handleGradeChange() | d2-verification.md §2 |
+| [新增] 规则配置 | confirm-new | — | d2-verification.md §3 |
+
+详情已写入 spechub/{reqId}/analysis/d2-verification.md
+```
 
 ---
 
@@ -78,7 +111,25 @@ Prior（D1 产物声明）+ Evidence（D2/D3/D5 验证结果）= Posterior（修
 | 1 | 黑钻保级判定 | 扩展现有等级过期 Job | 原产物声明"新建保级Job"，D2 发现 MembershipExpirationJob 已有保级链路 |
 | 2 | 黑钻降级执行 | 扩展现有等级变更 Service | 原产物声明"新建降级Service"，D2 发现 GradeChangeService 已有降级接口 |
 | 3 | 保级规则配置化 | 新建 QConfig 配置 | D2 确认不存在，confirm-new |
+
+## 代码插入点详情（DESIGN 阶段直接引用，无需再次探索）
+
+### 插入点 1: {功能点名}
+- 文件: `{模块/相对路径}`
+- 类/方法: `{ClassName}.{methodName}()` (Line {N})
+- 当前逻辑: {一句话描述当前该方法做什么}
+- 扩展方式: {具体怎么扩展——加分支/加 case/注入新依赖}
+- 影响范围: {影响哪些调用方/测试}
+
+### 插入点 2: ...
+（每个 should-extend/conflict 结论对应一个插入点）
 ```
+
+**关键设计：代码插入点的作用**
+
+此 section 是 DESIGN 阶段的**直接输入**。有了它，DESIGN 阶段不需要再派 Agent 去读代码文件——直接基于插入点信息做技术设计。这节省 ~20% context 和 ~10 分钟时间。
+
+插入点信息来源：D2 Agent 在验证过程中已经定位了具体代码位置，顺手产出即可，不增加额外工作。
 
 ---
 

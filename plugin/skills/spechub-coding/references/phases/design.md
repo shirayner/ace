@@ -4,9 +4,21 @@
 生成 proposal + design + tasks（通过 OpenSpec），形成可追溯的技术方案。
 
 ## 输入
-- 所有前置产出（comprehension.md, readiness-check.md, artifacts/）
-- `.claude/project-profile.md`
+- `spechub/{reqId}/comprehension.md` — **核心输入：修正后理解 + 代码插入点详情**
+- `spechub/{reqId}/readiness-check.md` — 中间件准备状态
+- `.claude/project-profile.md` — 项目编码约定
 - G0 确认的 Scope 裁决
+
+## Context Budget 规则 [HARD RULE]
+
+```
+⛔ 禁止在 DESIGN 阶段重新探索代码（派 Agent 读项目文件）
+✅ 所有代码定位信息从 comprehension.md §代码插入点详情 获取
+✅ 如需更多详情 → Read spechub/{reqId}/analysis/d2-verification.md 的特定 section
+✅ 如需架构参考 → Read spechub/{reqId}/analysis/d3-architecture.md
+```
+
+**理由**：COMPREHEND 阶段已完成代码验证和定位，DESIGN 不应重复此工作。代码插入点信息已包含文件路径、类名、方法名、行号、扩展方式——足够做技术设计。
 
 ## 产出
 - `openspec/changes/{slug}/proposal.md`
