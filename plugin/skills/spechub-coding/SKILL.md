@@ -298,10 +298,98 @@ D2(代码事实) > D3(架构一致性) > D4(中间件现状) > D5(设计偏好) 
 
 ---
 
+### Phase 0.7: Infrastructure Readiness Check（基础设施准备度校验）
+
+**目的**：在进入设计/实现前，自动校验本次需求涉及的中间件是否已具备实施条件。发现缺失时提前阻塞，给出 actionable 的补全清单，避免实现阶段卡在依赖缺失上。
+
+**触发时机**：G0 通过后、Context 准备之前。
+
+**校验范围**：
+- `newlyRequired`：全新引入的中间件（整个中间件为新）
+- `existing` 涉及新操作：现有中间件本次需要新增 operation / table / collection / topic / config 等
+
+**校验来源**：从 G0 确认的 **Scope In 功能点** + **infrastructureFootprint** 中提取需要校验的条目。
+
+---
+
+#### 校验矩阵
+
+| 中间件 | 校验场景 | MCP 工具 | 校验方法 | 通过标准 |
+|--------|---------|----------|---------|---------|
+| SOA | 新契约/新 operation | `mom_mcp_official.get_project_list` → `get_single_operation` | 查 appId+operationName 是否已发布 | 契约存在 + version ≥1 + maven 坐标在产物中已提供 |
+| DB | 新表/新字段 | `DOT.show_create_table` / `show_tables` | 查目标库中表/字段是否存在 | 表已存在 OR 产物中提供了完整 DDL |
+| QConfig | 新配置文件 | `qconfig_mcp.getqconfig` | 查 appid+file_name 是否有内容 | 已存在 OR 标记为"实现阶段创建"（非阻塞） |
+| Redis | 新集群使用 | `DOT.redis_call`（ping/EXISTS） | 验证集群名可达 | 集群已分配且可连接 |
+| MongoDB | 新 collection | `DOT.mongo_collections` | 查 cluster+db 下 collection 列表 | 存在 OR 标记为"实现阶段创建"（非阻塞） |
+| QMQ | 新 topic | ❌ 无 MCP | — | 人工确认 |
+| QSchedule | 新调度任务 | ❌ 无 MCP | — | 人工确认 |
+| DRC | 新同步配置 | ❌ 无 MCP | — | 人工确认 |
+
+#### 校验级别
+
+| 级别 | 含义 | 处理 |
+|------|------|------|
+| 🔴 BLOCKED | 必须有但不存在，且无法在实现阶段自行创建 | **阻塞进入引擎**，输出补全 action |
+| 🟡 WARN | 可在实现阶段创建但需确认方案 | 不阻塞，但在 readiness 报告中标注 |
+| 🔵 MANUAL | 无 MCP 工具，需人工确认 | AskUserQuestion 确认准备状态 |
+| ✅ READY | 校验通过 | 正常推进 |
+
+**BLOCKED 的典型场景**：
+- SOA 新契约 → 契约在 MOM 上不存在（需先找契约 owner 发布）
+- SOA 新 operation → operation 查不到（需先在 MOM 创建）
+- Maven 坐标 → 产物中未提供契约 JAR 的 groupId:artifactId:version
+- DB 新表 → 表不存在 且 产物中未提供 DDL（无法实现）
+
+#### 执行协议
+
+1. 从 G0 Scope In 功能点 + footprint 提取 **校验清单**（每个条目 = 中间件类型 + 具体资源标识）
+2. **并行校验**：对所有可自动校验的条目（SOA/DB/QConfig/Redis/MongoDB），单条 response 并行调用 MCP 工具
+3. 对无 MCP 的条目（QMQ/QSchedule/DRC），合并为一个 AskUserQuestion 批量确认
+4. 整合校验结果，Write `spechub/{reqId}/readiness-check.md`
+
+#### 产出物（MUST-WRITE）
+
+Write `spechub/{reqId}/readiness-check.md`：
+
+```markdown
+# Infrastructure Readiness Check — {requirementTitle}
+
+## 校验结果
+
+| # | 中间件 | 资源 | 校验方式 | 状态 | 详情 |
+|---|--------|------|---------|------|------|
+| 1 | SOA | AppId:xxx Op:YYY | MOM MCP | ✅ READY | v3 已发布 |
+| 2 | DB | testdb.new_table | DOT MCP | 🔴 BLOCKED | 表不存在，无 DDL |
+| 3 | QMQ | topic.xxx | 人工确认 | 🔵 用户确认 READY | — |
+
+## 🔴 BLOCKED 补全清单
+
+| # | 缺失项 | 需要的 Action | 负责方 |
+|---|--------|--------------|--------|
+| 1 | testdb.new_table | 提供 DDL 并执行建表 | 用户/DBA |
+
+## 结论
+- BLOCKED: {N} 项 → ⛔ 阻塞，需补全后继续
+- WARN: {N} 项 → 实现阶段处理
+- READY: {N} 项
+```
+
+#### 阻塞策略
+
+- 存在 🔴 BLOCKED → **AskUserQuestion**：展示补全清单，选项为"已补全，重新校验" / "跳过阻塞项（我负责）" / "终止本次需求"
+- 用户选择"跳过" → 标记为 `⚠️ USER_OVERRIDE`，记录到 state.json，继续推进
+- 无 BLOCKED → 自动通过，进入 Context 准备
+
+#### 更新状态
+
+校验通过后：`spechub/{reqId}/state.json` → `{"phase": "readiness-checked", "completedGates": ["G0"], ...}`
+
+---
+
 ### Context 准备（交付引擎）
 
-G0 通过后，**必须**执行：
-1. 更新 `spechub/{reqId}/state.json`：`{"phase": "design", "completedGates": ["G0"], ...}`
+G0 + Readiness Check 通过后，**必须**执行：
+1. 更新 `spechub/{reqId}/state.json`：`{"phase": "design", "completedGates": ["G0", "RC"], ...}`
 2. 以下信息供引擎使用：
 
 - **userRequest**：manifest.title + 确认的理解摘要
@@ -447,7 +535,8 @@ python3 scripts/spechub-archive-report.py <reqId> <gitRemoteUrl> \
    | 当前 phase | 必须存在的产出物 | 缺失时回退到 |
    |-----------|----------------|-------------|
    | understand | artifacts/ | Phase 0（重新拉取） |
-   | design | comprehension.md | Phase 0.5 |
+   | readiness-checked | comprehension.md | Phase 0.5 |
+   | design | readiness-check.md | Phase 0.7 |
    | apply | design.md + tasks.md | Phase 2 |
    | apply-verified | 编译通过 + 测试通过 | Phase 3 末尾验证 |
    | archive | handoff-check.md | 输出适配 Step 1 |
@@ -459,8 +548,8 @@ python3 scripts/spechub-archive-report.py <reqId> <gitRemoteUrl> \
 
 ```json
 {
-  "phase": "understand | design | apply | apply-verified | archive | done",
-  "completedGates": ["G0", "G2"],
+  "phase": "understand | readiness-checked | design | apply | apply-verified | archive | done",
+  "completedGates": ["G0", "RC", "G2"],
   "reqId": 1450,
   "requirementTitle": "黑钻升降保级规则+页面",
   "startedAt": "2026-05-29T10:00:00Z",
