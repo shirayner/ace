@@ -87,6 +87,35 @@ description: |
 5. 初始化状态追踪：
    - Write `spechub/.active` → 内容仅为 `{reqId}`
    - Write `spechub/{reqId}/state.json` → `{"phase": "pull", "completedGates": [], "reqId": {reqId}, "requirementTitle": "...", "startedAt": "<ISO>", "lastUpdatedAt": "<ISO>"}`
+6. **产物清单生成（MUST-WRITE）**：
+   从拉取脚本的响应结构中提取，Write `spechub/{reqId}/artifact-inventory.json`：
+   ```json
+   {
+     "reqId": 1450,
+     "requirementTitle": "...",
+     "generatedAt": "<ISO>",
+     "artifacts": {
+       "prd": { "exists": true/false },
+       "architecture": { "exists": true/false },
+       "proposal": { "exists": true/false },
+       "contracts": [{
+         "filename": "contract-XXXX.md",
+         "services": ["service-a", "service-b"],
+         "mavenCoordinates": [
+           { "service": "...", "groupId": "...", "artifactId": "...", "version": "...", "status": "provided|missing" }
+         ],
+         "operations": [
+           { "service": "...", "operation": "...", "status": "declared" }
+         ]
+       }],
+       "qmqDesign": { "exists": true/false, "topics": ["..."] },
+       "databaseDesign": { "exists": true/false, "tables": [{"db": "...", "table": "..."}] }
+     },
+     "infrastructureGaps": {}
+   }
+   ```
+   - `artifacts` 段：直接映射 API 响应结构化字段
+   - `infrastructureGaps` 段：此时为空，由 Phase 0.5 理解阶段填充（交叉对比 architecture 需求 vs 产物实际提供）
 
 **脚本路径**：`scripts/spechub-pull-bundle.py`（相对于本 skill 目录）
 
@@ -123,8 +152,14 @@ threshold = {insight≥1, assumptions≥2, defeater=mandatory}
 | D1: 产物语义分析 | 提取业务目标、核心流程、边界场景、隐含约束 | ⟂ |
 | D2: 代码现状验证 | 对 `[新增]`/`[修改]` 声明搜索代码，确认复用性 | ⟂ |
 | D3: 架构一致性检查 | 产物选型 vs 现有架构模式（分层/命名/依赖方向） | ⟂ |
-| D4: 中间件 footprint 验证 | 新增中间件是否有已有替代 | ⟂ |
+| D4: 中间件 footprint 验证 + Gap 分析 | 新增中间件是否有已有替代 + **填充 `artifact-inventory.json` 的 `infrastructureGaps`** | ⟂ |
 | D5: 方案必要性审计 ⟵ 优化⑤ | 对每个设计决策问"最简实现是什么？差异由何驱动？" | ⟂ |
+
+**D4 执行方法**：
+- 从 architecture/proposal 中提取所有中间件需求（SOA/DB/QMQ/QConfig/Redis/MongoDB/QSchedule/DRC）
+- 对比 `artifact-inventory.json` 的 `artifacts` 段，判断每个需求是否有对应的设计产物提供具体标识符
+- 产出 `infrastructureGaps`：对每个缺失项记录 { 中间件类型, gap类型(design_not_provided/identifier_missing), detail, needed[] }
+- 将 `infrastructureGaps` 更新回 `artifact-inventory.json`
 
 **D5 执行方法**：
 - 对产物每个核心功能点：如果用最简方式实现同一业务目标，方案差异在哪？
@@ -309,6 +344,34 @@ D2(代码事实) > D3(架构一致性) > D4(中间件现状) > D5(设计偏好) 
 - `existing` 涉及新操作：现有中间件本次需要新增 operation / table / collection / topic / config 等
 
 **校验来源**：从 G0 确认的 **Scope In 功能点** + **infrastructureFootprint** 中提取需要校验的条目。
+
+---
+
+#### 前置步骤：输入完备性检查（MUST-DO，在 MCP 校验前）
+
+**目的**：MCP 校验需要具体标识符（db_name, table_name, appId, operationName, topic 等）。当产物未提供这些信息时，校验无法执行。此步骤先确定"信息是否充足"，不足则向用户追问补全。
+
+**执行逻辑**：
+
+1. Read `spechub/{reqId}/artifact-inventory.json` → 获取产物完备性状态
+2. 对照 `infrastructureGaps`（Phase 0.5 已填充），生成**信息补全清单**：
+
+| 中间件 | 需要的标识符 | 来源 | 缺失时的追问模板 |
+|--------|-------------|------|----------------|
+| SOA | appId + operationName + maven坐标 | `contracts[].operations` + `contracts[].mavenCoordinates` | "请提供 {service} 的 appId 和 maven 坐标（groupId:artifactId:version）" |
+| DB | db_name + table_name（+ DDL） | `databaseDesign.tables` | "请提供需要新建的数据库名和表名（若表未建则需提供 DDL）" |
+| QMQ | topic_name | `qmqDesign.topics` | "请提供 QMQ topic 名称" |
+| QConfig | appid + file_name | 从 architecture 推断 | "请提供 QConfig 的 appid 和配置文件名" |
+| Redis | cluster_name | 从 architecture 推断 | "请提供 Redis 集群名称" |
+| MongoDB | cluster + db + collection | 从 architecture 推断 | "请提供 MongoDB 集群名、库名和 collection 名" |
+
+3. 若存在缺失项 → **AskUserQuestion**（批量展示所有缺失，一次性收集）：
+   - 展示："以下中间件信息缺失，需要补全后才能进行准备度校验"
+   - 选项："补充信息" / "暂时跳过（我确认已准备好）"
+4. 用户补全后 → 更新 `artifact-inventory.json` 的对应字段
+5. 全部标识符就位 → 进入 MCP 校验
+
+**跳过条件**：`infrastructureGaps` 为空（所有中间件信息均已由产物提供）→ 直接进入校验矩阵。
 
 ---
 
