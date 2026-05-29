@@ -1,0 +1,249 @@
+{
+  "schemaVersion": "1.0",
+  "defaultEnvType": "fat",
+  "paramInterpolation": "使用 {paramName} 语法插值，{paramName|default} 表示带默认值",
+  "checkTypes": {
+
+    "soa_new_interface": {
+      "description": "新增 SOA 接口（本服务作为 provider）",
+      "scenario": "本次需求需要新增一个 SOA 接口供外部调用",
+      "requiredParams": ["appId", "operationName", "version"],
+      "optionalParams": ["mavenGroupId", "mavenArtifactId", "mavenVersion"],
+      "checkSteps": [
+        {
+          "id": "contract_exists",
+          "tool": "mom_mcp_official.get_single_operation",
+          "params": {
+            "app_id": "{appId}",
+            "operation_name": "{operationName}",
+            "version": "{version}",
+            "lang": "zh-CN"
+          },
+          "passIf": "response contains operation definition (no error)",
+          "failLevel": "BLOCKED",
+          "failMessage": "SOA 契约 {operationName}(appId:{appId}) 在 MOM 上不存在，需先创建并发布"
+        },
+        {
+          "id": "maven_jar_published",
+          "tool": "mom_mcp_official.get_jar_project",
+          "params": {
+            "group_id": "{mavenGroupId}",
+            "artifact_id": "{mavenArtifactId}",
+            "version": "{mavenVersion}"
+          },
+          "skipIf": "mavenGroupId || mavenArtifactId || mavenVersion is empty",
+          "passIf": "project found (JAR exists in repository)",
+          "failLevel": "BLOCKED",
+          "failMessage": "Maven JAR {mavenGroupId}:{mavenArtifactId}:{mavenVersion} 未发布到仓库"
+        },
+        {
+          "id": "maven_coordinates_provided",
+          "tool": "param_check",
+          "check": "mavenGroupId && mavenArtifactId && mavenVersion all non-empty",
+          "passIf": "all three maven fields provided",
+          "failLevel": "BLOCKED",
+          "failMessage": "Maven JAR 坐标缺失（groupId:artifactId:version），需从契约 owner 处获取"
+        }
+      ]
+    },
+
+    "soa_dependency": {
+      "description": "依赖外部 SOA 接口（本服务作为 consumer）",
+      "scenario": "本次需求需要调用另一个服务的 SOA 接口",
+      "requiredParams": ["appId", "operationName"],
+      "optionalParams": ["mavenGroupId", "mavenArtifactId", "mavenVersion"],
+      "checkSteps": [
+        {
+          "id": "dep_contract_exists",
+          "tool": "mom_mcp_official.get_single_operation",
+          "params": {
+            "app_id": "{appId}",
+            "operation_name": "{operationName}",
+            "version": -1,
+            "lang": "zh-CN"
+          },
+          "passIf": "operation exists with published version >= 1",
+          "failLevel": "BLOCKED",
+          "failMessage": "依赖的 SOA 接口 {operationName}(appId:{appId}) 在 MOM 上不存在或未发布"
+        },
+        {
+          "id": "dep_maven_jar_published",
+          "tool": "mom_mcp_official.get_jar_project",
+          "params": {
+            "group_id": "{mavenGroupId}",
+            "artifact_id": "{mavenArtifactId}",
+            "version": "{mavenVersion}"
+          },
+          "skipIf": "mavenGroupId || mavenArtifactId || mavenVersion is empty",
+          "passIf": "project found (client JAR exists in repository)",
+          "failLevel": "BLOCKED",
+          "failMessage": "依赖接口的 client JAR {mavenGroupId}:{mavenArtifactId}:{mavenVersion} 未发布到仓库"
+        },
+        {
+          "id": "dep_maven_coordinates_provided",
+          "tool": "param_check",
+          "check": "mavenGroupId && mavenArtifactId && mavenVersion",
+          "passIf": "client jar coordinates provided",
+          "failLevel": "BLOCKED",
+          "failMessage": "依赖接口的 client JAR 坐标缺失，需从契约 owner 处获取"
+        }
+      ]
+    },
+
+    "db_new_table": {
+      "description": "新建数据库表",
+      "scenario": "本次需求需要创建新的数据库表",
+      "requiredParams": ["dbName", "tableName"],
+      "optionalParams": ["ddl", "envType"],
+      "checkSteps": [
+        {
+          "id": "table_exists",
+          "tool": "DOT.show_create_table",
+          "params": {
+            "db_name": "{dbName}",
+            "table_name": "{tableName}",
+            "env_type": "{envType|fat}"
+          },
+          "passIf": "table exists (returns CREATE TABLE statement)",
+          "failLevel": "conditional",
+          "failCondition": {
+            "if_param_provided:ddl": { "level": "WARN", "message": "表 {dbName}.{tableName} 不存在，但 DDL 已提供，可在实现阶段创建" },
+            "if_param_missing:ddl": { "level": "BLOCKED", "message": "表 {dbName}.{tableName} 不存在且无 DDL，无法实现" }
+          }
+        }
+      ]
+    },
+
+    "db_alter_table": {
+      "description": "现有表新增字段/索引",
+      "scenario": "本次需求需要修改现有表结构",
+      "requiredParams": ["dbName", "tableName", "alterDescription"],
+      "optionalParams": ["ddl", "envType"],
+      "checkSteps": [
+        {
+          "id": "table_current_schema",
+          "tool": "DOT.show_create_table",
+          "params": {
+            "db_name": "{dbName}",
+            "table_name": "{tableName}",
+            "env_type": "{envType|fat}"
+          },
+          "passIf": "table exists (can retrieve current schema)",
+          "failLevel": "BLOCKED",
+          "failMessage": "表 {dbName}.{tableName} 不存在，无法 ALTER"
+        }
+      ]
+    },
+
+    "qconfig_file": {
+      "description": "QConfig 配置文件",
+      "scenario": "本次需求需要使用 QConfig 配置",
+      "requiredParams": ["appId", "fileName"],
+      "optionalParams": ["targetEnv"],
+      "createDuringImpl": true,
+      "checkSteps": [
+        {
+          "id": "qconfig_exists",
+          "tool": "qconfig_mcp.getqconfig",
+          "params": {
+            "appid": "{appId}",
+            "file_name": "{fileName}",
+            "targetenv": "{targetEnv|fat}"
+          },
+          "passIf": "config file exists or is accessible",
+          "failLevel": "WARN",
+          "failMessage": "QConfig {appId}/{fileName} 不存在，将在实现阶段创建"
+        }
+      ]
+    },
+
+    "redis_usage": {
+      "description": "使用 Redis 集群",
+      "scenario": "本次需求涉及 Redis 读写",
+      "requiredParams": ["clusterName"],
+      "optionalParams": ["locationZone"],
+      "checkSteps": [
+        {
+          "id": "redis_reachable",
+          "tool": "DOT.redis_call",
+          "params": {
+            "cluster_name": "{clusterName}",
+            "command": "EXISTS __readiness_probe__",
+            "env_type": "fat",
+            "location_zone": "{locationZone|}"
+          },
+          "passIf": "no connection error (response value irrelevant)",
+          "failLevel": "BLOCKED",
+          "failMessage": "Redis 集群 {clusterName} 不可达，请确认集群已分配"
+        }
+      ]
+    },
+
+    "mongodb_usage": {
+      "description": "使用 MongoDB",
+      "scenario": "本次需求涉及 MongoDB 读写",
+      "requiredParams": ["cluster", "db"],
+      "optionalParams": ["collection"],
+      "createDuringImpl": true,
+      "checkSteps": [
+        {
+          "id": "mongo_db_accessible",
+          "tool": "DOT.mongo_collections",
+          "params": {
+            "cluster": "{cluster}",
+            "db": "{db}",
+            "env_type": "fat"
+          },
+          "passIf": "connection success (can list collections)",
+          "failLevel": "WARN",
+          "failMessage": "MongoDB {cluster}.{db} 连接成功，collection 可在实现阶段创建"
+        }
+      ]
+    },
+
+    "qmq_topic": {
+      "description": "QMQ 消息 Topic",
+      "scenario": "本次需求涉及 QMQ 消息发送/消费",
+      "requiredParams": ["topicName"],
+      "optionalParams": ["producerAppId", "consumerAppId"],
+      "checkSteps": [
+        {
+          "id": "qmq_manual",
+          "tool": "manual_confirm",
+          "question": "QMQ topic '{topicName}' 是否已在 QMQ 平台注册？",
+          "failLevel": "MANUAL"
+        }
+      ]
+    },
+
+    "qschedule_job": {
+      "description": "QSchedule 定时任务",
+      "scenario": "本次需求需要定时任务调度",
+      "requiredParams": ["jobName"],
+      "optionalParams": ["cron", "appId"],
+      "createDuringImpl": true,
+      "checkSteps": [
+        {
+          "id": "qschedule_manual",
+          "tool": "manual_confirm",
+          "question": "QSchedule 任务 '{jobName}' 是否已在平台创建？（新建任务可选择'实现阶段处理'）",
+          "failLevel": "MANUAL"
+        }
+      ]
+    },
+
+    "drc_sync": {
+      "description": "DRC 数据同步",
+      "scenario": "本次需求涉及跨数据中心/跨库数据同步",
+      "requiredParams": ["syncName", "sourceDb", "targetDb"],
+      "checkSteps": [
+        {
+          "id": "drc_manual",
+          "tool": "manual_confirm",
+          "question": "DRC 同步配置 '{syncName}' ({sourceDb} → {targetDb}) 是否已配置？",
+          "failLevel": "MANUAL"
+        }
+      ]
+    }
+  }
+}

@@ -7,6 +7,10 @@ archive-report.py — 归档上报到 SpecHub 平台
     --branch <branchName> --commit <commitHash> \
     --decisions <decisions_content_or_filepath>
 
+  python3 archive-report.py <requirementId> <gitRemoteUrl> \
+    --branch <branchName> --commit <commitHash> \
+    --divergences-json <divergences_json_filepath>
+
 环境变量:
   SPECHUB_BASE_URL  SOA 服务地址（默认: http://webapi.soa.fws.qa.nt.ctripcorp.com/api/37639）
 
@@ -60,19 +64,78 @@ def resolve_decisions_content(decisions_arg: str) -> str:
     return decisions_arg
 
 
+def divergences_to_markdown(divergences_path: str) -> str:
+    """Convert divergences JSON array to decisions markdown format.
+
+    Reads a JSON file containing divergences array, filters by severity,
+    groups by category, and formats as markdown for SpecHub platform.
+    """
+    path = Path(divergences_path)
+    if not path.is_file():
+        print(f"Divergences file not found: {divergences_path}", file=sys.stderr)
+        sys.exit(1)
+
+    with open(path, encoding="utf-8") as f:
+        divergences = json.load(f)
+
+    if not divergences:
+        return "无偏离，完全按平台产物实现"
+
+    # Filter: exclude minor severity
+    significant = [d for d in divergences if d.get("severity") != "minor"]
+
+    if not significant:
+        return "无重要偏离，完全按平台产物实现（仅有细微差异）"
+
+    # Group by category
+    groups = {}
+    for d in significant:
+        category = d.get("category", "其他")
+        if category not in groups:
+            groups[category] = []
+        groups[category].append(d)
+
+    # Format as markdown
+    lines = []
+    for category, items in groups.items():
+        lines.append(f"## {category}")
+        lines.append("")
+        for item in items:
+            lines.append(f"- 平台方案: {item.get('expected', 'N/A')}")
+            lines.append(f"- 本地实现: {item.get('actual', 'N/A')}")
+            lines.append(f"- 理由: {item.get('reason', 'N/A')}")
+            if item.get("type") == "infra_override":
+                lines.append("- 备注: 用户确认跳过，由用户负责后续补全")
+            if item.get("type") == "implementation_drift":
+                decision = item.get("decision", "")
+                if decision:
+                    lines.append(f"- 关联设计决策: {decision}")
+            lines.append("")
+
+    return "\n".join(lines).strip()
+
+
 def main():
     parser = argparse.ArgumentParser(description="Archive and report to SpecHub platform")
     parser.add_argument("requirement_id", type=int, help="Requirement ID")
     parser.add_argument("git_remote_url", help="Git remote URL")
     parser.add_argument("--branch", required=True, help="Feature branch name")
     parser.add_argument("--commit", required=True, help="Commit hash")
-    parser.add_argument("--decisions", required=True,
-                        help="Decisions markdown content or file path")
+
+    # Two mutually exclusive ways to provide decisions content
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--decisions",
+                       help="Decisions markdown content or file path")
+    group.add_argument("--divergences-json",
+                       help="Path to divergences JSON array file (will be converted to markdown)")
 
     args = parser.parse_args()
 
-    # Resolve decisions content
-    decisions_markdown = resolve_decisions_content(args.decisions)
+    # Resolve decisions content from either source
+    if args.decisions:
+        decisions_markdown = resolve_decisions_content(args.decisions)
+    else:
+        decisions_markdown = divergences_to_markdown(args.divergences_json)
 
     # Build request (field names match SOA contract)
     payload = {
