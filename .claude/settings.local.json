@@ -72,7 +72,9 @@
       "Bash(cp \"D:\\\\Users\\\\r.shi\\\\.claude\\\\plugins\\\\marketplaces\\\\ace-local\\\\skills\\\\spechub-coding\\\\SKILL.md\" \"D:\\\\Users\\\\r.shi\\\\work-space\\\\incubator\\\\ace\\\\plugin\\\\skills\\\\spechub-coding\\\\SKILL.md\")",
       "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/SKILL.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/SKILL.md)",
       "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/quality-criteria.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/quality-criteria.md)",
-      "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/dimensions.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/dimensions.md)"
+      "Bash(cp /d/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/dimensions.md /d/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/dimensions.md)",
+      "Bash(mkdir -p \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding2/references/phases\")",
+      "Bash(mkdir -p \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding2/scripts\")"
     ]
   }
 }
