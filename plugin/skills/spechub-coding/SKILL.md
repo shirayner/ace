@@ -1,5 +1,5 @@
 ---
-name: spechub-coding2
+name: spechub-coding
 description: |
   SpecHub 产物驱动的规范编码。当用户需要基于 SpecHub 平台产物进行本地编码时触发。
   适用于：用户提供 requirementId 或从 SpecHub inbox 选择需求后，基于平台产物完成编码。
@@ -23,15 +23,15 @@ description: |
 
 ## 状态机
 
-| Phase | 进入条件 | 产出 | 退出 Gate |
-|-------|---------|------|----------|
-| PULL | 用户触发 | artifacts/ + manifest.json | — (auto) |
-| COMPREHEND | pull.done | comprehension.md + inventory + readiness-manifest.json | G0 |
-| READINESS | G0 passed | readiness-check.md | G1 |
-| DESIGN | G1 passed | proposal.md + design.md + tasks.md (via OpenSpec) | G2 |
-| IMPLEMENT | G2 passed | 代码实现 + tasks.md 勾选 | — (auto) |
-| VERIFY | implement.done | handoff-check.md | G3 (auto) |
-| ARCHIVE | G3 passed | git + openspec archive + spechub archive | DONE |
+| Phase      | 进入条件       | 产出                                                   | 退出 Gate |
+| ---------- | -------------- | ------------------------------------------------------ | --------- |
+| PULL       | 用户触发       | artifacts/ + manifest.json                             | — (auto) |
+| COMPREHEND | pull.done      | comprehension.md + inventory + readiness-manifest.json | G0        |
+| READINESS  | G0 passed      | readiness-check.md                                     | G1        |
+| DESIGN     | G1 passed      | proposal.md + design.md + tasks.md (via OpenSpec)      | G2        |
+| IMPLEMENT  | G2 passed      | 代码实现 + tasks.md 勾选                               | — (auto) |
+| VERIFY     | implement.done | handoff-check.md                                       | G3 (auto) |
+| ARCHIVE    | G3 passed      | git + openspec archive + spechub archive               | DONE      |
 
 ---
 
@@ -80,8 +80,8 @@ description: |
 
 ### G3 — 验证通过（自动 Gate）
 
-**位置**: VERIFY → ARCHIVE  
-**条件**: 编译通过 + 测试通过 + handoff-check.md 存在  
+**位置**: VERIFY → ARCHIVE
+**条件**: 编译通过 + 测试通过 + handoff-check.md 存在
 **通过动作**: 自动进入 ARCHIVE
 
 ---
