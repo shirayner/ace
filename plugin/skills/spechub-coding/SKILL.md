@@ -84,6 +84,9 @@ description: |
    python3 scripts/spechub-pull-bundle.py <reqId> <gitRemoteUrl> <repoRoot>
    ```
 4. 产物写入 `spechub/{reqId}/artifacts/` + `manifest.json`
+5. 初始化状态追踪：
+   - Write `spechub/.active` → 内容仅为 `{reqId}`
+   - Write `spechub/{reqId}/state.json` → `{"phase": "pull", "completedGates": [], "reqId": {reqId}, "requirementTitle": "...", "startedAt": "<ISO>", "lastUpdatedAt": "<ISO>"}`
 
 **脚本路径**：`scripts/spechub-pull-bundle.py`（相对于本 skill 目录）
 
@@ -158,6 +161,30 @@ threshold = {insight≥1, assumptions≥2, defeater=mandatory}
 当新建方案复杂度增量 > 扩展方案 且无 (a)(b)(c)(d) 驱动力 → recommendation = `simplify`（不允许 `needs-discussion`）
 
 **违规定义**：对 D1-D5 逐个串行 = 违规。
+
+### Phase 0.5 产出物（MUST-WRITE）
+
+D1-D5 并行探索完成后，**必须**执行：
+
+1. Write `spechub/{reqId}/comprehension.md`，内容结构：
+   ```markdown
+   # 需求理解 — {requirementTitle}
+   ## 业务目标（D1）
+   ## 代码验证结论（D2）
+   | 产物声明 | 结论 | 证据 |
+   ## 架构一致性（D3）
+   ## Infrastructure Footprint（D4）
+   ## 简化建议（D5）
+   ```
+2. Write `spechub/{reqId}/state.json`：
+   ```json
+   {"phase": "understand", "completedGates": [], "timestamp": "<ISO>"}
+   ```
+3. Write `spechub/.active` → 内容仅为 `{reqId}`
+
+**comprehension.md 不存在 = Phase 0.5 未完成，禁止进入 G0。**
+
+---
 
 **D 维度冲突仲裁规则** ⟵ 优化⑧：
 
@@ -273,7 +300,9 @@ D2(代码事实) > D3(架构一致性) > D4(中间件现状) > D5(设计偏好) 
 
 ### Context 准备（交付引擎）
 
-G0 通过后，以下信息供引擎使用：
+G0 通过后，**必须**执行：
+1. 更新 `spechub/{reqId}/state.json`：`{"phase": "design", "completedGates": ["G0"], ...}`
+2. 以下信息供引擎使用：
 
 - **userRequest**：manifest.title + 确认的理解摘要
 - **scopeDecision**：用户确认的 Scope In 功能点清单
@@ -313,6 +342,7 @@ Read `../../shared/spec-engine.md` — 按通用引擎执行，但本适配层�
 - **Phase 1 生成**：scopeDecision 作为 proposal 范围约束
 - **Phase 2 澄清**：产物作为背景 + playbook 决策树辅助选型
   - 澄清维度：Playbook选型 | 契约验证 | 平台架构约束 | 架构决策 | 接口设计 | 数据状态 | 性能可靠性 | 部署运维
+- **Phase 2 完成（G2 通过后）**：更新 `spechub/{reqId}/state.json` → `{"phase": "apply", "completedGates": ["G0", "G2"], ...}`
 - **Phase 3 实现**：playbook 骨架 + profile 项目模式 = 实现指导
 
 ### 正反馈路径 ⟵ 加速机制（优化⑫修正）
@@ -324,19 +354,58 @@ Read `../../shared/spec-engine.md` — 按通用引擎执行，但本适配层�
 
 ---
 
+## Phase 3 完成验证（MUST-DO，不可跳过）
+
+代码实现全部完成后、进入输出适配之前，**必须按顺序**执行：
+
+1. **编译验证**：`Bash("mvn compile -DskipTests")` 或对应构建命令
+   - 编译失败 → 修复后重新编译，循环直到通过
+2. **运行单测**：`Bash("mvn test")` 或对应测试命令
+   - 测试失败 → 修复后重新运行，循环直到通过
+   - 若项目无法本地测试 → 标注跳过原因，AskUserQuestion 确认
+3. **清理临时文件**：删除 Agent 探索阶段生成的非项目文件
+   - `Bash("rm -f AUDIT_*.md QUICK_DECISION_CARD.md _AUDIT_INDEX.md")` 等
+   - 原则：`git status` 中不应有非功能性的临时文件
+4. **更新状态**：`spechub/{reqId}/state.json` → `{"phase": "apply-verified", ...}`
+
+**编译/测试未通过时，禁止进入输出适配。**
+
+---
+
 ## 输出适配
 
 引擎 Phase 4 (Archive) 完成后执行：
 
-### 1. Handoff Check（交付自检）
+### 1. Handoff Check（MUST-WRITE）
 
-1. `git diff` 对照 proposal "涉及文件" 清单 — 是否有遗漏/超出
-2. 对照 scopeDecision — Scope Out 的功能点是否意外出现在代码中
-3. 对照 profile 编码约定检查生成代码一致性
-4. 输出自检摘要
-5. 若有违规 → AskUserQuestion 确认继续
+执行检查后 **必须** Write `spechub/{reqId}/handoff-check.md`：
 
-### 2. Git 操作
+```markdown
+# Handoff Check — {requirementTitle}
+
+## git diff 摘要
+（粘贴 `git diff --stat` 输出）
+
+## Scope 覆盖矩阵
+| 功能点 | Scope 决策 | 代码覆盖 | 状态 |
+|--------|-----------|---------|------|
+| ... | Scope In | ✅ 已实现 | OK |
+| ... | Scope Out | ❌ 未出现 | OK |
+
+## 编码约定一致性
+- 命名规范: ✅/❌
+- 分层依赖方向: ✅/❌
+- ...
+
+## 违规项
+（无 / 具体描述）
+```
+
+**handoff-check.md 不存在 = Handoff Check 未完成，禁止执行 Git 操作。**
+
+若有违规 → AskUserQuestion 确认继续。
+
+### 2. Git 操作（MUST-DO）
 
 ```bash
 git checkout -b feature/spechub-{reqId}-<slug>
@@ -345,7 +414,9 @@ git commit -m "feat(spechub-{reqId}): <需求标题简述>"
 git push -u origin feature/spechub-{reqId}-<slug>
 ```
 
-### 3. SpecHub 上报
+更新状态：`spechub/{reqId}/state.json` → `{"phase": "archive", ...}`
+
+### 3. SpecHub 上报（MUST-DO）
 
 ```bash
 python3 scripts/spechub-archive-report.py <reqId> <gitRemoteUrl> \
@@ -358,18 +429,44 @@ python3 scripts/spechub-archive-report.py <reqId> <gitRemoteUrl> \
 
 **输出**：archiveRecordId + requirementStatus 更新确认
 
+更新状态：`spechub/{reqId}/state.json` → `{"phase": "done", ...}`
+删除：`spechub/.active`
+
+**Git + Archive 是流程的终结动作，不是可选项。AI 不得以"等待用户指示"为由停止——必须主动完成直到 state.json 标记为 done。**
+
 ---
 
 ## 恢复
 
 用户说"继续"时：
 
-1. Glob `spechub/*/manifest.json` → 找到活跃的 reqId
-2. Read manifest.json → `currentPhase` + `completedGates`
-3. 验证前置产物存在性：
-   - `currentPhase=design` 但 `proposal.md` 不存在 → 回退 Phase 1
-   - `currentPhase=apply` 但 `design.md` 不存在 → 回退 Phase 2
+1. Read `spechub/.active` → 获取当前运行的 `reqId`（文件不存在 = 无活跃需求，提示用户重新开始）
+2. Read `spechub/{reqId}/state.json` → 获取 `phase` + `completedGates`
+3. 验证前置产出物存在性：
+
+   | 当前 phase | 必须存在的产出物 | 缺失时回退到 |
+   |-----------|----------------|-------------|
+   | understand | artifacts/ | Phase 0（重新拉取） |
+   | design | comprehension.md | Phase 0.5 |
+   | apply | design.md + tasks.md | Phase 2 |
+   | apply-verified | 编译通过 + 测试通过 | Phase 3 末尾验证 |
+   | archive | handoff-check.md | 输出适配 Step 1 |
+   | done | — | 已完成，无需恢复 |
+
 4. 从断点 Phase 继续引擎执行
+
+### state.json 结构
+
+```json
+{
+  "phase": "understand | design | apply | apply-verified | archive | done",
+  "completedGates": ["G0", "G2"],
+  "reqId": 1450,
+  "requirementTitle": "黑钻升降保级规则+页面",
+  "startedAt": "2026-05-29T10:00:00Z",
+  "lastUpdatedAt": "2026-05-29T12:30:00Z"
+}
+```
 
 ---
 
