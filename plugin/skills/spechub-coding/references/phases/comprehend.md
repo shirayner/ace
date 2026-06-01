@@ -55,15 +55,36 @@
 - D4 → `spechub/{reqId}/analysis/d4-infra-gaps.md`
 - D5 → `spechub/{reqId}/analysis/d5-simplification.md`
 
-**D2 Agent 额外要求**：对每个 `should-extend` 或 `conflict` 结论，必须同时输出"代码插入点"信息（类名、方法名、行号、扩展方式），写入 d2-verification.md 中，并在返回摘要中包含一行式插入点引用。
+**D2 Agent 额外要求**：对每个 `should-extend` 或 `conflict` 结论，必须同时输出：
+1. **代码插入点**信息（类名、方法名、行号、扩展方式）
+2. **精确方法签名**（含参数类型和返回类型）— 包括插入点方法本身和该方法调用的关键依赖方法
+
+写入 d2-verification.md 中，并在返回摘要中包含一行式插入点引用。
+
+**D2 签名输出格式**（在 d2-verification.md 中，每个插入点必须包含）：
+```markdown
+### 插入点 X: {功能点名}
+- 文件: `{模块/相对路径}`
+- 类/方法: `{ClassName}.{methodName}()` (Line {N})
+- 方法签名: `{ReturnType} {methodName}({ParamType1} param1, ParamType2 param2})`
+- 当前逻辑: {一句话描述}
+- 扩展方式: {具体怎么扩展}
+- 目标类依赖的关键方法签名:
+  - `{ClassName}.{method}({params}): {ReturnType}` — {一句话说明}
+  - `{ClassName}.{method}({params}): {ReturnType}` — {一句话说明}
+  - ...（列出 IMPLEMENT 阶段会调用到的所有跨层方法签名）
+```
+
+> **设计意图**：IMPLEMENT 阶段 §2.5 签名预读可直接引用此处签名，减少 Read 调用。
+> 如果方法签名因类太长而无法在 D2 探索时确认，至少标注 `[需 IMPLEMENT 时确认]`。
 
 **Agent 返回格式示例**（D2）：
 ```
-| 产物声明 | 结论 | 插入点 | 证据文件位置 |
-|---------|------|--------|------------|
-| [新增] 保级Job | should-extend | ExpirationJob.java:89 processGradeExpiration() | d2-verification.md §1 |
-| [新增] 降级Service | should-extend | GradeChangeService.java:45 handleGradeChange() | d2-verification.md §2 |
-| [新增] 规则配置 | confirm-new | — | d2-verification.md §3 |
+| 产物声明 | 结论 | 插入点 | 签名 | 证据文件位置 |
+|---------|------|--------|------|------------|
+| [新增] 保级Job | should-extend | ExpirationJob.java:89 processGradeExpiration() | void processGradeExpiration(MemberGrade) | d2-verification.md §1 |
+| [新增] 降级Service | should-extend | GradeChangeService.java:45 handleGradeChange() | IBUErrorCode handleGradeChange(MemberGrade, TriggerSource) | d2-verification.md §2 |
+| [新增] 规则配置 | confirm-new | — | — | d2-verification.md §3 |
 
 详情已写入 spechub/{reqId}/analysis/d2-verification.md
 ```
@@ -117,9 +138,13 @@ Prior（D1 产物声明）+ Evidence（D2/D3/D5 验证结果）= Posterior（修
 ### 插入点 1: {功能点名}
 - 文件: `{模块/相对路径}`
 - 类/方法: `{ClassName}.{methodName}()` (Line {N})
+- 方法签名: `{ReturnType} {methodName}({ParamType1} param1, {ParamType2} param2)`
 - 当前逻辑: {一句话描述当前该方法做什么}
 - 扩展方式: {具体怎么扩展——加分支/加 case/注入新依赖}
 - 影响范围: {影响哪些调用方/测试}
+- 依赖方法签名:
+  - `{Class}.{method}({params}): {Return}` — {说明}
+  - `{Class}.{method}({params}): {Return}` — {说明}
 
 ### 插入点 2: ...
 （每个 should-extend/conflict 结论对应一个插入点）
