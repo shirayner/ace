@@ -18,23 +18,6 @@
 
 ## 执行步骤
 
-### 0. 归档确认 [HARD GATE]
-
-<HARD-GATE>
-在执行任何归档操作之前，必须 AskUserQuestion 让用户确认：
-
-"VERIFY 已通过，准备执行归档：
-- OpenSpec 本地归档
-- Git commit + push（分支: feature/spechub-{reqId}-{slug}）
-- SpecHub 远程上报
-
-确认归档？"
-
-选项：确认归档 / 暂不归档（我还需要调整）
-
-用户确认后才可执行后续步骤。
-</HARD-GATE>
-
 ### 1. OpenSpec 归档 [不可跳过]
 
 **slug = state.json.openspecChange**（DESIGN 阶段写入的值）
@@ -125,5 +108,5 @@ git push -u origin feature/spechub-{reqId}-{slug}
 
 ## 硬规则
 
-**用户确认后，归档 + Git + 上报必须一次性完成，不可中途停下。**
-确认后 AI 必须主动完成直到 state.json 标记为 done 且代码已 push。
+**归档 + Git + 上报是流程的终结动作，不是可选项。**
+VERIFY G3 通过后自动进入 ARCHIVE，AI 必须主动完成直到 state.json 标记为 done 且代码已 push。
