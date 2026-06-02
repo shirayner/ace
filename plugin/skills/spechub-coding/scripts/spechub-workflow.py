@@ -41,7 +41,7 @@ sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
 BASE_URL = os.environ.get(
     "SPECHUB_BASE_URL",
-    "http://webapi.soa.fws.qa.nt.ctripcorp.com/api/37639"
+    "http://spechub.ctripcorp.com"
 )
 
 
