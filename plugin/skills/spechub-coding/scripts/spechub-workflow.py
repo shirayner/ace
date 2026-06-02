@@ -13,7 +13,10 @@ spechub-workflow.py — SpecHub Coding 工作流统一 CLI
   python3 spechub-workflow.py archive <reqId> --repo-root <path> --branch <name> --commit <hash>
 
 环境变量:
-  SPECHUB_BASE_URL  SOA 服务地址（默认: http://webapi.soa.fws.qa.nt.ctripcorp.com/api/37639）
+  SPECHUB_BASE_URL  覆盖 config.json 中的 baseUrl（最高优先级）
+
+配置文件:
+  scripts/config.json  多环境配置（activeEnv 指针 + environments 字典）
 
 退出码:
   0 = 成功（JSON 输出到 stdout）
@@ -39,10 +42,32 @@ from urllib.error import HTTPError, URLError
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
 sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding="utf-8")
 
-BASE_URL = os.environ.get(
-    "SPECHUB_BASE_URL",
-    "http://spechub.ctripcorp.com"
-)
+# ─── Configuration ─────────────────────────────────────────────────────────
+
+def _load_base_url() -> str:
+    """Resolve base URL: env var > config.json > fallback."""
+    env_url = os.environ.get("SPECHUB_BASE_URL")
+    if env_url:
+        return env_url.rstrip("/")
+
+    config_path = Path(__file__).parent / "config.json"
+    if config_path.is_file():
+        try:
+            with open(config_path, encoding="utf-8") as f:
+                config = json.load(f)
+            active_env = config.get("activeEnv", "prod")
+            environments = config.get("environments", {})
+            env_config = environments.get(active_env, {})
+            url = env_config.get("baseUrl", "")
+            if url:
+                return url.rstrip("/")
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    return "http://spechub.ctripcorp.com/api"
+
+
+BASE_URL = _load_base_url()
 
 
 # ─── HTTP Helpers ───────────────────────────────────────────────────────────
@@ -143,7 +168,7 @@ def cmd_inbox(repo_root: Path) -> None:
 
     git_url = get_git_remote_url(repo_root)
 
-    resp = post_json("/json/getHandoffInbox", {"gitRemoteUrl": git_url})
+    resp = post_json("/getHandoffInbox", {"gitRemoteUrl": git_url})
     check_response_status(resp)
     check_business_status(resp)
 
@@ -291,15 +316,9 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
         "decisions": decisions_md
     }
 
-    resp = post_json("/json/archiveHandoff", payload)
+    resp = post_json("/archiveHandoff", payload)
     check_response_status(resp)
-
-    brs = resp.get("businessResponsesStatus", {})
-    status_code = brs.get("statusCode", "")
-    if status_code and status_code != "OK":
-        error_msg = brs.get("errorMessage", "Unknown error")
-        print(f"Business error [{status_code}]: {error_msg}", file=sys.stderr)
-        sys.exit(2)
+    check_business_status(resp)
 
     # Output result (no local file modifications after commit)
     output = {

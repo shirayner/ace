@@ -102,14 +102,81 @@ openspec instructions design --change {slug}
 }
 ```
 
-### 6. 进入 G2
+### 6. G2 条件式判定
 
-Read `references/gate-formats.md` §G2，按格式展示：
+**G2 不再固定要求完整确认，而是根据方案确定性自动选择介入级别。**
+
+#### 方案确定性评估
+
+```
+certainty = HIGH  # 默认
+
+# 降级条件（任一触发 → 降级）
+if count(divergences, type='design_choice', severity='significant') >= 2:
+    certainty = LOW
+if 存在跨模块架构变更:
+    certainty = LOW
+if count(决策点中有多个可行选项的) >= 3:
+    certainty = LOW
+elif count(决策点中有多个可行选项的) >= 1:
+    certainty = MEDIUM
+
+# 最终判定
+if certainty == HIGH:
+    所有决策点只有唯一解（profile + 代码约束决定）
+    无新增 significant divergence
+    tasks.md 中所有 task 可直接映射到 comprehension.md 功能点
+```
+
+#### 分流执行
+
+**HIGH_CERTAINTY → Level 1：通知式前进**
+
+```markdown
+✅ 技术方案已生成，所有决策由约束唯一确定。
+
+**决策摘要**: {N} 个决策点，均由项目约定/代码现状确定
+**任务清单**: {M} 个 task（{TDD}个 FULL_TDD + {CO}个 COMPILE_ONLY + {ST}个 SKIP_TEST）
+**偏离**: 无新增 design_choice
+
+[查看 design.md] [查看 tasks.md] [有异议?]
+```
+
+行为：不阻塞，直接进入 IMPLEMENT。
+
+---
+
+**MEDIUM_CERTAINTY → Level 2：精简确认**
+
+仅展示有多选项的决策点（其余自动采纳唯一解）：
+
+```markdown
+以下决策需要你确认（其余 {N-K} 个决策已由约束确定）：
+
+| D# | 决策 | 选项 A | 选项 B | AI 推荐 | 推荐理由 |
+|----|------|--------|--------|---------|---------|
+| D3 | 缓存策略 | Redis | 本地缓存 | Redis | 已有 cluster |
+```
+
+AskUserQuestion 选项：
+- "接受 AI 推荐" — 采纳所有推荐选项
+- "需要调整" — 用户选择不同方案
+
+---
+
+**LOW_CERTAINTY → Level 3：完整 G2**
+
+按原有格式展示（Read `references/gate-formats.md` §G2 Level 3）：
 - 决策清单摘要
 - 任务清单
-- 与平台产物的设计偏离（新增 divergences）
+- 新增 design_choice divergences
 
-→ AskUserQuestion 确认
+AskUserQuestion 选项：
+- "确认，开始实现"
+- "需要调整设计"
+- "有技术问题需讨论"
+
+---
 
 ### 7. 更新状态
 

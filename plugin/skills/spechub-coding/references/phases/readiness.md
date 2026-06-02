@@ -18,17 +18,45 @@
 ### 1. 读取 Manifest
 Read `spechub/{reqId}/readiness-manifest.json` → `checks[]`
 
-### 2. 补全缺失参数
+### 2. 参数自动推断 + 补全
 
-收集所有 check 中的 `paramGaps`（非空的）：
+#### 自动推断规则（减少人工输入）
+
+在 AskUserQuestion 之前，先尝试自动填充 paramGaps：
+
+```
+推断优先级（从高到低）：
+
+1. 从 project-profile.md 提取：
+   - appId → 项目自身的 SOA appId（profile §SOA 配置）
+   - dbName → 项目使用的数据库名（profile §数据库配置）
+   - 项目的 groupId/artifactId → pom.xml
+
+2. 从产物 artifacts/ 中提取：
+   - operationName → artifacts/architecture.md 中的接口定义
+   - tableName → artifacts/data-model.md 中的表名
+
+3. 从历史经验复用：
+   - 同项目历史 state.json 中相同 checkType 的参数
+
+4. 无法推断 → 保留为 paramGaps
+```
+
+**推断后行为**：
+- 推断成功的参数：标记来源为 `[auto-inferred: {source}]`，编译/校验失败时可追溯
+- 仅剩余无法推断的参数才 AskUserQuestion
+
+#### 人工补全（仅无法推断的参数）
+
+收集所有 check 中**推断后仍有**的 `paramGaps`（非空的）：
 - 若存在 paramGaps → AskUserQuestion 批量展示所有缺失参数，一次性收集
+- **若所有参数已自动推断完成 → 跳过此步骤，零人工输入**
 - 展示格式：
   ```
-  以下中间件校验需要补全参数：
-  | # | 中间件 | 描述 | 缺失参数 |
-  |---|--------|------|---------|
-  | RC-002 | SOA 依赖 | 积分查询接口 | mavenGroupId, mavenArtifactId, mavenVersion |
-  | RC-003 | DB 新表 | 等级变更记录表 | ddl |
+  以下中间件校验需要补全参数（已自动推断 {N}/{Total} 项）：
+  | # | 中间件 | 描述 | 缺失参数 | 已推断参数 |
+  |---|--------|------|---------|-----------|
+  | RC-002 | SOA 依赖 | 积分查询接口 | version | appId=100012345[auto] |
   ```
 - 用户补全后 → 更新 readiness-manifest.json 的对应 params + 清空 paramGaps
 
@@ -73,17 +101,39 @@ SOA 类型（soa_new_interface / soa_dependency）的 check：
 - ⚠️ **不允许**将 SOA check 标记为 WARN — "本次新建所以还没有"不是合理理由
 - **原因**：SOA 契约必须先于代码实现存在（否则无法编译 client JAR 依赖）
 
-### 4. 处理人工确认
+### 4. 处理人工确认（优化：自动决策 + 升级）
 
-将所有 `manual_confirm` 类型合并为一个 AskUserQuestion：
+#### BLOCKED 自动决策规则
+
+在 AskUserQuestion 之前，先按规则自动处理可预判的 BLOCKED：
+
 ```
-以下中间件需要人工确认：
-| # | 类型 | 问题 |
-|---|------|------|
-| RC-004 | QMQ | topic 'member.grade.change.event' 是否已注册？ |
-| RC-006 | QSchedule | 任务 'gradeExpirationJob' 是否已创建？ |
+自动降级为 WARN（createDuringImpl=true）：
+- db_new_table 且 DDL 已在 tasks.md 中 → WARN（实现阶段创建）
+- qconfig_file 未创建 → WARN（实现阶段创建）
+
+自动生成解决方案：
+- db_new_table BLOCKED → 自动将 DDL task 提升到 tasks.md 第一位
+- qmq_topic 未注册 → 通知用户需注册，标记 WARN 继续
+
+保持 BLOCKED（不可自动降级）：
+- SOA 契约/JAR 不存在 → 保持 BLOCKED（编译依赖，不可绕过）
+- 权限/网络/环境问题 → 保持 BLOCKED（需人工解决）
+```
+
+#### 人工确认批次（仅自动决策后仍需人工的项目）
+
+将所有 `manual_confirm` 类型 + 无法自动处理的 BLOCKED 合并为一个 AskUserQuestion：
+```
+以下中间件需要人工确认（已自动处理 {N} 项）：
+| # | 类型 | 问题 | 自动处理结果 |
+|---|------|------|------------|
+| RC-004 | QMQ | topic 'member.grade.change.event' 是否已注册？ | 需确认 |
+| RC-006 | QSchedule | 任务 'gradeExpirationJob' 是否已创建？ | 需确认 |
 ```
 选项：对每个可选 "已就绪" / "实现阶段处理" / "未就绪"
+
+**若所有 manual_confirm 项都可通过历史经验或产物信息自动确认 → 跳过此步骤**
 
 ### 5. 聚合结果
 

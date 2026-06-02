@@ -158,31 +158,89 @@ Prior（D1 产物声明）+ Evidence（D2/D3/D5 验证结果）= Posterior（修
 
 ---
 
-### Step C: 冲突展示 + 用户确认（G0）
+### Step C: G0 智能分流（争议度驱动）
 
-**G0 展示给用户的内容**（关键设计）：
+**G0 不再是固定的完整确认，而是根据争议度评分自动选择介入级别。**
 
-```markdown
-**修正后的需求理解**
-（Step B 的 Posterior — 这是 AI 基于代码事实得出的最终理解）
+#### 争议度评分算法
 
-**代码验证发现的冲突**（需要用户确认修正方向是否正确）
-| # | 产物原始声明 | 代码事实 | AI 建议的修正 | 请确认 |
-|---|-------------|---------|-------------|--------|
-| 1 | 新建保级 Job | 已有 MembershipExpirationJob 含保级逻辑 | → 扩展现有 Job | ✅/❌ |
-| 2 | 新建降级 Service | 已有 GradeChangeService 含降级接口 | → 扩展现有 Service | ✅/❌ |
+```
+contention_score = 0
 
-**Scope 裁决表**（基于修正后理解）
-| # | 功能点（修正后描述） | 建议 | 理由 |
+# D2 代码验证冲突（每个 conflict/should-extend +3）
+contention_score += count(d2.conclusions, status IN ['conflict', 'should-extend']) × 3
 
-**完成标准**（基于修正后的实现方向）
+# D5 简化建议中的 scope 争议（每个 +2）
+contention_score += count(d5.suggestions, type='scope_question') × 2
+
+# D3 架构不一致项（每个 +2）
+contention_score += count(d3.results, status='inconsistent') × 2
+
+# D2 reuse-existing 不计分（直接删除功能点，无争议）
+# D2 confirm-new 不计分（产物正确，无修正）
 ```
 
-**用户确认的是**：
-1. AI 的修正方向是否正确（可能用户确实需要新建，有 AI 不知道的理由）
-2. 最终 Scope
+#### 分流规则
 
-**如果用户否决某个修正** → 恢复产物原始声明，记录为 "用户确认采用产物方案（理由：...）"
+**争议度 = 0（零冲突）→ Level 1：通知式前进**
+
+展示格式：
+```markdown
+✅ 需求理解完成，无冲突无争议。
+
+**业务目标**: {一句话}
+**Scope**: {N} 个功能点确认 In，{M} 个删除（已有实现）
+**中间件**: {K} 项待校验
+
+[查看完整 comprehension.md] [有异议?]
+```
+
+行为：不阻塞，直接进入 READINESS。用户可随时回溯查看或提出异议。
+
+state.json 记录：
+```json
+{
+  "gates": { "G0": { "passed": true, "level": 1, "contentionScore": 0, "ts": "ISO" } }
+}
+```
+
+---
+
+**争议度 1-4（少量冲突）→ Level 2：精简确认**
+
+仅展示需要用户裁决的项（≤5 项），不展示完整理解：
+
+```markdown
+**需裁决项**（{N} 项冲突需你确认方向）
+
+| # | 产物声明 | 代码事实 | AI 建议 | 你的判断 |
+|---|---------|---------|---------|---------|
+| 1 | 新建保级 Job | 已有 ExpirationJob | → 扩展现有 | ✅/❌ |
+
+**Scope 争议**（如有）
+| # | 功能点 | AI 建议 | 理由 |
+|---|--------|---------|------|
+| 1 | 扩展积分 | ⚠️ 非必需 | D5: 最简实现不需要 |
+
+[查看完整 comprehension.md]
+```
+
+AskUserQuestion 选项：
+- "确认 AI 建议，继续"
+- "需要调整"（用户输入修正）
+
+---
+
+**争议度 > 4（多冲突/高争议）→ Level 3：完整 G0**
+
+按原有完整格式展示（Read `references/gate-formats.md` §G0 Level 3）：
+- 完整修正后需求理解
+- 冲突清单 + Scope 裁决表 + 中间件 Footprint + 完成标准
+
+AskUserQuestion 选项：
+- "确认并继续"
+- "需要调整 Scope"
+- "有疑问需讨论"
 
 ---
 

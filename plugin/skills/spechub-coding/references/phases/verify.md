@@ -83,11 +83,83 @@ Write `spechub/{reqId}/handoff-check.md`：
 （无 / 具体描述）
 ```
 
-### 6. G3 自动判定
+### 6. G3 最终确认（统一：偏离摘要 + 验证结果 + 归档确认）
 
-编译通过 + 测试通过 + handoff-check.md 存在 → 自动通过 G3
+**G3 不再仅仅是验证通过判定，而是整个流程的唯一统一确认点。**
 
-有违规项 → AskUserQuestion 确认是否继续
+将 IMPLEMENT 阶段累积的偏离 + VERIFY 验证结果合并为一次最终确认。
+
+#### 最终确认级别判定
+
+```
+if 编译✅ AND 测试✅ AND count(divergences, batchDeferred=true) == 0 AND 无违规:
+    → Level 1：通知式前进
+elif 编译✅ AND 测试✅:
+    → Level 2：展示偏离摘要 + 确认归档
+else:
+    → Level 3：完整展示 + 讨论
+```
+
+#### Level 1：通知式前进
+
+```markdown
+✅ 验证全部通过，无偏离。
+
+**测试**: {N} 类 {M} 用例全部通过
+**覆盖**: Scope In 功能 100% 覆盖
+**偏离**: 无（或仅 minor 自动吸收 ×{K}）
+
+即将自动归档到分支 feature/spechub-{reqId}-{slug}。
+[查看 handoff-check.md] [有异议?]
+```
+
+行为：不阻塞，直接进入 ARCHIVE。
+
+#### Level 2：展示偏离摘要 + 确认归档
+
+```markdown
+## 最终确认
+
+### 验证结果 ✅
+- 编译: 通过
+- 测试: {N} 类 {M} 用例全部通过
+- Scope 覆盖: 100%
+
+### 实现偏离摘要（共 {total} 项）
+
+**自动吸收（minor × {N}）** — 仅记录，不影响方案
+| Task | 偏离描述 | 原因 |
+|------|---------|------|
+| ... | ... | ... |
+
+**需确认（significant × {K}）**
+| # | Task | 设计方案 | 实际实现 | 偏离原因 | 你的判断 |
+|---|------|---------|---------|---------|---------|
+| 1 | T3 | 用 Redis 缓存 | 用本地 Guava Cache | 实测 QPS 不需要分布式 | ✅/❌ |
+| 2 | T5 | 同步调用 | 改为异步 QMQ | 避免阻塞主流程 | ✅/❌ |
+
+### 归档信息
+- 分支: feature/spechub-{reqId}-{slug}
+- OpenSpec: 归档到 openspec/changes/{slug}/
+- SpecHub: 偏离上报（{M} 项 decisions）
+```
+
+AskUserQuestion 选项：
+- "全部接受，确认归档" — 所有 batchDeferred 偏离 userApproved=true，进入 ARCHIVE
+- "逐项审查" — 用户逐个确认/拒绝
+- "有问题需修复" — 回到 IMPLEMENT 修复
+
+#### Level 3：完整展示
+
+在 Level 2 基础上增加：
+- 违规项详情
+- 测试失败详情
+- 修复建议
+
+AskUserQuestion 选项：
+- "接受违规，继续归档"
+- "修复后重新验证" — 回到 IMPLEMENT 修复
+- "终止" — 用户处理
 
 ### 7. 更新状态
 

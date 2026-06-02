@@ -48,15 +48,37 @@ description: |
 
 ---
 
+## 分级介入架构（Tiered Intervention）
+
+人工介入级别基于**风险 × 置信度 × 争议度**动态决定，而非固定流程：
+
+| Level | 名称 | 行为 | 适用条件 |
+|-------|------|------|---------|
+| 0 | 静默执行 | 自动完成，仅日志 | 零偏离 + 高置信度 + 纯机械操作 |
+| 1 | 通知式前进 | 通知摘要 + 默认继续 + 保留回溯点 | 低偏离 + 高置信度 + 可逆 |
+| 2 | 精简确认 | 仅展示 ≤5 项关键判断 + AskUserQuestion | 中偏离 OR 有真实选择需做 |
+| 3 | 深度对齐 | 完整展示 + 讨论 + 确认 | 高偏离 + 低置信度 + 不可逆 |
+
+**核心原则**：减少频次，提高单次质量。用户角色从"审批者"变为"监控者 + 关键决策者"。
+
+---
+
 ## Gate 定义
 
-### G0 — 需求理解确认
+### G0 — 需求理解确认（条件式）
 
 <HARD-GATE>
 **位置**: COMPREHEND → READINESS  
-**条件**: AskUserQuestion 展示理解摘要 + Scope 裁决 + 差异清单，用户确认  
-**格式**: Read `references/gate-formats.md` §G0  
-**通过动作**: state.json.gates.G0.passed = true
+**级别决定**: 基于争议度评分（详见 `references/phases/comprehend.md` §Step C）
+
+| 争议度 | 级别 | 行为 |
+|--------|------|------|
+| 0 分（零冲突零争议） | Level 1 | 通知式前进：一行摘要 + [查看详情][有异议?]，默认继续 |
+| 1-4 分（少量冲突） | Level 2 | 精简确认：仅展示冲突项 + Scope 争议项，用户裁决 |
+| >4 分（多冲突/高争议） | Level 3 | 完整 G0：当前完整流程 |
+
+**通过动作**: state.json.gates.G0.passed = true  
+**格式**: Read `references/gate-formats.md` §G0
 </HARD-GATE>
 
 ### G1 — 基础设施 Ready 确认
@@ -64,25 +86,39 @@ description: |
 <HARD-GATE>
 **位置**: READINESS → DESIGN  
 **条件**: 
-- 无 BLOCKED → 自动通过（不需要 AskUserQuestion）
-- 有 BLOCKED → AskUserQuestion：补全 / 跳过（记录 divergence） / 终止  
+- 无 BLOCKED → 自动通过（Level 0，不需要 AskUserQuestion）
+- 有 BLOCKED → 按类型处理（详见 `references/phases/readiness.md` §G1 判定）
 **通过动作**: state.json.gates.G1.passed = true
 </HARD-GATE>
 
-### G2 — 技术方案确认
+### G2 — 技术方案确认（条件式）
 
 <HARD-GATE>
 **位置**: DESIGN → IMPLEMENT  
-**条件**: AskUserQuestion 展示决策清单 + 任务清单 + 平台偏离，用户确认  
-**格式**: Read `references/gate-formats.md` §G2  
-**通过动作**: state.json.gates.G2.passed = true
+**级别决定**: 基于方案确定性（详见 `references/phases/design.md` §G2 条件式判定）
+
+| 确定性 | 级别 | 行为 |
+|--------|------|------|
+| HIGH（所有决策唯一解） | Level 1 | 通知式前进：决策摘要 + 任务列表 + [有异议?]，默认继续 |
+| MEDIUM（1-2 个多选项决策） | Level 2 | 精简确认：仅展示多选项决策 + AI 推荐 |
+| LOW（架构级偏离/多 divergence） | Level 3 | 完整 G2：当前完整流程 |
+
+**通过动作**: state.json.gates.G2.passed = true  
+**格式**: Read `references/gate-formats.md` §G2
 </HARD-GATE>
 
-### G3 — 验证通过（自动 Gate）
+### G3 — 最终确认（VERIFY → ARCHIVE）
 
-**位置**: VERIFY → ARCHIVE
-**条件**: 编译通过 + 测试通过 + handoff-check.md 存在
-**通过动作**: 自动进入 ARCHIVE
+**位置**: VERIFY → ARCHIVE  
+**行为**: VERIFY 完成后展示**统一最终确认**（偏离摘要 + 测试结果 + 归档确认三合一）
+
+| 条件 | 行为 |
+|------|------|
+| 编译✅ + 测试✅ + 无 significant 偏离 | Level 1：通知式前进 |
+| 编译✅ + 测试✅ + 有 significant 偏离 | Level 2：展示偏离摘要 + [确认归档] |
+| 有失败或违规 | Level 3：完整展示 + AskUserQuestion |
+
+**通过动作**: 进入 ARCHIVE
 
 ---
 
@@ -111,9 +147,13 @@ description: |
 ## 运行时规则
 
 - **惊讶测试**: 决策让用户惊讶 → 暂停 AskUserQuestion
-- **进度心跳**: Phase 切换报告 / 5+ 工具调用插入说明 / 偏离立即告知
-- **Divergence 记录**: 每个与产物的差异 → state.json.divergences[]，最终驱动 SpecHub decisions 字段
-- **Scope 守护**: 实现过程中发现需要 Scope Out 功能点的代码 → 停下确认
+- **进度心跳**: Phase 切换报告 / 5+ 工具调用插入说明 / blocker 偏离立即告知
+- **Divergence 分级处理**: 偏离按严重度分级处理（详见 `references/divergence-protocol.md` §自动分级规则）：
+  - minor → AUTO_ABSORB（记录 + 继续，不中断）
+  - significant → BATCH_REPORT（累积到 VERIFY 后统一展示）
+  - blocker → IMMEDIATE_ESCALATE（立即 AskUserQuestion）
+- **Scope 守护**: 实现过程中发现需要 Scope Out 功能点的代码 → 停下确认（blocker 级别）
+- **回溯点保留**: 每个 Level 1 通知式前进的节点，state.json 记录完整快照，用户可随时要求回溯
 
 ---
 

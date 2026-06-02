@@ -154,7 +154,9 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 
 **Step H — 偏离自检 + 标记完成**
 
-1. 自检：实现是否偏离对应决策点？（见 §3 偏离检测）
+1. 自检：实现是否偏离对应决策点？（见 §3 偏离检测 — 分级处理）
+   - 无偏离 → 直接标记完成
+   - 有偏离 → 按分级规则处理（AUTO_ABSORB/BATCH_REPORT/IMMEDIATE_ESCALATE）
 2. **[必须执行 Edit]** 打开 `openspec/changes/{slug}/tasks.md`（slug = state.json.openspecChange），将当前 task 的 `- [ ]` 改为 `- [x]`
    - 这是文件系统操作（Edit 工具），不是心理标记
    - 每完成一个 task 必须立即 Edit，不可攒到最后批量改
@@ -189,13 +191,41 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 
 ---
 
-### 3. 偏离检测
+### 3. 偏离检测（分级处理）
 
-每完成一个 task，检查实际实现与 design.md 决策是否一致：
+每完成一个 task，检查实际实现与 design.md 决策是否一致。
 
-**一致** → 继续下一个 task
+**偏离不再逐个确认，而是按严重度分级处理。**
 
-**偏离** → 记录 + 暂停确认：
+#### 偏离分级规则
+
+| 级别 | 条件 | 处理方式 | 示例 |
+|------|------|---------|------|
+| **AUTO_ABSORB** | minor：不改变对外接口签名的实现细节差异 | 记录 + 继续（不中断） | 方法名微调、参数顺序、内部算法选择、类型精确化 |
+| **BATCH_REPORT** | significant：改变了方法签名/依赖/流程，但不影响其他未完成 task 的前提 | 累积 → VERIFY 完成后统一展示 | 方法签名变更、依赖替换、流程调整 |
+| **IMMEDIATE_ESCALATE** | blocker：scope 蠕动、架构模式偏离、影响其他 task 前提 | 立即 AskUserQuestion | 新增 Scope Out 功能、改变分层方向、≥2 task 累积偏离 |
+
+#### AUTO_ABSORB 处理
+
+```json
+{
+  "id": "DIV-{seq}",
+  "type": "implementation_drift",
+  "severity": "minor",
+  "phase": "implement",
+  "category": "实现细节",
+  "expected": "design.md 描述",
+  "actual": "实际实现",
+  "reason": "偏离原因",
+  "autoAbsorbed": true,
+  "userApproved": false
+}
+```
+
+记录到 state.json → 继续下一个 task。无需任何中断。
+
+#### BATCH_REPORT 处理
+
 ```json
 {
   "id": "DIV-{seq}",
@@ -206,18 +236,36 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
   "expected": "design.md 中 D{N} 的方案",
   "actual": "实际实现方式",
   "reason": "偏离原因（如：实现中发现约束）",
+  "batchDeferred": true,
   "userApproved": false
 }
 ```
 
-→ AskUserQuestion："实现偏离了设计 D{N}，是否接受？"
-- 接受 → userApproved=true，继续
-- 拒绝 → 按设计重新实现
+记录到 state.json → 继续下一个 task。在 VERIFY 完成后的最终确认中统一展示。
+
+#### IMMEDIATE_ESCALATE 处理
+
+立即 AskUserQuestion：
+
+```markdown
+⚠️ 实现偏离（需立即确认）
+
+| 决策 | 设计方案 | 实际实现 | 偏离原因 |
+|------|---------|---------|---------|
+| D{N} | ... | ... | ... |
+
+**升级原因**: {scope蠕动 / 架构模式偏离 / 累积偏离≥2}
+```
+
+选项：
+- "接受偏离，继续" → userApproved=true
+- "按设计重新实现" → 回退当前 task
+- "回退到 DESIGN 重新规划" → re-spec
 
 ### 4. 回退条件
 
-**≥2 个 task 偏离设计** → 建议回退到 DESIGN Phase（re-spec）：
-- AskUserQuestion："已有 {N} 处偏离设计，建议回到设计阶段重新规划。继续/回退？"
+**≥2 个 IMMEDIATE_ESCALATE 级别偏离** → 建议回退到 DESIGN Phase（re-spec）：
+- AskUserQuestion 自动触发（在第 2 个 IMMEDIATE_ESCALATE 时）："已有 {N} 处重大偏离设计，建议回到设计阶段重新规划。继续/回退？"
 - 回退 → state.json.currentPhase = "design"，重新进入 DESIGN
 
 ### 5. 更新状态

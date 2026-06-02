@@ -78,7 +78,8 @@
       "Bash(cp \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/phases/comprehend.md\" \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/phases/comprehend.md\")",
       "Bash(cp \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/phases/design.md\" \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/phases/design.md\")",
       "Bash(rm \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-pull-bundle.py\")",
-      "Bash(rm \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-archive-report.py\")"
+      "Bash(rm \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-archive-report.py\")",
+      "mcp__feishu2md__md2feishu"
     ]
   }
 }
