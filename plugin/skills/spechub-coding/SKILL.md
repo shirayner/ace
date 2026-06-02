@@ -29,8 +29,8 @@ description: |
 | COMPREHEND | pull.done      | comprehension.md + inventory + readiness-manifest.json | G0        |
 | READINESS  | G0 passed      | readiness-check.md                                     | G1        |
 | DESIGN     | G1 passed      | proposal.md + design.md + tasks.md (via OpenSpec)      | G2        |
-| IMPLEMENT  | G2 passed      | 代码实现 + tasks.md 勾选                               | — (auto) |
-| VERIFY     | implement.done | handoff-check.md                                       | G3 (auto) |
+| IMPLEMENT  | G2 passed      | 代码实现 + 测试 + tasks.md 勾选（逐 task TDD 微循环） | — (auto) |
+| VERIFY     | implement.done | handoff-check.md（全量回归确认）                      | G3 (auto) |
 | ARCHIVE    | G3 passed      | git + openspec archive + spechub archive               | DONE      |
 
 ---

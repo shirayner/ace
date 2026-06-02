@@ -81,6 +81,9 @@ openspec instructions design --change {slug}
 - 每 task 关联决策点（如 `→ D1, D3`）
 - 拓扑顺序：DDL → DAO → SOA → QMQ → QConfig → QSchedule → Service → Test
 - 每 task 有明确的"做完了"标准
+- 每 task 标注测试策略：FULL_TDD / COMPILE_ONLY / SKIP_TEST
+- FULL_TDD 类 task 附带测试用例方向提示（正常/异常/边界）
+- 测试策略选择参照 `references/quality-criteria.md` §测试策略选择指南
 
 ### 5. 记录设计偏离
 

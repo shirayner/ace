@@ -35,6 +35,38 @@
 | 可验证 | 每个 task 有明确的"做完了"标准 |
 | 完整性 | tasks 覆盖 design 中所有决策点 |
 | Scope 一致性 | 不包含 Scope Out 功能点对应的 task |
+| 测试策略标注 | 每个 task 标注测试策略：FULL_TDD / COMPILE_ONLY / SKIP_TEST |
+| 测试用例提示 | FULL_TDD 类 task 应包含测试用例方向提示 |
+
+### 测试策略选择指南
+
+| Task 类型 | 测试策略 | 理由 |
+|-----------|---------|------|
+| Service 核心逻辑 | FULL_TDD | 核心价值，必须测试保障 |
+| Listener/Consumer | FULL_TDD | 消息处理逻辑需验证 |
+| Controller/SOA 接口 | FULL_TDD | 入参校验和转换逻辑 |
+| DAO/Entity/Repository | COMPILE_ONLY | 纯数据层，编译通过即可 |
+| DTO/VO 定义 | COMPILE_ONLY | 纯数据结构 |
+| DDL/SQL 脚本 | SKIP_TEST | 无需编译 |
+| QConfig/配置文件 | SKIP_TEST | 纯配置变更 |
+
+### tasks.md 格式示例
+
+```markdown
+- [ ] 实现 UserGradeService.calculateGrade() → D1, D3
+  - 测试策略: FULL_TDD
+  - 测试用例提示: 正常计算/边界等级/无订单场景
+
+- [ ] 添加 grade_history DDL → D2
+  - 测试策略: SKIP_TEST
+
+- [ ] 实现 GradeRepository DAO → D2
+  - 测试策略: COMPILE_ONLY
+
+- [ ] 实现 QMQ 消息消费 GradeChangeListener → D4
+  - 测试策略: FULL_TDD
+  - 测试用例提示: 正常消费/消息格式异常/幂等处理
+```
 
 ## 通用原则
 
