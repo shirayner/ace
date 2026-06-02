@@ -260,7 +260,7 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
 # ─── Command: archive ───────────────────────────────────────────────────────
 
 def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
-    """Build decisions from divergences, report to SpecHub, cleanup."""
+    """Report to SpecHub API. Local state cleanup is handled by AI before commit."""
     git_url = get_git_remote_url(repo_root)
     base_dir = repo_root / "spechub" / str(req_id)
     state_path = base_dir / "state.json"
@@ -278,7 +278,7 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     # Build decisions markdown from divergences
     decisions_md = _divergences_to_markdown(divergences)
 
-    # Write decisions.md locally
+    # Write decisions.md locally (idempotent — may already exist from AI pre-commit step)
     write_file(base_dir / "decisions.md", decisions_md)
 
     # Report to SpecHub
@@ -301,21 +301,7 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
         print(f"Business error [{status_code}]: {error_msg}", file=sys.stderr)
         sys.exit(2)
 
-    # Update state.json → done
-    state["currentPhase"] = "done"
-    state["phases"]["archive"] = {
-        "status": "done",
-        "ts": now_iso(),
-        "outputs": ["decisions.md", "spechub-archive"]
-    }
-    write_file(state_path, json.dumps(state, ensure_ascii=False, indent=2))
-
-    # Remove .active
-    active_path = repo_root / "spechub" / ".active"
-    if active_path.is_file():
-        active_path.unlink()
-
-    # Output result
+    # Output result (no local file modifications after commit)
     output = {
         "status": "ok",
         "archiveRecordId": resp.get("archiveRecordId"),

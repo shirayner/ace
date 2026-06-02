@@ -1,7 +1,7 @@
 # Phase: ARCHIVE — 双归档
 
 ## 职责
-本地归档（OpenSpec）+ 远程上报（SpecHub）+ 差异同步。
+本地归档（OpenSpec）+ 本地状态清理 + Git 提交 + 远程上报（SpecHub）。
 
 ## 输入
 - 所有产出文件
@@ -9,48 +9,68 @@
 - 实现代码
 
 ## 产出
-- Git 分支 + commit + push
 - OpenSpec archive（本地）
-- SpecHub archive（远程）— **由脚本自动完成 decisions 构建 + API 调用**
+- Git 分支 + commit + push
+- SpecHub archive（远程 API 上报）
 - state.json → DONE
 
 ---
 
 ## 执行步骤
 
-### 1. Git 操作
+### 1. OpenSpec 归档 [不可跳过]
+
+**slug = state.json.openspecChange**（DESIGN 阶段写入的值）
+
+按优先级执行：
+1. 调用 `/opsx:archive` — 如果可用，直接调用并传入 slug
+2. 如果 `/opsx:archive` 不可用 → 执行 CLI：
+   ```bash
+   openspec archive {slug}
+   ```
+3. 如果 openspec CLI 也不可用 → 至少确保 `openspec/changes/{slug}/` 目录下有完整的 proposal.md + design.md + tasks.md（全部 `[x]`），并在完成报告中标注 "OpenSpec 归档需手动执行"
+
+⚠️ **跳过此步 = 违规。** OpenSpec 归档是流程完整性的一部分，不可因"不确定如何执行"而静默跳过。
+
+### 2. 本地状态清理
+
+AI 直接执行以下操作（不调脚本）：
+
+1. **更新 state.json**：
+   ```json
+   {
+     "currentPhase": "done",
+     "phases": { "archive": { "status": "done", "ts": "{ISO}", "outputs": ["decisions.md", "spechub-archive"] } }
+   }
+   ```
+
+2. **删除 spechub/.active**：
+   ```bash
+   rm spechub/.active
+   ```
+
+### 3. Git 提交
 
 ```bash
 git checkout -b feature/spechub-{reqId}-{slug}
 git add -A
 git commit -m "feat(spechub-{reqId}): {title}"
-git push -u origin feature/spechub-{reqId}-{slug}
 ```
 
-记录 branchName 和 commitHash。
+记录 branchName 和 commitHash（从 git log 获取）。
 
-### 2. OpenSpec 归档
+**此时一个 commit 包含全部变更**：功能代码 + 测试 + openspec 归档产物 + state.json + .active 删除。
 
-调用 `/opsx:archive` 对 openspec change 进行归档：
-
-如果 `/opsx:archive` 不可用，手动执行：
-```bash
-openspec archive {slug}
-```
-
-### 3. SpecHub 上报（一次调用完成）
+### 4. SpecHub 远程上报
 
 ```bash
 python3 {skillDir}/scripts/spechub-workflow.py archive {reqId} --repo-root {repoRoot} \
   --branch {branchName} --commit {commitHash}
 ```
 
-脚本自动完成：
-- ✅ 读取 state.json.divergences[]
-- ✅ 过滤 minor → 按 category 分组 → 生成 decisions.md
-- ✅ 调用 SpecHub archiveHandoff API
-- ✅ 更新 state.json → phase: "done"
-- ✅ 删除 spechub/.active
+脚本职责（仅 API 调用，不修改本地文件）：
+- ✅ 读取 state.json.divergences[] → 生成 decisions.md（幂等）
+- ✅ 调用 SpecHub archiveHandoff API（带 branch + commitHash）
 
 脚本输出：
 ```json
@@ -63,7 +83,17 @@ python3 {skillDir}/scripts/spechub-workflow.py archive {reqId} --repo-root {repo
 }
 ```
 
-### 4. 完成报告
+**上报失败处理**：
+- 网络错误 → 重试 1 次
+- 持续失败 → 先执行 Step 5 push 代码，向用户报告"SpecHub 上报失败，需手动处理"
+
+### 5. Git Push
+
+```bash
+git push -u origin feature/spechub-{reqId}-{slug}
+```
+
+### 6. 完成报告
 
 向用户输出最终摘要：
 ```
@@ -78,5 +108,5 @@ python3 {skillDir}/scripts/spechub-workflow.py archive {reqId} --repo-root {repo
 
 ## 硬规则
 
-**Git + Archive 是流程的终结动作，不是可选项。**
-AI 不得以"等待用户指示"为由停止——必须主动完成直到 state.json 标记为 done。
+**归档 + Git + 上报是流程的终结动作，不是可选项。**
+AI 不得以"等待用户指示"为由停止——必须主动完成直到 state.json 标记为 done 且代码已 push。

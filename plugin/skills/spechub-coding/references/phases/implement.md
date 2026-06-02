@@ -155,7 +155,9 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 **Step H — 偏离自检 + 标记完成**
 
 1. 自检：实现是否偏离对应决策点？（见 §3 偏离检测）
-2. 将 `- [ ]` 改为 `- [x]`，进入下一个 task
+2. **[必须执行 Edit]** 打开 `openspec/changes/{slug}/tasks.md`（slug = state.json.openspecChange），将当前 task 的 `- [ ]` 改为 `- [x]`
+   - 这是文件系统操作（Edit 工具），不是心理标记
+   - 每完成一个 task 必须立即 Edit，不可攒到最后批量改
 
 ---
 
@@ -166,7 +168,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 │ Step A: 签名预读（如有跨层依赖）                           │
 │ Step B: 写实现代码                                        │
 │ Step C: 编译门控                                          │
-│ Step D: 偏离自检 + 标记完成                               │
+│ Step D: 偏离自检 + Edit tasks.md 标记 [x]                 │
 └───────────────────────────────────────────────────────────┘
 ```
 
@@ -179,7 +181,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 ```
 ┌───────────────────────────────────────────────────────────┐
 │ Step A: 写变更内容                                        │
-│ Step B: 标记完成                                          │
+│ Step B: Edit tasks.md 标记 [x]                            │
 └───────────────────────────────────────────────────────────┘
 ```
 
