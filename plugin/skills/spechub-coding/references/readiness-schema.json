@@ -7,6 +7,7 @@
     "soa_new_interface": {
       "description": "新增 SOA 接口（本服务作为 provider）",
       "scenario": "本次需求需要新增一个 SOA 接口供外部调用",
+      "prerequisite": "用户必须已在 MOM 上创建并发布契约。本 check 验证契约是否就绪。契约不存在 = BLOCKED，不可降级为 WARN。",
       "requiredParams": ["appId", "operationName", "version"],
       "optionalParams": ["mavenGroupId", "mavenArtifactId", "mavenVersion"],
       "checkSteps": [
@@ -50,7 +51,8 @@
     "soa_dependency": {
       "description": "依赖外部 SOA 接口（本服务作为 consumer）",
       "scenario": "本次需求需要调用另一个服务的 SOA 接口",
-      "requiredParams": ["appId", "operationName"],
+      "prerequisite": "依赖的 SOA 契约必须已发布。本 check 验证契约和 JAR 是否就绪。不存在 = BLOCKED，不可降级为 WARN。",
+      "requiredParams": ["appId", "operationName", "version"],
       "optionalParams": ["mavenGroupId", "mavenArtifactId", "mavenVersion"],
       "checkSteps": [
         {
@@ -59,12 +61,12 @@
           "params": {
             "app_id": "{appId}",
             "operation_name": "{operationName}",
-            "version": -1,
+            "version": "{version}",
             "lang": "zh-CN"
           },
-          "passIf": "operation exists with published version >= 1",
+          "passIf": "operation exists with published version",
           "failLevel": "BLOCKED",
-          "failMessage": "依赖的 SOA 接口 {operationName}(appId:{appId}) 在 MOM 上不存在或未发布"
+          "failMessage": "依赖的 SOA 接口 {operationName}(appId:{appId}, version:{version}) 在 MOM 上不存在或未发布"
         },
         {
           "id": "dep_maven_jar_published",

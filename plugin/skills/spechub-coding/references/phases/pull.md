@@ -9,7 +9,9 @@
 
 **有 reqId（用户提供了）**：直接进入 Step 2。
 
-**无 reqId**：调脚本列出 inbox：
+**无 reqId** [HARD RULE — 禁止弹出选择框询问用户"要查看 inbox 还是手动输入 ID"]：
+
+立即执行 inbox 脚本，获取需求列表：
 ```bash
 python3 {skillDir}/scripts/spechub-workflow.py inbox --repo-root {repoRoot}
 ```
@@ -19,7 +21,7 @@ python3 {skillDir}/scripts/spechub-workflow.py inbox --repo-root {repoRoot}
 {"status": "ok", "gitRemoteUrl": "...", "items": [{requirementId, title, status, ...}]}
 ```
 
-→ AskUserQuestion 让用户选择需求（展示 items 列表）
+→ 然后 AskUserQuestion 展示 items 列表让用户选择需求（附加一个"手动输入 ID"选项）
 
 **脚本输出 status=precondition_failed**：
 → 向用户展示 issues 列表，终止流程

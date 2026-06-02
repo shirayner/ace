@@ -32,6 +32,24 @@ Read `spechub/{reqId}/readiness-manifest.json` → `checks[]`
   ```
 - 用户补全后 → 更新 readiness-manifest.json 的对应 params + 清空 paramGaps
 
+#### SOA 参数补全引导
+
+对 SOA 类型的 check（soa_new_interface / soa_dependency），提问时附加引导说明：
+
+```
+以下 SOA 接口校验需要补全参数：
+| # | 场景 | 接口描述 | 缺失参数 |
+|---|------|---------|---------|
+| RC-001 | 新增接口(provider) | 会员等级查询 | operationName, version |
+| RC-002 | 依赖接口(consumer) | 积分服务查询 | appId, operationName, version |
+
+参数说明：
+- appId: MOM 平台上的应用 ID（项目详情中查看）
+- operationName: 接口在 MOM 上注册的操作名称
+- version: 契约版本号（在 MOM 上已发布的版本）
+- mavenGroupId/ArtifactId/Version: 契约 client JAR 的 Maven 坐标
+```
+
 ### 3. 执行校验
 
 对每个 check：
@@ -46,6 +64,14 @@ for step in schema.checkSteps:
 ```
 
 **并行规则**：所有 MCP 工具调用（非 manual_confirm）在单条 response 中并行执行。
+
+#### SOA check 的特殊规则 [HARD RULE]
+
+SOA 类型（soa_new_interface / soa_dependency）的 check：
+- paramGaps 未补全（用户未提供 appId/operationName/version）→ **BLOCKED**（不是 WARN），提示用户先提供参数
+- 参数已补全但 get_single_operation 查不到契约 → **BLOCKED**，提示用户先去 MOM 创建并发布契约
+- ⚠️ **不允许**将 SOA check 标记为 WARN — "本次新建所以还没有"不是合理理由
+- **原因**：SOA 契约必须先于代码实现存在（否则无法编译 client JAR 依赖）
 
 ### 4. 处理人工确认
 
@@ -90,9 +116,20 @@ Write `spechub/{reqId}/readiness-check.md`：
 ### 7. G1 判定
 
 - **无 BLOCKED** → 自动通过 G1，更新 state.json，进入 DESIGN
-- **有 BLOCKED** → AskUserQuestion：
+- **有 BLOCKED** → 按类型处理：
+
+#### SOA 类型的 BLOCKED（contract_exists / maven_jar_published 失败）
+
+SOA 契约/JAR 不存在意味着后续编译必然失败，**不可跳过**：
+- AskUserQuestion 选项：
+  1. "已在 MOM 上创建并发布契约，重新校验" → 回到 Step 3 重新执行该 check
+  2. "终止本次需求，先处理契约" → 停止
+
+#### 其他类型的 BLOCKED
+
+- AskUserQuestion：
   - "已补全，重新校验" → 回到 Step 3
-  - "跳过阻塞项（我负责）" → 记录 divergence（type: infra_override），通过 G1
+  - "跳过阻塞项（我负责后续补全）" → 记录 divergence（type: infra_override），通过 G1
   - "终止本次需求" → 停止
 
 ### 8. 更新状态

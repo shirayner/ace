@@ -252,6 +252,38 @@ Prior（D1 产物声明）+ Evidence（D2/D3/D5 验证结果）= Posterior（修
 
 **paramGaps 处理规则**：此阶段**不追问**缺失参数，只标记。留给 READINESS Phase 统一处理。
 
+### SOA 接口识别规则（D4 Agent 必须执行）
+
+**前提假设**：SOA 接口的契约必须在 READINESS 校验之前由用户在 MOM 上创建并发布。READINESS 阶段校验的是"契约是否已就绪"，而非"是否需要契约"。如果契约尚未创建 → READINESS 应阻塞等待用户创建，而非 WARN 跳过。
+
+D4 Agent 必须结合产物声明 + D2 代码验证结论，识别以下 SOA 场景：
+
+| 场景 | 识别方法 | 生成的 check type | version 处理 |
+|------|---------|-----------------|-------------|
+| 新增接口（provider） | 产物中标注"新增接口" / D2 确认代码中不存在该接口 | soa_new_interface | paramGaps，用户提供 |
+| 修改已有接口（provider） | 产物中标注"修改接口" / D2 发现现有接口签名需变更 | soa_new_interface | paramGaps，用户提供 |
+| 依赖外部接口（consumer） | 产物中出现外部服务调用 / D2 发现需引入新的远程调用 | soa_dependency | paramGaps，用户提供 |
+
+**统一原则**：所有 SOA 场景的 `version` 一律放入 paramGaps，由用户在 READINESS 阶段提供。AI 不做任何版本号推测。
+
+**params 推导优先级**：
+1. 从产物中直接提取（如果产物标注了 appId/operationName）
+2. 从 project-profile.md 的 SOA 配置中推导（本服务的 appId）
+3. 推导不出 → 放入 paramGaps
+
+**示例**：
+```json
+{
+  "id": "RC-003",
+  "type": "soa_new_interface",
+  "description": "新增会员等级查询接口",
+  "params": { "appId": "100012345", "operationName": "", "version": "" },
+  "paramGaps": ["operationName", "version"],
+  "source": "artifacts/architecture.md §接口设计",
+  "relatedScope": ["会员等级查询"]
+}
+```
+
 ---
 
 ## Divergence 记录
