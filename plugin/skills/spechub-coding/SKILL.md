@@ -16,7 +16,7 @@ description: |
 
 ## 前置检查
 
-1. `openspec/` 目录存在 — 否则提示 `npx @fission-ai/openspec init`
+1. `openspec/` 目录存在 — 否则提示 `openspec init`
 2. `.claude/project-profile.md` 存在 — 否则**直接调用 `/ace:init` 生成**，完成后继续流程（不终止）
 
 ---

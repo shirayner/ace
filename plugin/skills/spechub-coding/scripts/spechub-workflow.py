@@ -128,7 +128,7 @@ def check_preconditions(repo_root: Path) -> dict:
 
     openspec_dir = repo_root / "openspec"
     if not openspec_dir.is_dir():
-        issues.append("openspec/ 目录不存在，请先运行: npx @fission-ai/openspec init")
+        issues.append("openspec/ 目录不存在，请先运行: openspec init")
 
     profile_path = repo_root / ".claude" / "project-profile.md"
     if not profile_path.is_file():
