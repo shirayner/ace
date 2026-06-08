@@ -7,3 +7,4 @@ Thumbs.db
 tempdoc/
 package-lock.json
 .npmrc
+.idea/

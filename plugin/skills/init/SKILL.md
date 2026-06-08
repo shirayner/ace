@@ -14,7 +14,6 @@ description: |
   code review（→ code-review）；写测试（→ ut）；
   已有 project-profile.md 且未要求更新。
 ---
-
 # Init — 项目技术画像初始化
 
 ## 定位
@@ -68,11 +67,31 @@ description: |
 | 调用 | xxx-service | SOA client | pom.xml + config |
 | 被调 | — | SOA endpoint | contract |
 | 消息 | xxx-topic | QMQ producer | code |
+
+## 入口点索引
+> 项目所有对外交互入口及核心 Service。用于快速定位"需求功能声明"对应的代码位置。
+
+### SOA 接口（Provider）
+| # | 操作名 | 类.方法 | 功能描述 | 文件路径 |
+|---|--------|---------|---------|---------|
+
+### QMQ Consumer（消息消费）
+| # | Topic | 类.方法 | 功能描述 | 文件路径 |
+|---|-------|---------|---------|---------|
+
+### QSchedule Job（定时任务）
+| # | 任务名 | 类 | 功能描述 | 调度周期 | 文件路径 |
+|---|--------|-----|---------|---------|---------|
+
+### 核心 Service（内部编排层）
+| # | 类名 | 核心职责 | 关键方法 | 文件路径 |
+|---|------|---------|---------|---------|
 ```
 
 ### CLAUDE.md 引入
 
 在项目 CLAUDE.md 中追加一行：
+
 ```
 @.claude/project-profile.md
 ```
@@ -86,10 +105,10 @@ description: |
 ### Phase 1: 检测与准备
 
 1. 检查 `.claude/project-profile.md` 是否已存在
+
    - 存在 + 用户未要求刷新 → 提示"画像已存在，是否要更新？"
    - 存在 + `--refresh` → 进入 Phase 2（增量更新模式）
    - 不存在 → 进入 Phase 2（全量生成模式）
-
 2. 确认项目根目录（通过 git rev-parse --show-toplevel）
 
 ### Phase 2: 自动推断
@@ -97,12 +116,14 @@ description: |
 按以下顺序分析，每步产出结构化中间结论：
 
 #### 2.1 构建系统识别
+
 ```
 → 检查 pom.xml / build.gradle / package.json
 → 提取：构建工具、Java版本、核心依赖列表
 ```
 
 #### 2.2 中间件清单推断
+
 ```
 → 从 dependencies 识别：
    - ctrip-dal-client → DAL
@@ -115,6 +136,7 @@ description: |
 ```
 
 #### 2.3 架构分层分析
+
 ```
 → Glob src/main/java/**/ 列出包结构
 → 识别分层：
@@ -129,6 +151,7 @@ description: |
 #### 2.4 中间件使用模式提取
 
 对每个识别到的中间件：
+
 ```
 → Grep 关键注解/基类（如 @DalTransactional, AbstractBaseDao, @QmqConsumer）
 → 提取 2-3 个代表性文件
@@ -140,6 +163,7 @@ description: |
 ```
 
 #### 2.5 编码约定统计
+
 ```
 → 采样 10-20 个核心类
 → 统计：
@@ -150,6 +174,7 @@ description: |
 ```
 
 #### 2.6 上下游依赖识别
+
 ```
 → SOA client 配置 / @SoaClient 注解 → 调用的外部服务
 → SOA endpoint 定义 → 对外暴露的接口
@@ -158,7 +183,84 @@ description: |
 → HTTP client 配置 → 外部 REST 依赖
 ```
 
-#### 2.7 系统定位推断
+#### 2.7 入口点索引生成
+
+> **设计意图**：提前梳理项目的所有对外交互入口及其功能映射，
+> 使后续 `spechub-coding` 的 COMPREHEND 阶段从"全量代码探索"变为"查表比对"，
+> 每次需求节省 8-20 min + 13-35K token。
+
+**入口点定义** = 外部世界触发本项目执行的起点：
+
+| 类型          | 触发源       | 技术载体                                 | 识别方式                             |
+| ------------- | ------------ | ---------------------------------------- | ------------------------------------ |
+| SOA 接口      | 外部服务调用 | `@SoaService` 实现类的 public 方法     | Grep `@SoaService` / 继承 SOA 基类 |
+| QMQ Consumer  | 消息到达     | `@QmqConsumer` 标注的方法              | Grep `@QmqConsumer`                |
+| QSchedule Job | 定时触发     | 实现 `IScheduleTask` 或 `@QSchedule` | Grep 相关接口/注解                   |
+| HTTP Endpoint | HTTP 请求    | `@Controller`/`@RestController`      | Grep 相关注解                        |
+
+**执行步骤**：
+
+```
+对每种入口类型:
+  1. Grep 关键注解/基类 → 定位所有入口类
+  2. 对每个入口类:
+     - 提取 public 方法名
+     - 从方法名 + 类名 + 注释(如有) 推断一句话功能描述
+     - 记录文件路径
+  3. 识别核心 Service 层（被多个入口调用的业务编排类）:
+     - 从入口类的依赖注入字段 → 找到 Service 类
+     - 提取核心方法名 + 功能描述
+```
+
+**产出格式**（写入 project-profile.md §入口点索引）：
+
+```markdown
+## 入口点索引
+
+> 项目所有对外交互入口及核心 Service。用于快速定位"需求功能声明"对应的代码位置。
+> 自动生成于 {date}，`ace:init --refresh` 更新。
+
+### SOA 接口（Provider）
+
+| # | 操作名 | 类.方法 | 功能描述 | 文件路径 |
+|---|--------|---------|---------|---------|
+| 1 | GetMemberGrade | MemberGradeServiceImpl.getMemberGrade() | 查询会员当前等级 | module/src/.../soa/impl/MemberGradeServiceImpl.java |
+
+### QMQ Consumer（消息消费）
+
+| # | Topic | 类.方法 | 功能描述 | 文件路径 |
+|---|-------|---------|---------|---------|
+| 1 | member.order.completed | OrderPointsListener.onMessage() | 订单完成后累积积分 | .../listener/OrderPointsListener.java |
+
+### QSchedule Job（定时任务）
+
+| # | 任务名 | 类 | 功能描述 | 调度周期 | 文件路径 |
+|---|--------|-----|---------|---------|---------|
+| 1 | membershipExpirationJob | MembershipExpirationJob | 每日扫描过期会员执行降级 | 每日 2:00 | .../job/MembershipExpirationJob.java |
+
+### 核心 Service（内部编排层）
+
+| # | 类名 | 核心职责 | 关键方法 | 文件路径 |
+|---|------|---------|---------|---------|
+| 1 | GradeChangeService | 等级变更编排 | handleGradeChange(), calculateNewGrade() | .../service/GradeChangeService.java |
+```
+
+**粒度规则**：
+
+- ✅ 入口点（公开交互面）+ 核心 Service（业务编排层）
+- ✅ 一句话功能描述（用于语义匹配）
+- ✅ 文件路径（精确定位）
+- ❌ 不含方法签名参数类型（IMPLEMENT 阶段按需 Read）
+- ❌ 不含实现细节/算法
+- ❌ 不含 private 方法
+
+**增量维护**：
+
+- `ace:init --refresh` 时全量重建
+- `spechub-coding` ARCHIVE 阶段如新增入口点 → 自动追加
+
+#### 2.8 系统定位推断
+
 ```
 → 读 README.md（如有）
 → 读 pom.xml <description>
@@ -169,6 +271,7 @@ description: |
 ### Phase 3: 用户确认
 
 展示推断结果摘要，通过 AskUserQuestion 确认：
+
 - "系统定位推断是否准确？"
 - "是否有遗漏的中间件或特殊用法？"
 - "编码约定中是否有需要补充的硬性规则？"
@@ -189,6 +292,7 @@ description: |
 ## 增量更新模式（--refresh）
 
 当画像已存在时：
+
 1. 重新执行 Phase 2 全部步骤
 2. 对比已有画像 vs 新推断结果
 3. 只展示**差异部分**让用户确认
@@ -199,6 +303,7 @@ description: |
 ## 漂移检测（被动触发）
 
 其他 skill 在执行编码任务前可以做 lightweight 检测：
+
 ```
 → pom.xml 是否有新的中间件依赖（对比画像中的中间件列表）
 → src/main/java 是否有新的顶层 package（对比画像中的分层）
@@ -210,23 +315,13 @@ description: |
 
 ---
 
-## 与其他 skill 的关系
-
-| Skill | 如何使用画像 |
-|-------|------------|
-| **auto-goal** | implement 前 Read project-profile.md → 了解项目约定 |
-| **spechub-handoff** | plan 阶段跳过大部分 repo-analysis → 只做增量 focused grep |
-| **code-review** | 对照画像检查代码是否符合项目约定 |
-| **ut** | 根据画像中的测试约定生成测试 |
-
----
 
 ## 不做的事（反模式）
 
-| 反模式 | 为什么不做 |
-|--------|-----------|
-| 列出所有类和方法 | 高频变化、grep 可得、浪费 token |
-| 写入业务逻辑细节 | 变化快、应由 spec/PRD 提供 |
-| 生成代码骨架模板 | Framework MCP + grep 已有代码即可 |
-| 替代 CLAUDE.md 其他内容 | 画像只是其中一个 section |
-| 自动推断业务规则 | 代码中看不出"为什么"，需人工 |
+| 反模式                  | 为什么不做                        |
+| ----------------------- | --------------------------------- |
+| 列出所有类和方法        | 高频变化、grep 可得、浪费 token   |
+| 写入业务逻辑细节        | 变化快、应由 spec/PRD 提供        |
+| 生成代码骨架模板        | Framework MCP + grep 已有代码即可 |
+| 替代 CLAUDE.md 其他内容 | 画像只是其中一个 section          |
+| 自动推断业务规则        | 代码中看不出"为什么"，需人工      |
