@@ -1,0 +1,14 @@
+.gitignore
+  h_1b7a87984feade 11
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "eac5eaa8f581a89bb76a37f5f6b11fae5cb75e7c",
+  "prompts": {},
+  "humans": {
+    "h_1b7a87984feade": {
+      "author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
