@@ -1,0 +1,25 @@
+plugin/skills/requirement-anchors-analysis/templates/requirement-anchors-analysis.md
+  s_17b09d4a3dc0d4::t_4b2a00944f486c 1-68
+plugin/skills/requirement-anchors-analysis/SKILL.md
+  s_17b09d4a3dc0d4::t_57e976354a7c4e 1-281
+plugin/skills/requirement-anchors-analysis/templates/requirement-issues.md
+  s_17b09d4a3dc0d4::t_fef21b401dfc44 1-26
+docs/superpowers/plans/2026-06-10-requirement-anchors-analysis.md
+  s_17b09d4a3dc0d4::t_efb9153a80a2dd 1-127
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "0d3299f78ee8074ba908b0e29ca3f3f8cf1e1918",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
