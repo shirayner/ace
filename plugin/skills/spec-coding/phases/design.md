@@ -79,45 +79,66 @@ L4 接口分析：Grep 调用方/被调用方 → 约束清单
 
 **简言之**：有选择 + 有代价 → 问用户。无选择或无代价 → AI 自主。
 
-### 7. 设计决策澄清（需澄清级 — 确认门禁）
+### 7. 落地设计决策文档 + 澄清循环
+
+#### 7a. 写入 issues/design-issues.md（先落文档）
+
+将所有"需澄清"级决策写入文档：
+
+```markdown
+# Design Issues
+
+| id | question | severity | options | status | decision | rationale |
+|----|----------|----------|---------|--------|----------|-----------|
+| D1 | 游戏循环机制？ | 需澄清 | setInterval / rAF | open | - | - |
+| D2 | 蛇数据结构？ | 需澄清 | Array / LinkedList | open | - | - |
+| D3 | 渲染策略？ | 自主决定 | 全帧重绘 | resolved | 全帧重绘 | 400格无性能问题 |
+```
+
+**规则**：先有文档，再提问。"自主决定"级的也要记录（status=resolved + rationale）。
+
+#### 7b. 澄清循环（问→回写→检查）
 
 ```
-收集所有"需澄清"级设计决策：
-  每个决策列出：
-    - 问题描述
-    - 2-3 个可行选项（含推荐标记）
-    - 其他选项的权衡
+LOOP:
+  1. 从 design-issues.md 中取所有 status=open 的决策
+  2. 使用问题澄清模式向用户提问：
+     - 每个决策一个 tab
+     - options = 可行选项（推荐项加"(推荐)"）
+     - 单次 ≤4，超出分多轮
+  3. 收到回答后回写文档：
+     - status: open → resolved
+     - decision: 用户选择的方案
+     - rationale: 选择理由
+  4. 检查：用户回答是否引发新设计问题？
+     IF 有新问题 → 追加到文档（status=open）→ 回到 1
+     IF 无新问题 → 退出循环
+```
 
-使用 AskUserQuestion 多 tab 交互：
-  - 每个 question = 一个设计决策（独立 tab）
-  - options = 2-3 个可行选项（推荐项加"(推荐)"后缀 + description 说明理由）
-  - 用户可选择预设选项，也可选"Other"自由输入
-  - AskUserQuestion 单次最多 4 个 question
-  - 如决策 > 4 个 → 分多轮提问（每轮 ≤4）
+示例 AskUserQuestion：
+```
+AskUserQuestion(questions: [
+  {
+    header: "游戏循环",
+    question: "游戏循环使用什么机制？",
+    options: [
+      {label: "setInterval (推荐)", description: "离散格子移动无需帧同步，语义更清晰"},
+      {label: "requestAnimationFrame", description: "帧同步精确，但对格子游戏过度"}
+    ]
+  },
+  {
+    header: "数据结构",
+    question: "蛇的数据结构用什么？",
+    options: [
+      {label: "Array<{x,y}> 头在[0] (推荐)", description: "unshift/pop 自然映射移动语义"},
+      {label: "LinkedList", description: "O(1) 头尾操作，但 JS 无原生实现"}
+    ]
+  }
+])
+```
 
-示例：
-  AskUserQuestion(questions: [
-    {
-      header: "游戏循环",
-      question: "游戏循环使用什么机制？",
-      options: [
-        {label: "setInterval (推荐)", description: "离散格子移动无需帧同步，语义更清晰"},
-        {label: "requestAnimationFrame", description: "帧同步精确，但对格子游戏过度"}
-      ]
-    },
-    {
-      header: "数据结构",
-      question: "蛇的数据结构用什么？",
-      options: [
-        {label: "Array<{x,y}> 头在[0] (推荐)", description: "unshift/pop 自然映射移动语义"},
-        {label: "LinkedList", description: "O(1) 头尾操作，但 JS 无原生实现"}
-      ]
-    }
-  ])
-
-→ 用户逐 tab 确认/调整后再进入设计展开
+→ 所有决策 resolved 后进入设计展开
 → 未确认的决策 = 不可写入设计文档
-```
 
 **关键区分**：
 - 顶层架构方案选择（如"微服务 vs 单体"）→ 仍然是 Step 6 的总方案对比

@@ -65,13 +65,63 @@ IF scope_assessment == "needs_decomposition":
   → 其余记为 Future Changes
 ```
 
-### 8. 基于 unknowns 设计问题
+### 8. 落地问题文档（先写后问）
 
-- 暴露取舍（方案 A vs B）
-- 关联问题（"X 还涉及 Y？"）
-- 优先级（时间/质量/范围）
+基于 Step A 的分析，将所有 unknowns/待澄清事项写入 `issues/requirement-issues.md`。
 
-### 9. AskUserQuestion（引导性澄清）
+#### 问题分级（VOI 简化模型）
+
+按两维评估每个问题的严重性：
+
+| 维度 | 高 | 低 |
+|------|---|---|
+| **假设失败成本** | 错了需回退阶段/重做大量工作（如方向偏移、scope 错判） | 错了后续微调即可（如细节偏好、格式选择） |
+| **可推断性** | 代码/文档/上下文无法推断（如业务规则、验收标准） | 有明确信号可推断（如技术栈约定、现有模式） |
+
+分级结果：
+
+| 级别 | 判定条件 | 处理方式 |
+|------|---------|---------|
+| 必须澄清 | 假设失败成本高 + 不可推断 | 向用户提问，status=open |
+| 记录假设 | 假设失败成本低，或可从上下文推断 | AI 做出假设，status=assumed，对齐时展示 |
+
+**简言之**：错了代价大 + 推不出来 → 问。推得出或错了无所谓 → 假设并记录。
+
+#### 文档格式
+
+```markdown
+# Requirement Issues
+
+| id | question | level | status | answer | source |
+|----|----------|-------|--------|--------|--------|
+| R1 | 头像尺寸限制多少？ | 必须澄清 | open | - | - |
+| R2 | 存储方式选本地还是 OSS？ | 必须澄清 | open | - | - |
+| R3 | 上传格式支持哪些？ | 记录假设 | assumed | JPEG/PNG/WebP | 参照现有上传逻辑 |
+```
+
+**规则**：先有文档，再提问。"记录假设"级的也要写入，对齐时展示给用户。
+
+### 9. 澄清循环（问→回写→检查新问题）
+
+```
+LOOP:
+  1. 从 issues/requirement-issues.md 中取所有 status=open 的问题
+  2. 按问题澄清模式（参见 references/ask-user-guide.md）向用户提问
+     - 每轮 ≤4 个问题
+     - 每个问题给推荐选项
+  3. 收到回答后回写文档：
+     - status: open → resolved
+     - answer: 用户的回答
+     - source: "用户确认"
+  4. 检查：用户回答是否引发新问题？
+     IF 有新问题 → 追加到文档（评估分级）→ 回到 1
+     IF 无新问题 → 退出循环
+  5. 检查所有 status=assumed 的条目：
+     → 在 Step 10 对齐四要素的"关键假设"中展示
+     → 用户可在审批时通过 Other 纠正
+```
+
+**关键**：每次 AskUserQuestion 后必须回写文档。文档是真实状态，不是事后补充。
 
 ### 10. 展示四要素对齐（markdown 文本输出）
 
@@ -111,14 +161,10 @@ AskUserQuestion(questions: [{
 
 处理逻辑：
 - 通过 → 事件 `aligned` → Phase 2
-- Other（用户输入补充）→ 读取补充 → 更新理解 → 进入 Phase 2
+- Other（用户输入补充）→ 读取补充 → 更新 issues 文档 → 进入 Phase 2
 - 拒绝 → 回到 Step 8 重新澄清
 
-### 12. 写入 issues/requirement-issues.md
-
-记录发现的问题、风险、待确认事项。
-
-### 13. 事件 `aligned` → Phase 2
+### 12. 事件 `aligned` → Phase 2
 
 ---
 

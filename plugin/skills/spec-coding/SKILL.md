@@ -145,6 +145,13 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 - 开放式仅在无法给选项时使用
 - 需深入的话题 → 拆为多消息逐步追问
 
+## 产物语言规则
+
+- 所有产出文档使用**中文**编写（proposal.md、spec.md、design.md、tasks.md、issues/*.md）
+- spec 中的 RFC 2119 关键词保持英文大写（SHALL、MUST、WHEN、THEN、GIVEN、AND）
+- 代码标识符、文件路径、命令保持英文
+- OpenSpec validate 不检查语言，只检查格式结构
+
 ---
 
 ## 状态文件：`.ace-state.json`
