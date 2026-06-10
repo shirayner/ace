@@ -53,22 +53,24 @@ openspec instructions specs --change {name} --json
 ```markdown
 ## ADDED Requirements
 
-### Requirement: Avatar Upload
-The system SHALL accept image uploads in JPEG, PNG, and WebP formats.
-The system SHALL reject files exceeding 5MB.
+### Requirement: 头像上传
+系统 SHALL 接受 JPEG、PNG 和 WebP 格式的图片上传。
+系统 SHALL 拒绝超过 5MB 的文件。
 
-#### Scenario: Successful upload
-- **GIVEN** a user with a valid session
-- **WHEN** the user uploads a 2MB JPEG file
-- **THEN** the system stores the image
-- **AND** returns a public URL
+#### Scenario: 上传成功
+- **GIVEN** 一个拥有有效会话的用户
+- **WHEN** 用户上传一个 2MB 的 JPEG 文件
+- **THEN** 系统存储该图片
+- **AND** 返回一个公开 URL
 
-#### Scenario: File too large
-- **GIVEN** a user with a valid session
-- **WHEN** the user uploads a 6MB file
-- **THEN** the system rejects with HTTP 413
-- **AND** returns an error message
+#### Scenario: 文件过大
+- **GIVEN** 一个拥有有效会话的用户
+- **WHEN** 用户上传一个 6MB 的文件
+- **THEN** 系统以 HTTP 413 拒绝
+- **AND** 返回错误信息
 ```
+
+**语言规则**：delta spec 使用中文编写，仅 RFC 2119 关键词（SHALL、MUST、WHEN、THEN、GIVEN、AND）保持英文大写。
 
 ### 4. 格式验证
 

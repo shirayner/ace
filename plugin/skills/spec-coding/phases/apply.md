@@ -51,6 +51,13 @@ IF none：
 
 ### 3. 执行
 
+<HARD-GATE>
+每完成一个任务后，必须立即：
+1. 更新 tasks.md 中对应 checkbox：`- [ ]` → `- [x]`
+2. 更新 .ace-state.json：`completed_tasks++`，`current_task` 指向下一个
+未更新 = 任务未完成。不可先执行多个任务再批量更新。
+</HARD-GATE>
+
 #### Subagent 模式（推荐）
 
 invoke `/subagent-execute`，传入：
@@ -58,18 +65,17 @@ invoke `/subagent-execute`，传入：
 - `design_context`: openspec/changes/{name}/technical-design.md
 - `pattern_report`: technical-design.md 的 Patterns 节
 
-→ /subagent-execute 返回执行结果
-→ spec-coding 更新 .ace-state.json
+→ /subagent-execute 每完成一个任务就更新 tasks.md checkbox
+→ 全部完成后 spec-coding 更新 .ace-state.json
 
 #### Direct 模式
 
-- 逐任务执行（主代理直接实现）
-- 每任务完成后：
-  - 执行 /verify Gate Function（运行验证命令）
-  - 更新 tasks.md checkbox
-  - 更新 .ace-state.json: `completed_tasks++`
-- 无 spec-reviewer / code-reviewer（轻量模式）
-- 但**仍必须运行验证命令**（/verify 铁律不可跳过）
+逐任务执行（主代理直接实现），每任务完成后**立即**：
+1. 执行 /verify Gate Function（运行验证命令）
+2. 更新 tasks.md checkbox：`- [ ]` → `- [x]`
+3. 更新 .ace-state.json: `completed_tasks++`, `current_task++`
+
+无 spec-reviewer / code-reviewer（轻量模式），但**仍必须运行验证命令**（/verify 铁律不可跳过）。
 
 ### 4. 偏差处理（分级）
 
