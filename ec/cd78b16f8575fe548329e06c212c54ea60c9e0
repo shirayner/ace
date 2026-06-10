@@ -1,0 +1,34 @@
+.ace/wiki/_meta.yml
+  s_17b09d4a3dc0d4::t_b292f2d414d9b9 1-25
+  s_17b09d4a3dc0d4::t_02911e2be010c9 26-30
+.ace/wiki/SUMMARY.md
+  s_17b09d4a3dc0d4::t_da7c36fd59de5a 1-107
+.ace/wiki/entries/api/uninstall.md
+  s_17b09d4a3dc0d4::t_df7a40dc415752 1-67
+.ace/wiki/entries/api/list.md
+  s_17b09d4a3dc0d4::t_f4cd05070990c2 1-64
+.ace/wiki/entries/api/init.md
+  s_17b09d4a3dc0d4::t_415355c6d6aba8 1-102
+.ace/wiki/entries/api/spec.md
+  s_17b09d4a3dc0d4::t_115bc7c6d1fff9 1-100
+.ace/wiki/INDEX.md
+  s_17b09d4a3dc0d4::t_73f9cd0a0977b7 1-34
+.ace/wiki/entries/api/doctor.md
+  s_17b09d4a3dc0d4::t_917d6158d0f442 1-61
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "eccd78b16f8575fe548329e06c212c54ea60c9e0",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
