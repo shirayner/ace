@@ -1,0 +1,32 @@
+plugin/skills/requirement-analysis/SKILL.md
+  s_17b09d4a3dc0d4::t_5a7ec83fbe85fc 1-372
+plugin/skills/requirement-analysis/templates/requirement-anchors-analysis.md
+  s_17b09d4a3dc0d4::t_2d1d9aeb2e457b 1-63
+plugin/skills/requirement-analysis/templates/requirement-issues.md
+  s_17b09d4a3dc0d4::t_ef000a647fc01d 1-26
+plugin/skills/requirement-analysis/templates/prd.md
+  s_17b09d4a3dc0d4::t_98d0c9dfe6bf7e 1-65
+docs/superpowers/specs/2026-06-11-requirement-analysis.md
+  s_17b09d4a3dc0d4::t_e191d1493218ff 1-60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "ff394d8cd86a1d19989c3d72d7a6e98ba4f9c9c8",
+  "prompts": {},
+  "humans": {
+    "h_1b7a87984feade": {
+      "author": "chengzheng <chengzheng@trip.com>"
+    }
+  },
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
