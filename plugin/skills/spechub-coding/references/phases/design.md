@@ -6,7 +6,7 @@
 ## 输入
 - `spechub/{reqId}/comprehension.md` — **核心输入：修正后理解 + 代码插入点详情**
 - `spechub/{reqId}/readiness-check.md` — 中间件准备状态
-- `.claude/project-profile.md` — 项目编码约定
+- `.ace/project-profile.md` — 项目编码约定
 - G0 确认的 Scope 裁决
 
 ## Context Budget 规则 [HARD RULE]

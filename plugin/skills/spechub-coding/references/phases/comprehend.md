@@ -9,7 +9,7 @@
 
 ## 输入
 - `spechub/{reqId}/artifacts/` — 原始产物
-- `.claude/project-profile.md` — 项目技术画像
+- `.ace/project-profile.md` — 项目技术画像
 
 ## 产出（全部 MUST-WRITE）
 - `spechub/{reqId}/comprehension.md` — **修正后**的统一理解

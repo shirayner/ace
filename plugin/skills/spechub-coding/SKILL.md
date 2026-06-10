@@ -3,7 +3,7 @@ name: spechub-coding
 description: |
   SpecHub 产物驱动的规范编码。当用户需要基于 SpecHub 平台产物进行本地编码时触发。
   适用于：用户提供 requirementId 或从 SpecHub inbox 选择需求后，基于平台产物完成编码。
-  前提：项目中已有 openspec/ 目录（由 OpenSpec CLI 初始化）+ .claude/project-profile.md（由 /ace:init 生成）。
+  前提：项目中已有 openspec/ 目录（由 OpenSpec CLI 初始化）+ .ace/project-profile.md（由 /ace:init 生成）。
 
   DO NOT TRIGGER: 无平台产物的纯本地开发；单文件 bug 修复（→ 直接 Edit）；
   纯探索/学习（→ auto-goal）；代码审查（→ code-review）；写测试（→ ut）。
@@ -17,7 +17,7 @@ description: |
 ## 前置检查
 
 1. `openspec/` 目录存在 — 否则提示 `openspec init`
-2. `.claude/project-profile.md` 存在 — 否则**直接调用 `/ace:init` 生成**，完成后继续流程（不终止）
+2. `.ace/project-profile.md` 存在 — 否则**直接调用 `/ace:init` 生成**，完成后继续流程（不终止）
 
 ---
 

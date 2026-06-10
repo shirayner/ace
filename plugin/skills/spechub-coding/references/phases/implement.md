@@ -6,7 +6,7 @@
 ## 输入
 - `openspec/changes/{slug}/design.md` — 决策清单（含接口契约）
 - `openspec/changes/{slug}/tasks.md` — 任务清单（含测试策略标注）
-- `.claude/project-profile.md` — 项目编码约定
+- `.ace/project-profile.md` — 项目编码约定
 
 ## 产出
 - 实际代码变更

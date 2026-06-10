@@ -130,9 +130,9 @@ def check_preconditions(repo_root: Path) -> dict:
     if not openspec_dir.is_dir():
         issues.append("openspec/ 目录不存在，请先运行: openspec init")
 
-    profile_path = repo_root / ".claude" / "project-profile.md"
+    profile_path = repo_root / ".ace" / "project-profile.md"
     if not profile_path.is_file():
-        issues.append(".claude/project-profile.md 不存在，请先运行: /ace:init")
+        issues.append(".ace/project-profile.md 不存在，请先运行: /ace:init")
 
     if issues:
         return {"ok": False, "issues": issues}

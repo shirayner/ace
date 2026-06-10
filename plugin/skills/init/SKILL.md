@@ -2,7 +2,7 @@
 name: init
 description: |
   初始化项目技术画像。分析代码仓库的架构、分层、中间件使用模式、编码约定，
-  生成 .claude/project-profile.md 并在 CLAUDE.md 中通过 @path 引入。
+  生成 .ace/project-profile.md 并在 CLAUDE.md 中通过 @path 引入。
 
   触发场景：
   - "初始化项目画像" / "init project profile"
@@ -18,14 +18,14 @@ description: |
 
 ## 定位
 
-分析目标仓库代码 → 推断技术画像 → 生成 `.claude/project-profile.md` → CLAUDE.md 引入。
+分析目标仓库代码 → 推断技术画像 → 生成 `.ace/project-profile.md` → CLAUDE.md 引入。
 后续所有 skill（auto-goal / spechub-handoff / code-review / ut）读取此画像作为项目上下文。
 
 ---
 
 ## 产出
 
-### 文件：`.claude/project-profile.md`
+### 文件：`.ace/project-profile.md`
 
 ```markdown
 # 项目技术画像
@@ -93,7 +93,7 @@ description: |
 在项目 CLAUDE.md 中追加一行：
 
 ```
-@.claude/project-profile.md
+@.ace/project-profile.md
 ```
 
 实现渐进式加载——CLAUDE.md 保持简短，画像内容按需引用。
@@ -104,7 +104,7 @@ description: |
 
 ### Phase 1: 检测与准备
 
-1. 检查 `.claude/project-profile.md` 是否已存在
+1. 检查 `.ace/project-profile.md` 是否已存在
 
    - 存在 + 用户未要求刷新 → 提示"画像已存在，是否要更新？"
    - 存在 + `--refresh` → 进入 Phase 2（增量更新模式）
@@ -280,9 +280,9 @@ description: |
 
 ### Phase 4: 生成落地
 
-1. 组装 `.claude/project-profile.md` 内容
+1. 组装 `.ace/project-profile.md` 内容
 2. 写入文件
-3. 检查 CLAUDE.md 是否已有 `@.claude/project-profile.md` 引入
+3. 检查 CLAUDE.md 是否已有 `@.ace/project-profile.md` 引入
    - 没有 → 追加引入行
    - 已有 → 跳过
 4. 输出完成摘要
