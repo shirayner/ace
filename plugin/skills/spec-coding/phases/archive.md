@@ -21,7 +21,16 @@ openspec validate --json
 
 确保所有 spec 文件格式正确，避免归档失败。
 
-### 3. 归档（OpenSpec CLI 执行）
+### 3. 归档（配置驱动）
+
+```
+IF config.auto_archive == true:
+  → 直接执行 `openspec archive {change-name} --yes`
+  → 无需用户确认
+ELSE:
+  → 先 markdown 展示即将归档的内容摘要
+  → AskUserQuestion 审批确认后再执行
+```
 
 ```bash
 openspec archive {change-name} --yes
@@ -53,9 +62,17 @@ E{N}: {描述} | 来源: {change-name} | 日期: {date}
 
 收敛：经验 > 20 条时提议合并/淘汰。
 
-### 5. 分支处理
+### 5. 分支处理（配置驱动）
 
-使用问题澄清模式：
+```
+IF config.auto_push == true:
+  → git add -A
+  → git commit -m "feat(spec): {change-name} 归档完成"
+  → git push -u origin {branch_name}
+  → 无需用户确认
+ELSE:
+  → AskUserQuestion 让用户选择：
+```
 
 ```
 AskUserQuestion(questions: [{

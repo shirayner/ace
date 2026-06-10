@@ -30,6 +30,64 @@ description: |
 
 1. `openspec/` 目录存在 — 否则提示 `openspec init`
 2. OpenSpec CLI 可用 — 否则提示安装 `@anthropic-ai/openspec`
+3. `.ace/config.yaml` 存在 → Read 并解析 `spec-coding` 节
+   - 不存在 → 使用默认配置（mode: manual, auto_archive: false, auto_push: false, use_subagent: true）
+
+---
+
+## 配置驱动行为
+
+Read `.ace/config.yaml` 中的 `spec-coding` 节，配置决定全流程行为：
+
+```yaml
+spec-coding:
+  mode: manual        # auto | manual
+  auto_archive: false # 实施完成后是否自动归档（不等确认）
+  auto_push: false    # 归档后是否自动提交代码到远程（commit + push）
+  use_subagent: true  # Phase 5 是否使用子代理
+```
+
+### 配置读取与行为路由（伪代码）
+
+```
+启动时 Read .ace/config.yaml → 解析 spec-coding 节 → 存为 CONFIG
+
+## mode 控制人工交互
+IF CONFIG.mode == "auto":
+  Phase 1: 执行 Step A（内部分析）→ 跳过 Step B/C → 直接 Phase 2
+  Phase 3: 跳过设计决策澄清 + 审批 → AI 自主选推荐方案
+  Phase 4: 跳过计划审批 → 直接 Phase 5
+ELSE (manual):
+  Phase 1: 完整 Step A → Step B（澄清循环）→ Step C（对齐审批）
+  Phase 3: 设计决策澄清 + 用户审批
+  Phase 4: 计划审批
+
+## auto_archive 控制归档时机
+IF CONFIG.auto_archive == true:
+  Phase 5 apply 完成 → 直接进入 Phase 6（复盘 + openspec archive + 经验提取）
+ELSE:
+  Phase 5 apply 完成 → AskUserQuestion 确认后再进入 Phase 6
+
+## auto_push 控制代码提交
+IF CONFIG.auto_push == true:
+  Phase 6 归档完成 → git add + git commit + git push -u origin {branch}
+ELSE:
+  Phase 6 归档完成 → AskUserQuestion 选择（合并/PR/保持）
+
+## use_subagent 控制执行方式
+IF CONFIG.use_subagent == true:
+  Phase 5 → invoke /subagent-execute
+ELSE:
+  Phase 5 → direct 模式（主代理逐任务执行）
+```
+
+### 配置缺失时的默认值
+
+`.ace/config.yaml` 不存在或字段缺失时，使用：
+- `mode`: manual
+- `auto_archive`: false
+- `auto_push`: false
+- `use_subagent`: true
 
 ---
 

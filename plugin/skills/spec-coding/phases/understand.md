@@ -58,6 +58,16 @@ IF 触发 → `scope_assessment = "needs_decomposition"`
 
 ## Step B: 需求澄清（先解决信息缺口，确定需求）
 
+**配置驱动**：
+```
+IF mode == "auto":
+  → 跳过 Step B 和 Step C
+  → AI 自主完成所有决策（假设走推荐选项）
+  → 直接进入 Phase 2
+IF mode == "manual":
+  → 执行完整的澄清 + 对齐流程
+```
+
 ### 7. 范围分解路由
 
 ```

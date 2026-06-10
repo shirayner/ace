@@ -8,9 +8,21 @@
 
 ## 执行逻辑
 
-### 1. 选择执行策略（首次进入时，一次性确认）
+### 1. 选择执行策略
 
-使用问题澄清模式（两个独立 tab）：
+**配置驱动**：
+
+```
+IF config.use_subagent 已配置:
+  → 直接使用配置值决定执行模式
+  → mode=="auto" 时隔离方式默认 branch，跳过交互
+  → mode=="manual" 时只问隔离方式（执行模式已由配置决定）
+
+IF config.use_subagent 未配置（或 config 不存在）:
+  → AskUserQuestion 让用户选择执行模式 + 隔离方式
+```
+
+**手动模式下的交互**（仅 config 未明确时）：
 
 ```
 AskUserQuestion(questions: [
