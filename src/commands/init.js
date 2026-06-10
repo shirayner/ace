@@ -51,28 +51,13 @@ export async function initCommand(options) {
         p.log.message(['Auto-skip:', ...skipLines].join('\n'));
       }
 
-      // Show conflict section + prompt
+      // Show conflict section — overwrite by default
       if (preview.conflict.length > 0) {
         const conflictLines = preview.conflict.map(f => `  ${f}`);
-        p.log.warn([`${preview.conflict.length} existing file(s):`, ...conflictLines].join('\n'));
-
-        const action = await p.select({
-          message: `How to handle ${preview.conflict.length} existing files?`,
-          options: [
-            { value: 'skip', label: 'Keep existing', hint: 'recommended' },
-            { value: 'overwrite', label: 'Overwrite with latest' },
-            { value: 'cancel', label: 'Cancel' },
-          ],
-          initialValue: 'skip',
-        });
-
-        if (p.isCancel(action) || action === 'cancel') {
-          p.cancel('Setup cancelled.');
-          process.exit(0);
-        }
+        p.log.warn([`${preview.conflict.length} existing file(s) will be overwritten:`, ...conflictLines].join('\n'));
 
         for (const componentName of components) {
-          resolutions[componentName] = action;
+          resolutions[componentName] = 'overwrite';
         }
       }
     }
