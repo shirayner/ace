@@ -2,6 +2,8 @@
 
 **目的**：生成 bite-sized 实现任务，每个任务原子化、可验证、包含 TDD 步骤。
 
+**交互规范**：所有 AskUserQuestion 调用遵循 `references/ask-user-guide.md`。
+
 ---
 
 ## 执行逻辑
@@ -11,11 +13,20 @@
 ```
 design.md 是否覆盖了无法收敛为单个 plan 的内容？
 IF yes →
-  "设计展开后发现比预期复杂。建议拆为多个 plan：
-   Plan A: {scope} — 独立产出可工作的软件
-   Plan B: {scope} — 独立产出可工作的软件"
+  先 markdown 展示拆分建议：
+    "设计展开后发现比预期复杂。建议拆为多个 plan：
+     Plan A: {scope} — 独立产出可工作的软件
+     Plan B: {scope} — 独立产出可工作的软件"
   → 不回退 design（design 仍有效），只拆分执行
-  → AskUserQuestion 确认拆分策略
+  → 使用问题澄清模式确认：
+    AskUserQuestion(questions: [{
+      header: "范围拆分",
+      question: "是否同意拆分为多个 plan？",
+      options: [
+        {label: "同意拆分 (推荐)", description: "按上述方案拆分，先做 Plan A"},
+        {label: "不拆分", description: "保持单一 plan，接受更大复杂度"}
+      ]
+    }])
 IF no → 继续
 ```
 
@@ -94,7 +105,21 @@ OpenSpec 要求 + spec-coding TDD 增强：
 - 依赖任务标记 `(depends: X)`
 - 注意：Apply 阶段仍串行执行，⟂ 标记仅供参考
 
-### 8. AskUserQuestion（确认计划）
+### 8. 审批确认（计划）
+
+先用 markdown 展示计划概览（任务数、File Map、分组结构），然后使用审批模式：
+
+```
+AskUserQuestion(questions: [{
+  header: "确认",
+  question: "以上实施计划是否可以开始执行？",
+  options: [
+    {label: "通过", description: "计划合理，开始实施"},
+    {label: "拒绝", description: "计划有问题，需要重新规划"}
+  ]
+  // 用户选 Other 并输入内容 = 有补充的通过
+}])
+```
 
 ### 9. 更新 .ace-state.json
 

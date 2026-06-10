@@ -2,6 +2,8 @@
 
 **目的**：深度技术设计，产出 design.md + technical-design.md。这是代码库深入探索的阶段。
 
+**交互规范**：所有 AskUserQuestion 调用遵循 `references/ask-user-guide.md`。
+
 ---
 
 ## 执行逻辑
@@ -187,21 +189,32 @@ spec-coding 增强产物，写入 change 目录但不由 OpenSpec 管理：
 - 通过 → 用户审查
 - 问题 → 修复后重新审查
 
-### 13. AskUserQuestion（用户审查文档）— 确认门禁
+### 13. 设计文档审批（确认门禁）
 
-"技术设计已完成（technical-design.md + design.md），请 review。可以开始规划了吗？"
+先 markdown 展示设计摘要（架构概览、核心决策表、实现顺序），然后：
 
 ```
-IF 用户有调整意见：
-  → 修改 technical-design.md（必须）
-  → 评估是否影响 design.md：
+AskUserQuestion(questions: [{
+  header: "确认",
+  question: "技术设计是否可以开始规划实施？",
+  options: [
+    {label: "通过", description: "设计合理，开始规划"},
+    {label: "拒绝", description: "设计有问题，需要调整"}
+  ]
+  // 用户选 Other 并输入调整意见 = 有补充的通过
+}])
+```
+
+处理逻辑：
+- 通过 → 继续
+- Other（用户输入调整意见）→ 按意见修改：
+  - 修改 technical-design.md（必须）
+  - 评估是否影响 design.md：
     - 架构决策/Goals/Risks 变更 → 同步更新 design.md + openspec validate
     - 仅组件细节/接口/实现顺序 → 只改 technical-design.md
-  → 重新执行步骤 11（自审查）
-  → 重新 AskUserQuestion 确认
-IF 用户确认通过：
-  → 继续
-```
+  - 重新执行步骤 11（自审查）
+  - 重新审批确认
+- 拒绝 → 回退到 Step 1 重新探索设计
 
 ### 14. 写入 issues/design-issues.md（如有遗留）
 

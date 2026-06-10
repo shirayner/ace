@@ -2,6 +2,8 @@
 
 **目的**：深度理解需求并与用户形成共识。内部严格执行"先想后问"。
 
+**交互规范**：所有 AskUserQuestion 调用遵循 `references/ask-user-guide.md`。
+
 ---
 
 ## Step A: 内部深度分析（先想，无用户交互）
@@ -91,7 +93,7 @@ IF scope_assessment == "needs_decomposition":
 - 可测试条件 2
 ```
 
-### 11. AskUserQuestion（对齐审批 — 轻量三选一）
+### 11. AskUserQuestion（对齐审批）
 
 在同一 response 中，紧接四要素文本后调用 AskUserQuestion：
 
@@ -101,15 +103,15 @@ AskUserQuestion(questions: [{
   question: "以上理解是否准确？",
   options: [
     {label: "通过", description: "理解正确，继续下一步"},
-    {label: "补充后通过", description: "大方向对，但有补充（请在 Other 中说明）"},
     {label: "拒绝", description: "理解有偏差，需要重新对齐"}
   ]
+  // 用户选 Other 并输入内容 = 有补充的通过
 }])
 ```
 
 处理逻辑：
 - 通过 → 事件 `aligned` → Phase 2
-- 补充后通过 → 读取用户补充 → 更新理解 → 直接进入 Phase 2
+- Other（用户输入补充）→ 读取补充 → 更新理解 → 进入 Phase 2
 - 拒绝 → 回到 Step 8 重新澄清
 
 ### 12. 写入 issues/requirement-issues.md

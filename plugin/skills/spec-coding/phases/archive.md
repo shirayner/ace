@@ -2,6 +2,8 @@
 
 **目的**：知识固化 + 流程收尾。Spec 合并由 OpenSpec CLI 保证。
 
+**交互规范**：所有 AskUserQuestion 调用遵循 `references/ask-user-guide.md`。
+
 ---
 
 ## 执行逻辑
@@ -53,7 +55,19 @@ E{N}: {描述} | 来源: {change-name} | 日期: {date}
 
 ### 5. 分支处理
 
-AskUserQuestion：合并主分支 / 创建 PR / 保持 / 丢弃
+使用问题澄清模式：
+
+```
+AskUserQuestion(questions: [{
+  header: "分支处理",
+  question: "实施分支如何处理？",
+  options: [
+    {label: "合并主分支 (推荐)", description: "squash merge 到主分支"},
+    {label: "创建 PR", description: "推送远端，创建 Pull Request"},
+    {label: "保持", description: "保留分支不做处理"}
+  ]
+}])
+```
 
 ### 6. 更新 .ace-state.json
 
@@ -64,7 +78,21 @@ AskUserQuestion：合并主分支 / 创建 PR / 保持 / 丢弃
 }
 ```
 
-### 7. AskUserQuestion（归档确认）
+### 7. 归档确认（审批模式）
+
+先 markdown 展示归档摘要（变更名、完成任务数、经验提取情况），然后：
+
+```
+AskUserQuestion(questions: [{
+  header: "确认",
+  question: "归档流程是否完成？",
+  options: [
+    {label: "通过", description: "确认完成，结束流程"},
+    {label: "拒绝", description: "还有未完成的工作"}
+  ]
+  // 用户选 Other 并输入内容 = 有补充的通过
+}])
+```
 
 ---
 

@@ -2,21 +2,37 @@
 
 **目的**：按计划执行代码实现。可选 subagent 模式（推荐）或 direct 模式。
 
+**交互规范**：所有 AskUserQuestion 调用遵循 `references/ask-user-guide.md`。
+
 ---
 
 ## 执行逻辑
 
 ### 1. 选择执行策略（首次进入时，一次性确认）
 
-AskUserQuestion（合并两个选择为一次交互）：
+使用问题澄清模式（两个独立 tab）：
 
-| 维度 | 选项 | 说明 |
-|------|------|------|
-| 执行模式 | subagent（推荐） | 隔离子代理 + 双重审查 |
-| | direct | 主代理直接执行，轻量快速 |
-| 隔离方式 | branch（推荐） | git checkout -b feat/spec-{change-name} |
-| | worktree | EnterWorktree（完全隔离） |
-| | none | 当前分支直接工作 |
+```
+AskUserQuestion(questions: [
+  {
+    header: "执行模式",
+    question: "代码实施使用什么执行模式？",
+    options: [
+      {label: "subagent (推荐)", description: "隔离子代理 + 双重审查，质量更高"},
+      {label: "direct", description: "主代理直接执行，轻量快速，无审查"}
+    ]
+  },
+  {
+    header: "隔离方式",
+    question: "代码隔离方式？",
+    options: [
+      {label: "branch (推荐)", description: "git checkout -b feat/spec-{name}"},
+      {label: "worktree", description: "EnterWorktree 完全隔离"},
+      {label: "none", description: "当前分支直接工作"}
+    ]
+  }
+])
+```
 
 ### 2. 创建隔离环境（在任何代码修改之前）
 
