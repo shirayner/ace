@@ -412,14 +412,3 @@ PRD 用户故事 → wiki 漏斗 → 缺口分析 → 代码确认 → 变更分
 | `templates/requirement-anchors-analysis.md` | 代码锚点分析产出格式 | B.5 |
 | `templates/requirement-issues.md` | 需求澄清记录格式 | A.3 / B.1 |
 
----
-
-## 与其他 Skill 的关系
-
-| Skill | 关系 | 说明 |
-|-------|------|------|
-| `llm-wiki-generator` | 上游依赖 | wiki 知识库提供锚点目录和业务上下文 |
-| `llm-wiki-reader` | 协议复用 | 渐进式加载 wiki 的协议 |
-| `spec-coding` | 下游消费 | 检测 prd.md + requirement-anchors-analysis.md → 存在则直接消费，不存在则调用本 Skill 生成 |
-| `auto-goal` | 下游消费 | 需求型目标检测产物→不存在则调用本 Skill |
-| `spechub-coding` | 下游消费 | 平台产物驱动时可跳过本 Skill 直接进入编码 |
