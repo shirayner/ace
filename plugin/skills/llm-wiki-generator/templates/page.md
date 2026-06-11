@@ -6,7 +6,7 @@ generated_at: {{ISO_TIMESTAMP}}
 source_commit: {{GIT_COMMIT_HASH}}
 description: {{一句话产品语言描述}}
 route: {{路由路径}}
-entry_file: {{入口文件路径}}
+entry_file: {{源码路径}}
 parent_flow: {{所属用户流程,如 booking-flow}}
 api_calls:
 {{#each api_calls}}
@@ -16,7 +16,7 @@ related_business: [{{逗号分隔的业务概念}}]
 keywords: [{{中英文关键词}}]
 ---
 
-# {{入口标题(产品语言)}}
+# {{标题（产品语言）}}
 
 ## 业务场景
 <!-- 用户在哪个流程访问该页面,页面解决什么问题 -->
