@@ -32,7 +32,15 @@ description: |
 不使用 `git rev-parse --show-toplevel`（用户可能不在 git 仓库中，或 git 根不是意图的项目根）。
 所有文件操作使用 `$PROJECT_ROOT` 为基准的绝对路径。
 
-1. `$PROJECT_ROOT/openspec/` 目录存在 — 否则提示用户运行 `openspec init` 并**停止**
+1. `$PROJECT_ROOT/openspec/` 目录存在检查：
+   - 存在 → 继续
+   - 不存在 → 自动执行初始化脚本：
+     ```
+     bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
+     ```
+
+     → 告知用户："openspec/ 目录不存在，已自动初始化。"
+     → 继续流程（不中断）
 2. `.ace/project-profile.md` 存在 → Read 一次（后续 phase 引用已加载内容，不重复 Read）
    - 不存在 → 派遣后台 Agent 执行 ace:init 生成 project-profile.md：
      ```
@@ -40,6 +48,7 @@ description: |
        prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
          当前项目根：$PROJECT_ROOT。按 init skill 的完整流程执行。")
      ```
+
      → 告知用户："project-profile.md 不存在，已在后台启动初始化。"
      → 继续 Phase 1（不等待，profile 在 Phase 3 Design 阶段使用时再 Read）
 3. `.ace/config.yaml` 检查：
@@ -298,6 +307,7 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 ```
 $PROJECT_ROOT/
 ├── .ace/
+│   ├── project-profile.md          # 项目技术画像（ace:init 生成）
 │   ├── experience.md              # 项目经验库（spec-coding 维护）
 │   └── config.yaml                # ACE 框架配置
 │
