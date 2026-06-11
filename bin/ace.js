@@ -7,6 +7,7 @@ import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
 import { uninstallCommand } from '../src/commands/uninstall.js';
 import { specInitCommand, specDoctorCommand, specUpdateCommand } from '../src/commands/spec.js';
+import { upgradeCommand } from '../src/commands/upgrade.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -40,6 +41,12 @@ program
   .description('Remove all ace-managed components')
   .option('-y, --yes', 'Skip confirmation prompt', false)
   .action(uninstallCommand);
+
+program
+  .command('upgrade')
+  .description('Upgrade ace to the latest version')
+  .option('-f, --force', 'Force reinstall even if already up to date', false)
+  .action(upgradeCommand);
 
 const spec = program
   .command('spec')

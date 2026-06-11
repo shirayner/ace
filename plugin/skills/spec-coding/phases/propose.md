@@ -1,20 +1,22 @@
 # Phase 2: Propose（创建提案）
 
-**目的**：通过 OpenSpec CLI 创建变更，按 CLI 提供的写作指令生成提案和 delta spec。
+**目的**：基于已确定的需求，按 OpenSpec CLI 写作指令生成提案和 delta spec。
+
+**前提**：Phase 1 已完成以下操作：
+- `openspec new change {name}` 已执行（目录已存在）
+- `.ace-state.json` 已创建（phase=propose）
+- `issues/requirement-issues.md` 已持久化
 
 ---
 
 ## 执行逻辑
 
-### 1. 创建 change（OpenSpec CLI）
+### 1. 确认工作目录
 
-```bash
-openspec new change {change-name}
-# 可用选项：--description, --schema, --goal
 ```
-
-→ 自动创建 `openspec/changes/{name}/` 目录结构
-→ 自动创建 `.openspec.yaml`（工件图状态）
+$CHANGE_DIR = $PROJECT_ROOT/openspec/changes/{change_name}/
+验证：$CHANGE_DIR/.ace-state.json 存在且 phase == "propose"
+```
 
 ### 2. 获取 proposal 写作指令
 
@@ -28,7 +30,7 @@ openspec instructions proposal --change {name} --json
 - `context`: 项目上下文（来自 config.yaml）
 - `rules`: 约束规则（来自 config.yaml 的 rules.proposal）
 
-**AI 基于指令编写 proposal.md → 写入 change 目录。**
+**AI 基于指令编写 proposal.md → 写入 $CHANGE_DIR。**
 
 ### 3. 获取 delta spec 写作指令
 
@@ -38,7 +40,7 @@ openspec instructions specs --change {name} --json
 
 返回同样四层分离的富化指令。
 
-**AI 基于指令编写 delta spec → 写入 `specs/{domain}/spec.md`。**
+**AI 基于指令编写 delta spec → 写入 `$CHANGE_DIR/specs/{domain}/spec.md`。**
 
 #### Delta Spec 格式要求（OpenSpec 解析器强制）
 
@@ -83,32 +85,19 @@ openspec validate --json
 - `valid=false` → 读取 issues → 自动修复 → 重新验证
 - 3 次仍失败 → AskUserQuestion 报告问题
 
-### 5. 初始化 .ace-state.json
+### 5. 更新状态文件
 
-写入 change 目录，记录初始状态：
-```json
-{
-  "change_name": "{name}",
-  "created_at": "{date}",
-  "workflow": "{分级结果}",
-  "phase": "propose"
-}
+```
+Edit $CHANGE_DIR/.ace-state.json:
+  "phase": "design",
+  "timestamps.design_started": "{ISO时间}",
+  "propose": {
+    "proposal": "proposal.md",
+    "delta_specs": ["specs/{domain}/spec.md"]
+  }
 ```
 
 ### 6. 事件 `proposed` → Phase 3
-
----
-
-## OpenSpec CLI 完整调用序列
-
-```bash
-openspec new change {name}                                    # 1. 创建目录
-openspec instructions proposal --change {name} --json         # 2. proposal 指令
-  → AI 写 proposal.md
-openspec instructions specs --change {name} --json            # 3. specs 指令
-  → AI 写 specs/{domain}/spec.md
-openspec validate --json                                      # 4. 格式验证
-```
 
 ---
 

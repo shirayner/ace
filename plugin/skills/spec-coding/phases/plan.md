@@ -124,14 +124,15 @@ AskUserQuestion(questions: [{
 }])
 ```
 
-### 9. 更新 .ace-state.json
+### 9. 更新状态 + 事件 `planned` → Phase 5
 
-```json
-{
-  "phase": "plan",
-  "tasks_file": "tasks.md",
-  "total_tasks": N
-}
 ```
-
-### 10. 事件 `planned` → Phase 5
+Edit $CHANGE_DIR/.ace-state.json:
+  "phase": "apply",
+  "timestamps.apply_started": "{ISO时间}",
+  "plan": {
+    "tasks_file": "tasks.md",
+    "total_tasks": N,
+    "approved": true
+  }
+```

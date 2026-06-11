@@ -35,6 +35,7 @@ description: |
 1. `$PROJECT_ROOT/openspec/` 目录存在检查：
    - 存在 → 继续
    - 不存在 → 自动执行初始化脚本：
+
      ```
      bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
      ```
@@ -43,6 +44,7 @@ description: |
      → 继续流程（不中断）
 2. `.ace/project-profile.md` 存在 → Read 一次（后续 phase 引用已加载内容，不重复 Read）
    - 不存在 → 派遣后台 Agent 执行 ace:init 生成 project-profile.md：
+
      ```
      Agent(description="初始化项目画像", run_in_background=true,
        prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
@@ -253,36 +255,36 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 
 ## 状态文件：`.ace-state.json`
 
-存放于 `openspec/changes/{name}/.ace-state.json`，与 `.openspec.yaml` 共存：
+**完整模板**：见 `references/state-template.jsonc`
 
-```json
-{
-  "change_name": "add-user-auth",
-  "created_at": "2026-06-08",
-  "workflow": "standard",
-  "phase": "apply",
-  "phase_started_at": "2026-06-08T14:30:00",
-  "understanding": {
-    "insights_count": 3,
-    "assumptions_count": 4,
-    "scope_assessment": "appropriate",
-    "aligned": true
-  },
-  "proposal": "proposal.md",
-  "delta_specs": ["specs/auth/spec.md"],
-  "design_doc": "design.md",
-  "design_approved": true,
-  "tasks_file": "tasks.md",
-  "total_tasks": 8,
-  "completed_tasks": 5,
-  "apply_mode": "subagent",
-  "isolation": "branch",
-  "branch_name": "feat/spec-add-user-auth",
-  "current_task": 6,
-  "archived": false,
-  "experience_extracted": false
-}
-```
+**位置**：`$PROJECT_ROOT/openspec/changes/{name}/.ace-state.json`（与 `.openspec.yaml` 共存）
+**创建时机**：Phase 1 Step A 完成后（Step 7）
+**更新时机**：每个阶段转换时 + 阶段内关键状态变更时
+
+**为什么放在 openspec/changes/ 下**（而非 .ace/ 目录）：
+
+- `openspec archive` 会整体移动目录 → 状态文件自动归档
+- 恢复时只需扫描 `openspec/changes/` 一个位置
+
+**字段分层**：
+
+| 层级    | 字段路径                                                                                  | 写入时机                      |
+| ------- | ----------------------------------------------------------------------------------------- | ----------------------------- |
+| 基础    | change_name, created_at, workflow                                                         | Phase 1 Step 7 创建时         |
+| 阶段    | phase                                                                                     | 每次阶段转换                  |
+| 时间    | timestamps.{phase}_started, timestamps.completed_at                                       | 进入该阶段时 / 归档完成时     |
+| Phase 1 | understand.scope_assessment, understand.aligned, understand.issues_file                   | Phase 1 完成时                |
+| Phase 2 | propose.proposal, propose.delta_specs                                                     | Phase 2 完成时                |
+| Phase 3 | design.design_doc, design.technical_design, design.issues_file, design.approved           | Phase 3 完成时                |
+| Phase 4 | plan.tasks_file, plan.total_tasks, plan.approved                                          | Phase 4 完成时                |
+| Phase 5 | apply.mode, apply.isolation, apply.branch_name, apply.completed_tasks, apply.current_task | Phase 5 进入时 + 每任务完成时 |
+| Phase 6 | archive.archived, archive.experience_extracted                                            | Phase 6 完成时                |
+
+**更新规则**：
+
+- 阶段转换时更新 `phase` + `phase_started_at`
+- Phase 5 每完成一个任务更新 `completed_tasks` + `current_task`
+- 只追加/更新字段，不删除已有字段
 
 ---
 

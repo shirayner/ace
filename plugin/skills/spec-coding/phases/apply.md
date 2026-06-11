@@ -46,17 +46,24 @@ AskUserQuestion(questions: [
 ])
 ```
 
-### 2. 创建隔离环境（在任何代码修改之前）
+### 2. 创建隔离环境 + 更新状态
 
 ```
 IF branch：
   git checkout -b feat/spec-{change-name}
-  → 记录 branch_name 到 .ace-state.json
 IF worktree：
   EnterWorktree
-  → 记录 worktree path 到 .ace-state.json
 IF none：
   → 跳过
+
+更新 .ace-state.json:
+  "apply": {
+    "mode": "{subagent|direct}",
+    "isolation": "{branch|worktree|none}",
+    "branch_name": "feat/spec-{change-name}",
+    "completed_tasks": 0,
+    "current_task": 1
+  }
 ```
 
 **此步骤必须在步骤 3 之前完成。任何代码修改都在隔离环境中进行。**
@@ -66,7 +73,7 @@ IF none：
 <HARD-GATE>
 每完成一个任务后，必须立即：
 1. 更新 tasks.md 中对应 checkbox：`- [ ]` → `- [x]`
-2. 更新 .ace-state.json：`completed_tasks++`，`current_task` 指向下一个
+2. 更新 .ace-state.json：`"apply.completed_tasks"++`，`"apply.current_task"` 指向下一个
 未更新 = 任务未完成。不可先执行多个任务再批量更新。
 </HARD-GATE>
 

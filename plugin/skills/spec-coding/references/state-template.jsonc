@@ -1,0 +1,70 @@
+# .ace-state.json 完整模板
+#
+# 位置：$PROJECT_ROOT/openspec/changes/{change_name}/.ace-state.json
+# 创建时机：Phase 1 Step 7（Step A 完成后，确定 change_name 时）
+# 更新规则：每次阶段转换 + 阶段内关键状态变更时立即更新
+# 字段策略：渐进填充——创建时只有基础字段，后续阶段按需追加，不删除已有字段
+
+{
+  # === 基础信息（Phase 1 Step 7 创建时填写）===
+  "change_name": "add-avatar-upload",
+  "created_at": "2026-06-11",
+
+  # === 阶段控制 ===
+  "phase": "understand",
+  "workflow": "standard",
+
+  # === 各阶段时间戳（进入该阶段时记录）===
+  "timestamps": {
+    "understand_started": "2026-06-11T10:00:00",
+    "propose_started": null,
+    "design_started": null,
+    "plan_started": null,
+    "apply_started": null,
+    "archive_started": null,
+    "completed_at": null
+  },
+
+  # === Phase 1: Understand 产出 ===
+  "understand": {
+    "scope_assessment": "appropriate",
+    "aligned": true,
+    "issues_file": "issues/requirement-issues.md"
+  },
+
+  # === Phase 2: Propose 产出 ===
+  "propose": {
+    "proposal": "proposal.md",
+    "delta_specs": ["specs/avatar/spec.md"]
+  },
+
+  # === Phase 3: Design 产出 ===
+  "design": {
+    "design_doc": "design.md",
+    "technical_design": "technical-design.md",
+    "issues_file": "issues/design-issues.md",
+    "approved": false
+  },
+
+  # === Phase 4: Plan 产出 ===
+  "plan": {
+    "tasks_file": "tasks.md",
+    "total_tasks": 8,
+    "approved": false
+  },
+
+  # === Phase 5: Apply 状态 ===
+  "apply": {
+    "mode": "subagent",
+    "isolation": "branch",
+    "branch_name": "feat/spec-add-avatar-upload",
+    "completed_tasks": 0,
+    "current_task": 1
+  },
+
+  # === Phase 6: Archive 状态 ===
+  "archive": {
+    "archived": false,
+    "experience_extracted": false
+  }
+}

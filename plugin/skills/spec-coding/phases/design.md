@@ -265,7 +265,19 @@ AskUserQuestion(questions: [{
 
 ### 14. 写入 issues/design-issues.md（如有遗留）
 
-### 15. 事件 `designed` → Phase 4
+### 15. 更新状态 + 事件 `designed` → Phase 4
+
+```
+Edit $CHANGE_DIR/.ace-state.json:
+  "phase": "plan",
+  "timestamps.plan_started": "{ISO时间}",
+  "design": {
+    "design_doc": "design.md",
+    "technical_design": "technical-design.md",
+    "issues_file": "issues/design-issues.md",
+    "approved": true
+  }
+```
 
 ---
 

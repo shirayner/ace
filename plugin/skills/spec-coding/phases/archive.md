@@ -63,11 +63,14 @@ OpenSpec 自动执行：
 
 ### 5. 更新 .ace-state.json
 
-```json
-{
-  "archived": true,
-  "experience_extracted": true
-}
+```
+Edit $CHANGE_DIR/.ace-state.json:
+  "phase": "archive",
+  "timestamps.completed_at": "{ISO时间}",
+  "archive": {
+    "archived": true,
+    "experience_extracted": true
+  }
 ```
 
 ### 6. 分支处理（配置驱动）
