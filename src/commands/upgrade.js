@@ -6,14 +6,22 @@ import ora from 'ora';
 const PACKAGE_NAME = '@shirayner/ace';
 const OFFICIAL_REGISTRY = 'https://registry.npmjs.org/';
 
+/** Shared options for non-interactive npm calls: capture stdout/stderr, work on Windows. */
+const NPM_CAPTURE_OPTS = {
+  encoding: 'utf-8',
+  shell: true,
+  windowsHide: true,
+};
+
 /**
  * Get the currently installed global version of ace.
  * Falls back to 'unknown' if detection fails.
  */
 function getCurrentVersion() {
-  const result = spawnSync('npm', ['list', '-g', '--depth=0', '--json', PACKAGE_NAME], {
-    encoding: 'utf-8',
-  });
+  const result = spawnSync(
+    `npm list -g --depth=0 --json ${PACKAGE_NAME}`,
+    NPM_CAPTURE_OPTS,
+  );
   try {
     const data = JSON.parse(result.stdout || '{}');
     const deps = data.dependencies || {};
@@ -28,21 +36,23 @@ function getCurrentVersion() {
  * Returns null on failure.
  */
 function fetchLatestVersion(registry) {
-  const args = ['view', PACKAGE_NAME, 'version', '--registry', registry];
-  const result = spawnSync('npm', args, { encoding: 'utf-8' });
+  const result = spawnSync(
+    `npm view ${PACKAGE_NAME} version --registry ${registry}`,
+    NPM_CAPTURE_OPTS,
+  );
   if (result.status !== 0) return null;
   return (result.stdout || '').trim() || null;
 }
 
 /**
  * Attempt to install the package using the given registry.
+ * Streams npm output directly to the terminal.
  * Returns true on success, false on failure.
  */
 function tryInstall(registry) {
   const result = spawnSync(
-    'npm',
-    ['install', '-g', PACKAGE_NAME, '--registry', registry],
-    { stdio: 'inherit' },
+    `npm install -g ${PACKAGE_NAME} --registry ${registry}`,
+    { stdio: 'inherit', shell: true, windowsHide: true },
   );
   return result.status === 0;
 }
@@ -51,7 +61,7 @@ function tryInstall(registry) {
  * Get the configured npm registry from user's npm config.
  */
 function getUserRegistry() {
-  const result = spawnSync('npm', ['config', 'get', 'registry'], { encoding: 'utf-8' });
+  const result = spawnSync('npm config get registry', NPM_CAPTURE_OPTS);
   return (result.stdout || '').trim() || OFFICIAL_REGISTRY;
 }
 
