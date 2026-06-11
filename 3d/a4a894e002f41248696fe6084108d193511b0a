@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-06-11-entry-to-anchor-rename.md
+  s_17b09d4a3dc0d4::t_feb9bc65dce3b1 1-340
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "3da4a894e002f41248696fe6084108d193511b0a",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
