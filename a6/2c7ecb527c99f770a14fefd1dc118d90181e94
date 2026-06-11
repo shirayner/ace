@@ -1,0 +1,19 @@
+docs/superpowers/plans/2026-06-11-wiki-generator-auto-flow.md
+  s_17b09d4a3dc0d4::t_6999563e0154a8 1-266
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "a62c7ecb527c99f770a14fefd1dc118d90181e94",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
