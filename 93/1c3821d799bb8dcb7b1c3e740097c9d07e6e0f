@@ -1,0 +1,27 @@
+plugin/skills/llm-wiki-generator/SKILL.md
+  s_17b09d4a3dc0d4::t_c6e42c1b7f46e2 350-351
+  s_17b09d4a3dc0d4::t_c3f6f7ecbf658c 359,367
+  s_17b09d4a3dc0d4::t_ed97ba8334c599 5
+  s_17b09d4a3dc0d4::t_8a20fde516cdff 21,23,25,27-32,34,36-41,43-44,46-57,59-62,64,66-68,70,72-75
+  s_17b09d4a3dc0d4::t_72ec982961af32 193
+  s_17b09d4a3dc0d4::t_f0ab09b5f27be8 19
+  s_17b09d4a3dc0d4::t_7fac90a9f1ba80 181-182
+  s_17b09d4a3dc0d4::t_198a789566cedc 209
+  s_17b09d4a3dc0d4::t_68b88f2bbdeea0 332,338
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "931c3821d799bb8dcb7b1c3e740097c9d07e6e0f",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
