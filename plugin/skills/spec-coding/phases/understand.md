@@ -8,6 +8,14 @@
 
 ## Step A: 需求深度分析（先想，无用户交互）
 
+### 0. 检测 requirement-analysis 产物
+
+检查 `.ace/changes/{name}/` 是否存在：
+- **存在** → 读取 `prd.md`（替代原始需求输入）、读取 `.ace/changes/{name}/issues/requirement-issues.md`（继承已有澄清结论）
+  - 后续 Step A 分析基于 prd.md 内容进行
+  - Step B 只识别**技术实现层面**的新 unknowns（业务澄清已在 requirement-analysis 完成）
+- **不存在** → 按当前逻辑从零开始
+
 ### 1. 解析用户输入
 
 提取核心意图、关键实体、约束条件。
@@ -83,7 +91,7 @@ IF scope_assessment == "needs_decomposition":
 
 基于 Step A 的分析，在上下文中整理所有 unknowns/待澄清事项。
 
-**注意**：Phase 1 时 change 目录尚未创建（Phase 2 才 `openspec new change`），因此**不写文件**。问题列表暂存在对话上下文中，Phase 2 创建 change 后再持久化为 `issues/requirement-issues.md`。
+**注意**：Phase 1 时直接将问题列表写入 `.ace/changes/{name}/issues/requirement-issues.md`。如 `.ace/changes/{name}/` 不存在则先创建目录。
 
 #### 问题分级（VOI 简化模型）
 
@@ -119,7 +127,7 @@ LOOP:
 
 **退出条件**：所有"必须澄清"的问题都已解决。此时需求基本确定，AI 可以形成完整理解。
 
-**文件持久化时机**：Phase 2 创建 change 后，将本阶段的问题列表 + 答案 + 假设写入 `issues/requirement-issues.md`。
+**文件持久化时机**：将本阶段的问题列表 + 答案 + 假设写入 `.ace/changes/{name}/issues/requirement-issues.md`。如已有 requirement-analysis 写入的内容，append 技术层面新问题（不覆盖业务澄清结论）。
 
 ---
 

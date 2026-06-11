@@ -365,6 +365,22 @@ PRD 用户故事 → wiki 漏斗 → 缺口分析 → 代码确认 → 变更分
 
 ---
 
+## 完成衔接：进入编码阶段
+
+需求分析产物已就绪：
+
+- `.ace/changes/{{需求名}}/prd.md`
+- `.ace/changes/{{需求名}}/requirement-anchors-analysis.md`
+- `.ace/changes/{{需求名}}/issues/requirement-issues.md`
+
+建议使用 `spec-coding` Skill 进入编码阶段。回复 `spec-coding {{需求名}}` 即可，spec-coding 将：
+
+1. 读取 prd.md 作为需求输入（跳过业务澄清）
+2. 读取 issues/ 继承已有澄清结论
+3. 以相同需求名创建 openspec change（`openspec new change {{需求名}}`）
+
+---
+
 ## 门禁
 
 | Gate | 阶段 | 条件 | 验证方式 |
