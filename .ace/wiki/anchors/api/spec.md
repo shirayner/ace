@@ -64,13 +64,13 @@ keywords: [规范驱动开发, spec-driven workflow, 可执行规范, 项目初�
 
 ## 调用链路
 
-**init 入口**：
+**init 锚点**：
 specInitCommand → SpecInstaller.run() → ensureOpenspecCli() → isOpenspecInstalled()（检查 openspec --version）→ runOpenspecInit()（执行 openspec init）→ installTemplates()（复制模板文件至 openspec/templates/）→ installConfig()（合并或安装 config.yaml）→ mergeSpecConfig()（YAML 智能合并）→ backupFile()（备份原配置文件）→ initTeamConventions() → TeamInstaller.run()（克隆团队规范仓库）
 
-**doctor 入口**：
+**doctor 锚点**：
 specDoctorCommand → SpecInstaller.doctor() → isOpenspecInstalled()（检查 openspec CLI）→ fs.pathExists()（多次检查目录、配置文件、模板文件存在性）→ 通过 execSync 检查 git --version
 
-**update 入口**：
+**update 锚点**：
 specUpdateCommand → SpecInstaller.installTemplates()（更新模板文件）→ SpecInstaller.installShared()（更新共享文件）→ SpecInstaller.installConfig()（合并更新 config.yaml）→ mergeSpecConfig() → backupFile()
 
 ## 外部依赖详情
@@ -94,7 +94,7 @@ specUpdateCommand → SpecInstaller.installTemplates()（更新模板文件）�
 - **文件备份**：`backupFile()` — 位于 `src/core/merger.js`
 - **常量定义**：`OPENSPEC_TEMPLATES_DIR`、`SPEC_TEMPLATE_FILES` — 位于 `src/core/constants.js`
 
-## 相关入口
+## 相关锚点
 
 - ace doctor：用于整体检查 ACE 环境与项目配置的健康状态
 - ace init：项目级初始化，spec 初始化是其子流程之一

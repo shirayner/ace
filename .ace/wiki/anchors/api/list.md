@@ -58,7 +58,7 @@ keywords: [list, 组件列表, 安装状态, component status, installed, partia
 
 - `listCommand()` — `/Users/chengzheng/Projects/py/ace/src/commands/list.js`
 
-## 相关入口
+## 相关锚点
 
 - `ace doctor` — 安装后全面诊断，检测配置完整性
 - `ace init` — 组件安装命令，list 展示的状态反映 init 的安装结果

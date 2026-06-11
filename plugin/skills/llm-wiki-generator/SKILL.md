@@ -46,7 +46,7 @@ description: 为代码仓库生成 LLM Wiki 知识库,供需求评审/技术方�
 
 5. **停止,不进行构建**
 
-### 分支 B:已初始化但 entries 为空(或仅含注释)
+### 分支 B:已初始化但 anchors 为空(或仅含注释)
 
 流程:
 1. 读取 `.ace/wiki/_meta.yml`
@@ -243,7 +243,7 @@ Phase 1: 锚点发现(串行)
    - 通过 `date -u +"%Y-%m-%dT%H:%M:%SZ"` 获取当前 UTC 时间,填入 `generated_at` 字段
 
 3. **写入文件**
-   - 写入 `.ace/wiki/entries/<type>/<fileName>.md`(fileName 即原始类名 PascalCase,来自 Phase 1 解析结果)
+   - 写入 `.ace/wiki/anchors/<type>/<fileName>.md`(fileName 即原始类名 PascalCase,来自 Phase 1 解析结果)
    - 确保 frontmatter 格式正确,`name` 字段填入原始类名(非 kebab-case)
 
 4. **返回**
@@ -258,12 +258,12 @@ Phase 1: 锚点发现(串行)
 
 #### INDEX.md 生成
 
-1. 扫描 `.ace/wiki/entries/**/*.md` 的 frontmatter
+1. 扫描 `.ace/wiki/anchors/**/*.md` 的 frontmatter
 2. 读取 `~/.claude/skills/llm-wiki-generator/templates/INDEX.md`
 3. 按 type 分组列出每个锚点:
    ```
    ### API (12 个)
-   - [FlightFillPageComponentApplication](./entries/api/FlightFillPageComponentApplication.md) — <description>
+   - [FlightFillPageComponentApplication](./anchors/api/FlightFillPageComponentApplication.md) — <description>
    ```
 4. 从 _meta.yml 推导 frontmatter:
    - `name`:从 pom.xml / package.json 读项目名
@@ -288,12 +288,12 @@ Phase 1: 锚点发现(串行)
 
 #### 校验
 
-1. 遍历 `.ace/wiki/entries/**/*.md`,检查 frontmatter 必填字段:
+1. 遍历 `.ace/wiki/anchors/**/*.md`,检查 frontmatter 必填字段:
    - `name` ✓
    - `type` ✓
    - `description` ✓
    - `token_count` ✓
-2. INDEX.md 锚点数 == entries/ 实际文件数?
+2. INDEX.md 锚点数 == anchors/ 实际文件数?
 3. 收集失败锚点列表和原因
 
 #### Token 报告
@@ -308,7 +308,7 @@ Phase 1: 锚点发现(串行)
 | 总计 | 所有任务合计 |
 
 存量统计:
-- 扫描 `.ace/wiki/entries/**/*.md` 文件大小估算 token (1 token ≈ 4 字符英文,≈ 2 字符中文)
+- 扫描 `.ace/wiki/anchors/**/*.md` 文件大小估算 token (1 token ≈ 4 字符英文,≈ 2 字符中文)
 - INDEX.md + SUMMARY.md 大小估算
 
 #### 最终输出

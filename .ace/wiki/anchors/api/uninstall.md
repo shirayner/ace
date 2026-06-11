@@ -61,7 +61,7 @@ keywords: [uninstall, 卸载, remove, ace, claude code, cleanup, 清理, 还原,
 
 `uninstallCommand` 函数 — `src/commands/uninstall.js`，导出的命令入口函数。所有步骤以内联方式实现，无子类。
 
-## 相关入口
+## 相关锚点
 
 - `installCommand` (`src/commands/install.js`): 安装 ace 组件，与 uninstall 对称的逆操作
 - `Installer` class (`src/core/installer.js`): 安装引擎，定义了 ace 管理的组件结构和文件清单，uninstall 依赖这些结构确定需要清理的内容
