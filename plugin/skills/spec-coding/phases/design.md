@@ -8,6 +8,14 @@
 
 ## 执行逻辑
 
+### 0. 引用项目画像（前置检查已加载，无需重复 Read）
+
+从已加载的 `.ace/project-profile.md` 中提取：
+- 架构分层 → 确定受影响层级
+- 编码约定 → Pattern Grounding 起点
+- 单元测试模式 → 设计测试策略时引用
+- 入口点索引 → 快速定位相关代码
+
 ### 1. 代码库分层探索（由外而内）
 
 ```
@@ -212,29 +220,47 @@ spec-coding 增强产物，写入 change 目录但不由 OpenSpec 管理：
 
 ### 13. 设计文档审批（确认门禁）
 
-先 markdown 展示设计摘要（架构概览、核心决策表、实现顺序），然后：
+控制台展示**简短的认知摘要**（引导用户去文件 review，而非在控制台堆信息）：
+
+```markdown
+技术设计已完成，请 review `technical-design.md`。
+
+**AI 自主决策**（以下决策未经你确认，请核查）：
+- {D3}: {选择} — {理由}
+- {D4}: {选择} — {理由}
+
+**高风险假设**：
+- {假设 1}（依据：{代码证据}）
+- {假设 2}（依据：{代码证据}）
+
+**影响范围**：{N} 个文件（详见 technical-design.md §Component Design）
+
+📄 完整设计：openspec/changes/{name}/technical-design.md
+```
+
+<HARD-GATE>
+控制台摘要的核心目的是暴露"AI 自主做的决策 + 高风险假设"——这是用户之前未审过的部分。
+不要在控制台重复已澄清的决策（Step 7 用户已逐一确认）。
+详细内容引导用户到文件中阅读。
+</HARD-GATE>
+
+然后在同一 response 中调用：
 
 ```
 AskUserQuestion(questions: [{
-  header: "确认",
-  question: "技术设计是否可以开始规划实施？",
+  header: "设计对齐",
+  question: "已 review technical-design.md，AI 的认知是否准确？",
   options: [
-    {label: "通过", description: "设计合理，开始规划"},
-    {label: "拒绝", description: "设计有问题，需要调整"}
+    {label: "通过", description: "认知准确，开始规划实施"},
+    {label: "拒绝", description: "有认知偏差，需要调整"}
   ]
-  // 用户选 Other 并输入调整意见 = 有补充的通过
+  // 用户选 Other 并输入具体偏差 = 有补充的通过
 }])
 ```
 
 处理逻辑：
 - 通过 → 继续
-- Other（用户输入调整意见）→ 按意见修改：
-  - 修改 technical-design.md（必须）
-  - 评估是否影响 design.md：
-    - 架构决策/Goals/Risks 变更 → 同步更新 design.md + openspec validate
-    - 仅组件细节/接口/实现顺序 → 只改 technical-design.md
-  - 重新执行步骤 11（自审查）
-  - 重新审批确认
+- Other（用户指出偏差）→ 修正认知 → 更新 technical-design.md → 重新审批
 - 拒绝 → 回退到 Step 1 重新探索设计
 
 ### 14. 写入 .ace/changes/{name}/issues/design-issues.md（如有遗留）

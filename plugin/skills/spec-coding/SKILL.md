@@ -28,10 +28,46 @@ description: |
 
 ## 前置检查
 
-1. `openspec/` 目录存在 — 否则提示 `openspec init`
-2. OpenSpec CLI 可用 — 否则提示安装 `@anthropic-ai/openspec`
-3. `.ace/config.yaml` 存在 → Read 并解析 `spec-coding` 节
-   - 不存在 → 使用默认配置（mode: manual, auto_archive: false, auto_push: false, use_subagent: true）
+**项目根目录确定**：运行 `pwd` 获取当前工作目录作为 `$PROJECT_ROOT`。
+不使用 `git rev-parse --show-toplevel`（用户可能不在 git 仓库中，或 git 根不是意图的项目根）。
+所有文件操作使用 `$PROJECT_ROOT` 为基准的绝对路径。
+
+1. `$PROJECT_ROOT/openspec/` 目录存在检查：
+   - 存在 → 继续
+   - 不存在 → 自动执行初始化脚本：
+     ```
+     bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
+     ```
+
+     → 告知用户："openspec/ 目录不存在，已自动初始化。"
+     → 继续流程（不中断）
+2. `.ace/project-profile.md` 存在 → Read 一次（后续 phase 引用已加载内容，不重复 Read）
+   - 不存在 → 派遣后台 Agent 执行 ace:init 生成 project-profile.md：
+     ```
+     Agent(description="初始化项目画像", run_in_background=true,
+       prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
+         当前项目根：$PROJECT_ROOT。按 init skill 的完整流程执行。")
+     ```
+
+     → 告知用户："project-profile.md 不存在，已在后台启动初始化。"
+     → 继续 Phase 1（不等待，profile 在 Phase 3 Design 阶段使用时再 Read）
+3. `.ace/config.yaml` 检查：
+
+```
+IF .ace/config.yaml 不存在:
+  → mkdir -p .ace/
+  → 使用默认配置创建 .ace/config.yaml（内容见 references/config-template.yaml）
+  → 向用户展示配置项：
+    "已创建 .ace/config.yaml，当前配置：
+     - mode: manual（需人工澄清对齐）
+     - auto_archive: false（归档前需确认）
+     - auto_push: false（不自动提交远程）
+     - use_subagent: true（使用子代理执行）
+     如需调整，直接编辑 .ace/config.yaml。"
+  → 继续流程（不中断）
+ELSE:
+  → Read .ace/config.yaml → 解析 spec-coding 节
+```
 
 ---
 
@@ -84,6 +120,7 @@ ELSE:
 ### 配置缺失时的默认值
 
 `.ace/config.yaml` 不存在或字段缺失时，使用：
+
 - `mode`: manual
 - `auto_archive`: false
 - `auto_push`: false
@@ -101,22 +138,22 @@ ELSE:
 
 ### 状态转换
 
-| 当前阶段 | 事件 | 目标阶段 | 守护条件 |
-|---------|------|---------|---------|
-| - | `init` | understand | 用户触发 /spec-coding |
-| understand | `aligned` | propose | AskUserQuestion 确认对齐 |
-| propose | `proposed` | design | proposal.md + delta-spec + openspec validate 通过 |
-| design | `designed` | plan | design.md 生成 + 用户审批 |
-| plan | `planned` | apply | tasks.md 生成 + 用户批准 |
-| apply | `applied` | archive | 所有任务完成 |
-| archive | `archived` | (终态) | 归档完成 |
+| 当前阶段   | 事件         | 目标阶段   | 守护条件                                          |
+| ---------- | ------------ | ---------- | ------------------------------------------------- |
+| -          | `init`     | understand | 用户触发 /spec-coding                             |
+| understand | `aligned`  | propose    | AskUserQuestion 确认对齐                          |
+| propose    | `proposed` | design     | proposal.md + delta-spec + openspec validate 通过 |
+| design     | `designed` | plan       | design.md 生成 + 用户审批                         |
+| plan       | `planned`  | apply      | tasks.md 生成 + 用户批准                          |
+| apply      | `applied`  | archive    | 所有任务完成                                      |
+| archive    | `archived` | (终态)     | 归档完成                                          |
 
 ### 回退路径
 
-| 阶段 | 回退条件 | 目标 |
-|------|---------|------|
+| 阶段   | 回退条件     | 目标                      |
+| ------ | ------------ | ------------------------- |
 | design | 用户否决设计 | → understand（重新对齐） |
-| apply | 发现设计缺陷 | → design |
+| apply  | 发现设计缺陷 | → design                 |
 
 ---
 
@@ -147,14 +184,14 @@ ELSE:
 
 进入每阶段时 Read `phases/{phase}.md`，按其指令执行。
 
-| phase | 行为 |
-|-------|------|
-| understand | Read `phases/understand.md` → 内部分析 + 交互对齐 |
-| propose | Read `phases/propose.md` → 创建提案（OpenSpec CLI） |
-| design | Read `phases/design.md` → 深入代码探索 + 技术设计 |
-| plan | Read `phases/plan.md` → 任务编排 |
-| apply | invoke `/subagent-execute`（或 direct 模式） |
-| archive | Read `phases/archive.md` → 归档收尾 |
+| phase      | 行为                                                   |
+| ---------- | ------------------------------------------------------ |
+| understand | Read `phases/understand.md` → 内部分析 + 交互对齐   |
+| propose    | Read `phases/propose.md` → 创建提案（OpenSpec CLI） |
+| design     | Read `phases/design.md` → 深入代码探索 + 技术设计   |
+| plan       | Read `phases/plan.md` → 任务编排                    |
+| apply      | invoke `/subagent-execute`（或 direct 模式）         |
+| archive    | Read `phases/archive.md` → 归档收尾                 |
 
 ---
 
@@ -170,12 +207,12 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
   cross_module:     是否跨模块边界
 ```
 
-| 分级 | Phase 1 | Phase 2 | Phase 3 | Phase 4 | Phase 5 | Phase 6 |
-|------|---------|---------|---------|---------|---------|---------|
-| trivial | 简化对齐 | 跳过 | 跳过 | 跳过（内联 tasks） | TDD 实现 | 简化 |
-| small | ✅ | tasks only | 跳过 | ✅ | TDD 实现 | ✅ |
-| standard | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| large | ✅ + 分解 | ✅ | ✅ | ✅ | ✅ | ✅ |
+| 分级     | Phase 1   | Phase 2    | Phase 3 | Phase 4            | Phase 5  | Phase 6 |
+| -------- | --------- | ---------- | ------- | ------------------ | -------- | ------- |
+| trivial  | 简化对齐  | 跳过       | 跳过    | 跳过（内联 tasks） | TDD 实现 | 简化    |
+| small    | ✅        | tasks only | 跳过    | ✅                 | TDD 实现 | ✅      |
+| standard | ✅        | ✅         | ✅      | ✅                 | ✅       | ✅      |
+| large    | ✅ + 分解 | ✅         | ✅      | ✅                 | ✅       | ✅      |
 
 **分级时机**：Phase 1 结束后、进入 Phase 2 前。
 **存储**：写入 `.ace-state.json` 的 `workflow` 字段。
@@ -186,11 +223,13 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 ## 范围检测
 
 **主检测（Phase 1 末尾）**：
+
 - 信号：≥2 独立子系统 / "平台"等宏大词汇 / ≥3 无关技术层
 - 触发后：Phase 1 首要议题变为分解策略确认
 - 分解后：只对第一个子项目继续，其余记为 Future Changes
 
 **兜底（Phase 4 开头）**：
+
 - 设计展开后发现无法收敛为单个 plan → 拆为多个 plan
 - 不回退 design，只拆 plan
 
@@ -249,17 +288,17 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 
 ## OpenSpec CLI 集成点
 
-| 阶段 | CLI 命令 | 用途 |
-|------|---------|------|
-| 启动/恢复 | `openspec list --json` | 检测活跃变更 |
-| Phase 2 | `openspec new change {name}` | 创建 change 目录结构 |
-| Phase 2 | `openspec instructions proposal --change {name} --json` | 获取写作指令 |
-| Phase 2 | `openspec instructions specs --change {name} --json` | 获取 spec 写作指令 |
-| Phase 2/3/4 | `openspec validate --json` | 验证 artifact 格式 |
-| Phase 3 | `openspec instructions design --change {name} --json` | 获取 design 指令 |
-| Phase 4 | `openspec instructions tasks --change {name} --json` | 获取 tasks 指令 |
-| Phase 5 | `openspec status --change {name} --json` | 查看工件图状态 |
-| Phase 6 | `openspec archive {name} --yes` | 归档合并 |
+| 阶段        | CLI 命令                                                  | 用途                 |
+| ----------- | --------------------------------------------------------- | -------------------- |
+| 启动/恢复   | `openspec list --json`                                  | 检测活跃变更         |
+| Phase 2     | `openspec new change {name}`                            | 创建 change 目录结构 |
+| Phase 2     | `openspec instructions proposal --change {name} --json` | 获取写作指令         |
+| Phase 2     | `openspec instructions specs --change {name} --json`    | 获取 spec 写作指令   |
+| Phase 2/3/4 | `openspec validate --json`                              | 验证 artifact 格式   |
+| Phase 3     | `openspec instructions design --change {name} --json`   | 获取 design 指令     |
+| Phase 4     | `openspec instructions tasks --change {name} --json`    | 获取 tasks 指令      |
+| Phase 5     | `openspec status --change {name} --json`                | 查看工件图状态       |
+| Phase 6     | `openspec archive {name} --yes`                         | 归档合并             |
 
 ---
 
@@ -268,6 +307,7 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 ```
 $PROJECT_ROOT/
 ├── .ace/
+│   │── project-profile.md
 │   ├── experience.md                     # 项目经验库（spec-coding 维护）
 │   ├── config.yaml                       # ACE 框架配置
 │   └── changes/{name}/                   # spec-coding 与 requirement-analysis 共享
@@ -298,6 +338,7 @@ $PROJECT_ROOT/
 ## 经验闭环
 
 Phase 6 归档后触发经验提取：
+
 - 触发条件：意外 / 踩坑 / 反直觉 / 可复用模式
 - 存储：`.ace/experience.md`
 - 格式：`E{N}: {描述} | 来源: {change-name} | 日期: {date}`
