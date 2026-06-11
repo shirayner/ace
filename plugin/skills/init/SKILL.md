@@ -54,7 +54,40 @@ description: |
 - 命名：{从代码统计推断的约定}
 - 异常：{异常处理模式}
 - 日志：{日志使用模式}
-- 测试：{测试组织方式}
+
+## 单元测试模式
+
+### 框架栈
+| 层 | 工具 | 版本 | 证据 |
+|----|------|------|------|
+| 测试框架 | {JUnit 4 / JUnit 5 / TestNG} | {x.x} | pom.xml |
+| Mock 框架 | {Mockito / PowerMock / MockK} | {x.x} | pom.xml |
+| 静态 Mock | {PowerMock / Mockito-inline / MockedStatic / 无} | - | 代码搜索 |
+| 断言库 | {AssertJ / Hamcrest / JUnit assert} | - | 代码搜索 |
+| Spring 测试 | {@SpringBootTest / @MockBean / 无} | - | 代码搜索 |
+
+### Mock 模式
+- 普通依赖 Mock：{@Mock + @InjectMocks / 手动构造注入}
+- 静态方法 Mock：{PowerMockito.mockStatic / Mockito.mockStatic / 不支持}
+- 静态初始化忽略：{@SuppressStaticInitializationFor / @PrepareForTest / 无}
+- Final 类/方法 Mock：{PowerMock / mockito-inline / 不支持}
+
+### 测试组织
+- 目录：{src/test/java 与 src/main/java 镜像}
+- 命名约定：{XxxTest / XxxTests / Test_Xxx}
+- 基类：{BaseTest / AbstractUnitTest / 无}
+- 公共 fixture：{TestHelper / TestDataBuilder / 无}
+
+### 运行命令
+- 全量：{mvn test / gradle test}
+- 单文件：{mvn test -Dtest=XxxTest}
+- 单方法：{mvn test -Dtest=XxxTest#methodName}
+
+### 典型测试示例
+```java
+// 摘自项目中最具代表性的测试类（展示 mock 设置 + 断言风格）
+{从现有测试代码中摘取 30-50 行代表性片段}
+```
 
 ## 构建与运行
 - 构建：{mvn / gradle 命令}
@@ -112,6 +145,12 @@ description: |
 2. 确认项目根目录（通过 git rev-parse --show-toplevel）
 
 ### Phase 2: 自动推断
+
+**排除规则**：project-profile 只描述项目本身的技术特征，不包含以下内容：
+- OpenSpec 工具链（openspec/ 目录、CLI 命令、spec 格式）
+- ACE 框架（.ace/ 目录、config.yaml、experience.md）
+- Claude Code / CLAUDE.md 相关说明
+- 任何"如何使用 AI 辅助工具"的说明
 
 按以下顺序分析，每步产出结构化中间结论：
 
@@ -173,7 +212,31 @@ description: |
    - 注释风格
 ```
 
-#### 2.6 上下游依赖识别
+#### 2.6 单元测试模式推断
+
+```
+→ Step 1: 框架识别（从 pom.xml / build.gradle）
+   Grep: junit-jupiter / junit / testng / mockito-core / powermock / assertj
+   → 提取框架名 + 版本
+
+→ Step 2: Mock 模式识别（从 src/test 代码）
+   Grep src/test: @Mock, @InjectMocks, @MockBean
+   Grep src/test: mockStatic, PowerMockito.mockStatic, MockedStatic
+   Grep src/test: @SuppressStaticInitializationFor, @PrepareForTest
+   Grep src/test: @RunWith(PowerMockRunner.class), @ExtendWith(MockitoExtension.class)
+   → 归纳：普通 Mock 方式 + 静态 Mock 方式 + 初始化抑制方式
+
+→ Step 3: 测试组织（目录结构 + 命名）
+   Glob src/test/java/**/*Test.java → 统计命名模式
+   搜索是否有 BaseTest / AbstractTest 基类
+   搜索是否有 TestHelper / TestDataBuilder / fixture 类
+
+→ Step 4: 摘取典型示例
+   选 1 个代表性测试类（含 mock 设置 + 验证 + 断言）
+   摘取核心 30-50 行作为模板写入 profile
+```
+
+#### 2.7 上下游依赖识别
 
 ```
 → SOA client 配置 / @SoaClient 注解 → 调用的外部服务
@@ -183,7 +246,7 @@ description: |
 → HTTP client 配置 → 外部 REST 依赖
 ```
 
-#### 2.7 入口点索引生成
+#### 2.8 入口点索引生成
 
 > **设计意图**：提前梳理项目的所有对外交互入口及其功能映射，
 > 使后续 `spechub-coding` 的 COMPREHEND 阶段从"全量代码探索"变为"查表比对"，
@@ -259,7 +322,7 @@ description: |
 - `ace:init --refresh` 时全量重建
 - `spechub-coding` ARCHIVE 阶段如新增入口点 → 自动追加
 
-#### 2.8 系统定位推断
+#### 2.9 系统定位推断
 
 ```
 → 读 README.md（如有）

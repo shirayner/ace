@@ -8,6 +8,15 @@
 ## 上下文
 {ARCHITECTURE_CONTEXT — technical-design.md 中的相关段落}
 
+## 单元测试约定
+{TEST_CONVENTIONS — 从 .ace/project-profile.md §单元测试模式 提取}
+- 框架：{测试框架 + Mock 框架}
+- Mock 方式：{普通依赖 / 静态方法 / 静态初始化}
+- 运行命令：{单文件运行命令}
+- 命名约定：{XxxTest 等}
+
+严格遵循以上测试约定编写测试。不可引入项目未使用的测试框架或 Mock 方式。
+
 ## 开始之前
 如有疑问（需求、方式、依赖、不明确的点），**立即提问**。
 开始前提问比做完后重来更好。
