@@ -1,0 +1,14 @@
+plugin/skills/spec-coding/SKILL.md
+  h_1b7a87984feade 31-54,56-70,123,142,154,188,211,226,232,292,310,341
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "634389d75b2ad5c1fa2810de596562fedde6d205",
+  "prompts": {},
+  "humans": {
+    "h_1b7a87984feade": {
+      "author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
