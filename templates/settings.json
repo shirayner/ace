@@ -36,65 +36,8 @@
       "PostToolUse": []
     }
   },
-  "hooks": {
-    "PreToolUse": [
-      {
-        "matcher": "Bash",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/ace.bash-guard.sh",
-            "timeout": 5000
-          }
-        ]
-      },
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/ace.file-guard.sh",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/ace.java-compile-check.sh",
-            "timeout": 35000
-          },
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/ace.content-guard.sh",
-            "timeout": 5000
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash ~/.claude/hooks/ace.stop-verify.sh",
-            "timeout": 10000
-          }
-        ]
-      }
-    ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "bash ~/.claude/scripts/statusline-command.sh"
-  },
+  "hooks": {},
   "enabledPlugins": {
-    "revealjs@revealjs-skill": true,
     "ace@ace-local": true
   },
   "autoMemoryDirectory": "~/.claude/memory/",

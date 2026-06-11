@@ -58,6 +58,19 @@ function tryInstall(registry) {
 }
 
 /**
+ * Run `ace init --force` to sync the latest templates and rules.
+ * Uses the globally installed ace binary so the freshly upgraded version is used.
+ */
+function runInit() {
+  const aceCmd = process.platform === 'win32' ? 'ace.cmd' : 'ace';
+  const result = spawnSync(
+    `${aceCmd} init --force`,
+    { stdio: 'inherit', shell: true, windowsHide: true },
+  );
+  return result.status === 0;
+}
+
+/**
  * Get the configured npm registry from user's npm config.
  */
 function getUserRegistry() {
@@ -146,5 +159,12 @@ export async function upgradeCommand(options) {
   } else {
     console.log(chalk.yellow(`  Install completed, but version check returned: ${newVersion}`));
     console.log(chalk.dim('  (This may be normal if ace was already at the target version.)\n'));
+  }
+
+  // 7. Sync latest templates and rules via `ace init --force`
+  console.log(chalk.bold('  Syncing latest templates and rules...\n'));
+  const initOk = runInit();
+  if (!initOk) {
+    console.log(chalk.yellow('\n  ace init encountered an error. Run `ace init --force` manually to finish syncing.\n'));
   }
 }
