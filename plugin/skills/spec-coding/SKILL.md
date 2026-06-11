@@ -309,24 +309,29 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 ```
 $PROJECT_ROOT/
 ├── .ace/
-│   ├── project-profile.md          # 项目技术画像（ace:init 生成）
-│   ├── experience.md              # 项目经验库（spec-coding 维护）
-│   └── config.yaml                # ACE 框架配置
+│   │── project-profile.md
+│   ├── experience.md                     # 项目经验库（spec-coding 维护）
+│   ├── config.yaml                       # ACE 框架配置
+│   └── changes/{name}/                   # spec-coding 与 requirement-analysis 共享
+│       ├── prd.md                        # 来自 requirement-analysis（如有）
+│       ├── requirement-anchors-analysis.md  # 来自 requirement-analysis（如有）
+│       └── issues/
+│           ├── requirement-issues.md     # 业务澄清 + 技术澄清
+│           └── design-issues.md          # 设计决策记录（spec-coding）
 │
 ├── openspec/
-│   ├── specs/{domain}/spec.md     # 源代码真理（OpenSpec 维护）
-│   ├── changes/{change-name}/     # 由 `openspec new change` 创建
-│   │   ├── .openspec.yaml         # OpenSpec 管理（工件图状态）
-│   │   ├── .ace-state.json        # spec-coding 管理（工作流状态）
+│   ├── specs/{domain}/spec.md            # 源代码真理（OpenSpec 维护）
+│   ├── changes/{change-name}/            # 由 `openspec new change` 创建
+│   │   ├── .openspec.yaml                # OpenSpec 管理（工件图状态）
+│   │   ├── .ace-state.json               # spec-coding 管理（工作流状态）
 │   │   ├── proposal.md
-│   │   ├── design.md              # 精简决策记录（OpenSpec validate）
-│   │   ├── technical-design.md    # 完整设计参考（spec-coding 私有）
+│   │   ├── design.md                     # 精简决策记录（OpenSpec validate）
+│   │   ├── technical-design.md           # 完整设计参考（spec-coding 私有）
 │   │   ├── tasks.md
-│   │   ├── specs/{domain}/spec.md # Delta specs
-│   │   ├── issues/
+│   │   ├── specs/{domain}/spec.md        # Delta specs
 │   │   └── notes.md
-│   ├── changes/archive/           # 已完成（openspec archive 移动至此）
-│   └── config.yaml                # OpenSpec 项目配置
+│   ├── changes/archive/                  # 已完成（openspec archive 移动至此）
+│   └── config.yaml                       # OpenSpec 项目配置
 └── ...
 ```
 

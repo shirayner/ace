@@ -9,7 +9,7 @@
 2. 存在 `package.json` 且 dependencies 含 `react`/`vue`/`next`/`nuxt` → `type: frontend`
 3. 同时满足 1 和 2 → `type: hybrid`
 
-## 2. 后端入口扫描
+## 2. 后端锚点扫描
 
 ### API
 查找优先级(命中任一即算):
@@ -48,7 +48,7 @@ grep -rl "@Scheduled" --include="*.java"
 find . -name "*Job.java" -o -name "*Task.java" -o -name "*Schedule.java" | grep -v test
 ```
 
-## 3. 前端入口扫描
+## 3. 前端锚点扫描
 
 ### Page
 ```bash
@@ -76,8 +76,8 @@ find src/components/ -name "*.tsx" -o -name "*.vue" | grep -v node_modules
 
 排除:
 - `*/test/*` `*/tests/*` `*Test.java` `*Tests.java`
-- `*Mapper.java`(MyBatis Mapper,数据访问层非入口)
-- `*RepositoryImpl.java`(实现类非入口)
+- `*Mapper.java`(MyBatis Mapper,数据访问层非锚点)
+- `*RepositoryImpl.java`(实现类非锚点)
 - `src/components/ui/` `src/components/common/`(通用 UI 组件)
 
 ## 5. 结果格式
@@ -85,7 +85,7 @@ find src/components/ -name "*.tsx" -o -name "*.vue" | grep -v node_modules
 扫描完成后产出精确列表:
 
 ```yaml
-entries:
+anchors:
   api:
     - FlightFillPageComponentApplication
     - QueryMemberRightsV35Application
@@ -95,4 +95,4 @@ entries:
     - CoinsExpireJob
 ```
 
-写入 _meta.yml 的 entries 段,覆盖原有内容。
+写入 _meta.yml 的 anchors 段,覆盖原有内容。

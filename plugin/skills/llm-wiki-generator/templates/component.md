@@ -6,7 +6,7 @@ generated_at: {{ISO_TIMESTAMP}}
 source_commit: {{GIT_COMMIT_HASH}}
 description: {{一句话产品语言描述}}
 component_name: {{组件名}}
-entry_file: {{入口文件路径}}
+entry_file: {{源码路径}}
 used_in_pages: [{{使用的页面列表}}]
 api_calls:
 {{#each api_calls}}
@@ -16,7 +16,7 @@ related_business: [{{逗号分隔的业务概念}}]
 keywords: [{{中英文关键词}}]
 ---
 
-# {{入口标题(产品语言)}}
+# {{标题（产品语言）}}
 
 ## 业务场景
 <!-- 该组件在哪些页面出现,解决什么业务问题 -->

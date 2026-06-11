@@ -56,6 +56,6 @@ doctorCommand → fs.readdir（遍历模板规则目录和插件缓存目录）
 - **函数**: doctorCommand
 - **文件**: src/commands/doctor.js
 
-## 相关入口
+## 相关锚点
 
 - ace init: 安装和配置 ace 工具，doctor 用于验证 init 的执行结果

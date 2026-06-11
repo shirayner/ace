@@ -8,6 +8,14 @@
 
 ## Step A: 需求深度分析（先想，无用户交互）
 
+### 0. 检测 requirement-analysis 产物
+
+检查 `.ace/changes/{name}/` 是否存在：
+- **存在** → 读取 `prd.md`（替代原始需求输入）、读取 `.ace/changes/{name}/issues/requirement-issues.md`（继承已有澄清结论）
+  - 后续 Step A 分析基于 prd.md 内容进行
+  - Step B 只识别**技术实现层面**的新 unknowns（业务澄清已在 requirement-analysis 完成）
+- **不存在** → 按当前逻辑从零开始
+
 ### 1. 解析用户输入
 
 提取核心意图、关键实体、约束条件。
@@ -138,6 +146,7 @@ Write $CHANGE_DIR/issues/requirement-issues.md
 | R2 | 存储方式选本地还是 OSS？ | 必须澄清 | open | - | - |
 | R3 | 上传格式支持哪些？ | 记录假设 | assumed | JPEG/PNG/WebP | 参照现有上传逻辑 |
 ```
+
 
 #### 问题分级（VOI 简化模型）
 

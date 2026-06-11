@@ -89,7 +89,7 @@ L4 接口分析：Grep 调用方/被调用方 → 约束清单
 
 ### 7. 落地设计决策文档 + 澄清循环
 
-#### 7a. 写入 issues/design-issues.md（先落文档）
+#### 7a. 写入 .ace/changes/{name}/issues/design-issues.md（先落文档）
 
 将所有"需澄清"级决策写入文档：
 
@@ -263,7 +263,7 @@ AskUserQuestion(questions: [{
 - Other（用户指出偏差）→ 修正认知 → 更新 technical-design.md → 重新审批
 - 拒绝 → 回退到 Step 1 重新探索设计
 
-### 14. 写入 issues/design-issues.md（如有遗留）
+### 14. 写入 .ace/changes/{name}/issues/design-issues.md（如有遗留）
 
 ### 15. 更新状态 + 事件 `designed` → Phase 4
 

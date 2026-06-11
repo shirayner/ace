@@ -13,10 +13,10 @@ keywords: [{{中英文关键词,逗号分隔}}]
 
 ## 快速查找
 
-| 我想了解... | 看这个入口 |
+| 我想了解... | 看这个锚点 |
 |------------|-----------|
-{{#each lookup_entries}}
-| {{question}} | [{{name}}](./entries/{{type}}/{{name}}.md) |
+{{#each lookup_anchors}}
+| {{question}} | [{{name}}](./anchors/{{type}}/{{name}}.md) |
 {{/each}}
 
 ## 核心业务流程
@@ -24,9 +24,9 @@ keywords: [{{中英文关键词,逗号分隔}}]
 {{#each business_flows}}
 ### {{flow_name}}
 - **概要**: {{one_line_summary}}
-- **入口**:
-{{#each entries}}
-  - [{{name}}](./entries/{{type}}/{{name}}.md) — {{role_in_flow}}
+- **锚点**:
+{{#each anchors}}
+  - [{{name}}](./anchors/{{type}}/{{name}}.md) — {{role_in_flow}}
 {{/each}}
 
 {{/each}}
@@ -36,9 +36,9 @@ keywords: [{{中英文关键词,逗号分隔}}]
 {{#each domain_models}}
 ### {{model_name}}
 - **定义**: {{one_line_definition}}
-- **关联入口**:
-{{#each entries}}
-  - [{{name}}](./entries/{{type}}/{{name}}.md) — {{relevance}}
+- **关联锚点**:
+{{#each anchors}}
+  - [{{name}}](./anchors/{{type}}/{{name}}.md) — {{relevance}}
 {{/each}}
 
 {{/each}}

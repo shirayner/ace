@@ -1,11 +1,11 @@
-# LLM Wiki 入口配置
+# LLM Wiki 锚点配置
 # 此文件由 llm-wiki-generator Skill 生成和维护。
-# 配置 entries 后触发 Skill 或说"开始构建"。
+# 配置 anchors 后触发 Skill 或说"开始构建"。
 
 type: backend  # backend | frontend | hybrid
 
 # ─────────────────────────────────────────────
-# entries:入口识别规则
+# anchors:锚点识别规则
 # ─────────────────────────────────────────────
 # 每条规则是一个 selector 字符串或对象:
 #
@@ -19,9 +19,9 @@ type: backend  # backend | frontend | hybrid
 #   { name: "*Service", in: "**/api/**" }
 #   { annotation: "@QmqConsumer", in: "**/listener/**" }
 #
-# 多条规则 OR 合并(命中任一即算入口)
+# 多条规则 OR 合并(命中任一即算锚点)
 
-entries:
+anchors:
   api:
     # 示例:
     # - "*Application"                          # 类名 glob
