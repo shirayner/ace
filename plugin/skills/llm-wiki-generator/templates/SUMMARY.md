@@ -15,7 +15,7 @@ keywords: [{{中英文关键词,逗号分隔}}]
 
 | 我想了解... | 看这个锚点 |
 |------------|-----------|
-{{#each lookup_entries}}
+{{#each lookup_anchors}}
 | {{question}} | [{{name}}](./anchors/{{type}}/{{name}}.md) |
 {{/each}}
 
@@ -25,7 +25,7 @@ keywords: [{{中英文关键词,逗号分隔}}]
 ### {{flow_name}}
 - **概要**: {{one_line_summary}}
 - **锚点**:
-{{#each entries}}
+{{#each anchors}}
   - [{{name}}](./anchors/{{type}}/{{name}}.md) — {{role_in_flow}}
 {{/each}}
 
@@ -37,7 +37,7 @@ keywords: [{{中英文关键词,逗号分隔}}]
 ### {{model_name}}
 - **定义**: {{one_line_definition}}
 - **关联锚点**:
-{{#each entries}}
+{{#each anchors}}
   - [{{name}}](./anchors/{{type}}/{{name}}.md) — {{relevance}}
 {{/each}}
 

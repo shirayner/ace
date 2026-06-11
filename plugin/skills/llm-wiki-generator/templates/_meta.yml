@@ -1,6 +1,6 @@
 # LLM Wiki 锚点配置
 # 此文件由 llm-wiki-generator Skill 生成和维护。
-# 配置 entries 后触发 Skill 或说"开始构建"。
+# 配置 anchors 后触发 Skill 或说"开始构建"。
 
 type: backend  # backend | frontend | hybrid
 

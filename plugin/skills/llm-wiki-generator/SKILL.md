@@ -50,7 +50,7 @@ description: 为代码仓库生成 LLM Wiki 知识库,供需求评审/技术方�
 
 流程:
 1. 读取 `.ace/wiki/_meta.yml`
-2. 检查 `entries` 字段是否为空
+2. 检查 `anchors` 字段是否为空
 3. 如果为空,展示与分支 A 相同的提示菜单
 4. **停止,不进行构建**
 
@@ -58,12 +58,12 @@ description: 为代码仓库生成 LLM Wiki 知识库,供需求评审/技术方�
 
 流程:
 1. 读取 `.ace/wiki/_meta.yml`
-2. 解析 `entries` 字段(见"锚点解析"章节)
+2. 解析 `anchors` 字段(见"锚点解析"章节)
 3. 进入四阶段并行构建流水线(见"构建流水线"章节)
 
 ## 锚点解析
 
-从 `.ace/wiki/_meta.yml` 的 `entries` 字段解析锚点列表。
+从 `.ace/wiki/_meta.yml` 的 `anchors` 字段解析锚点列表。
 
 ### 配置格式
 
@@ -71,7 +71,7 @@ _meta.yml 示例:
 ```yaml
 type: backend
 
-entries:
+anchors:
   api:
     - FlightFillPageComponentApplication    # 精确类名
     - "*Application"                        # 类名 glob
@@ -129,7 +129,7 @@ entries:
 
 ## 自然语言扫描范围
 
-当用户用自然语言描述扫描范围时(非"开始构建"),解析意图并追加到 `.ace/wiki/_meta.yml` 的 `entries`。
+当用户用自然语言描述扫描范围时(非"开始构建"),解析意图并追加到 `.ace/wiki/_meta.yml` 的 `anchors`。
 
 ### 解析规则
 
@@ -167,12 +167,12 @@ entries:
 
 4. 回显:
    ```
-   将追加到 _meta.yml.entries.api:
+   将追加到 _meta.yml.anchors.api:
      { name: "*Application", in: "**/application/**" }
    预估命中 12 个类。确认?(yes / no)
    ```
 
-5. 用户确认后,读取 `.ace/wiki/_meta.yml`,在对应 `entries.<type>` 下追加 selector。
+5. 用户确认后,读取 `.ace/wiki/_meta.yml`,在对应 `anchors.<type>` 下追加 selector。
 
 6. 输出"已写入。继续追加或回复'开始构建'。"
 
@@ -198,7 +198,7 @@ Phase 1: 锚点发现(串行)
 
 ### Phase 1:锚点发现
 
-1. 从 _meta.yml.entries 解析所有规则(字符串/对象,glob/注解/路径)
+1. 从 _meta.yml.anchors 解析所有规则(字符串/对象,glob/注解/路径)
 2. 对每条规则执行 grep/find,收集命中的类/文件
 3. 合并去重,产出最终清单
 4. 展示:
@@ -340,7 +340,7 @@ Token 消耗:
 1. 读取 `~/.claude/skills/llm-wiki-generator/rules/auto-scan.md`
 2. 按规则扫描项目
 3. 排除测试类、Mapper、RepositoryImpl、通用 UI 组件
-4. 结果以精确名字符串列表写入 `.ace/wiki/_meta.yml` 的 `entries` 段
+4. 结果以精确名字符串列表写入 `.ace/wiki/_meta.yml` 的 `anchors` 段
 5. 展示:
    ```
    扫描到:

@@ -95,4 +95,4 @@ anchors:
     - CoinsExpireJob
 ```
 
-写入 _meta.yml 的 entries 段,覆盖原有内容。
+写入 _meta.yml 的 anchors 段,覆盖原有内容。
