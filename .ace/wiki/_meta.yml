@@ -1,0 +1,30 @@
+# LLM Wiki 入口配置
+# 此文件由 llm-wiki-generator Skill 生成和维护。
+# 配置 entries 后触发 Skill 或说"开始构建"。
+
+type: backend  # backend | frontend | hybrid
+
+# ─────────────────────────────────────────────
+# entries:入口识别规则
+# ─────────────────────────────────────────────
+# 每条规则是一个 selector 字符串或对象:
+#
+# 字符串简写(自动判定):
+#   精确类名     → FlightFillPageComponentApplication
+#   类名 glob    → "*Application"
+#   注解(@前缀)  → "@RestController"
+#   路径 glob    → "**/application/**"
+#
+# 对象组合(需要 WHAT + WHERE 时):
+#   { name: "*Service", in: "**/api/**" }
+#   { annotation: "@QmqConsumer", in: "**/listener/**" }
+#
+# 多条规则 OR 合并(命中任一即算入口)
+
+entries:
+  api:
+    - init
+    - doctor
+    - list
+    - spec
+    - uninstall
