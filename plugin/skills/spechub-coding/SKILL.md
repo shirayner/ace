@@ -41,7 +41,7 @@ description: |
 $PROJECT_ROOT/
 ├── .ace/
 │   ├── tasks/{changeName}/           # $TASK_DIR — ACE 状态与过程产物
-│   │   ├── state.json                # 状态机（type: "spec"）
+│   │   ├── state.json                # 状态机（type: "spechub"）
 │   │   └── artifacts/                # ACE 过程产出物
 │   │       ├── comprehension.md
 │   │       ├── artifact-inventory.json

@@ -79,6 +79,13 @@ $PROJECT_ROOT/.ace/tasks/{changeName}/state.json
 }
 ```
 
+### spechub 类型（独立 schema）
+
+`type: "spechub"` 使用独立 schema，由 `spechub-coding/references/state-schema.md` 定义。
+与上述统一模板的公共字段不兼容（使用 camelCase、phases 结构等）。
+
+spec-coding 恢复协议筛选 `type=="spec"` 时会自动排除 spechub 任务。
+
 ---
 
 ## 配套文件

@@ -7,7 +7,7 @@
 
 ```json
 {
-  "type": "spec",
+  "type": "spechub",
   "reqId": 1450,
   "title": "黑钻升降保级规则",
   "currentPhase": "design",

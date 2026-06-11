@@ -244,7 +244,7 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
 
     # Derive changeName (slug) from title
     title = manifest.get("title", f"Requirement {req_id}")
-    change_name = _title_to_slug(title)
+    change_name = _title_to_slug(title, req_id)
 
     # Initialize state.json at .ace/tasks/{changeName}/state.json
     task_dir = repo_root / ".ace" / "tasks" / change_name
@@ -254,7 +254,7 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
     (task_dir / "artifacts" / "analysis").mkdir(parents=True, exist_ok=True)
 
     state = {
-        "type": "spec",
+        "type": "spechub",
         "reqId": req_id,
         "title": title,
         "changeName": change_name,
@@ -294,7 +294,7 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
     print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
-def _title_to_slug(title: str) -> str:
+def _title_to_slug(title: str, req_id: int = 0) -> str:
     """Convert title to kebab-case slug."""
     import re
     # Remove non-alphanumeric (keeping CJK and ascii letters/digits)
@@ -304,7 +304,7 @@ def _title_to_slug(title: str) -> str:
     # Limit length
     if len(slug) > 50:
         slug = slug[:50].rstrip('-')
-    return slug or f"req-{id}"
+    return slug or f"req-{req_id}"
 
 
 # ─── Command: archive ───────────────────────────────────────────────────────

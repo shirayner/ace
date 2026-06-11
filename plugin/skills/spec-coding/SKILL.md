@@ -28,36 +28,46 @@ description: |
 
 ## 前置检查
 
+<HARD-GATE>
+前置检查必须按顺序全部完成后，才可进入阶段路由。
+禁止在前置检查完成前 Read 任何 phases/*.md 文件或执行阶段逻辑。
+</HARD-GATE>
+
 **项目根目录确定**：运行 `pwd` 获取当前工作目录作为 `$PROJECT_ROOT`。
 不使用 `git rev-parse --show-toplevel`（用户可能不在 git 仓库中，或 git 根不是意图的项目根）。
 所有文件操作使用 `$PROJECT_ROOT` 为基准的绝对路径。
 
-1. `$PROJECT_ROOT/openspec/` 目录存在检查：
-   - 存在 → 继续
-   - 不存在 → 自动执行初始化脚本：
-
-     ```
-     bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
-     ```
-
-     → 告知用户："openspec/ 目录不存在，已自动初始化。"
-     → 继续流程（不中断）
-2. `.ace/project-profile.md` 存在 → Read 一次（后续 phase 引用已加载内容，不重复 Read）
-   - 不存在 → 派遣后台 Agent 执行 ace:init 生成 project-profile.md：
-
-     ```
-     Agent(description="初始化项目画像", run_in_background=true,
-       prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
-         当前项目根：$PROJECT_ROOT。按 init skill 的完整流程执行。")
-     ```
-
-     → 告知用户："project-profile.md 不存在，已在后台启动初始化。"
-     → 继续 Phase 1（不等待，profile 在 Phase 3 Design 阶段使用时再 Read）
-3. `.ace/config.yaml` 检查：
+**Step 1 — openspec/ 目录**：
 
 ```
-IF .ace/config.yaml 不存在:
-  → mkdir -p .ace/
+IF $PROJECT_ROOT/openspec/ 存在:
+  → 继续 Step 2
+ELSE:
+  → 执行: bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
+  → 告知用户："openspec/ 目录不存在，已自动初始化。"
+  → 继续 Step 2
+```
+
+**Step 2 — .ace/project-profile.md**：
+
+```
+IF $PROJECT_ROOT/.ace/project-profile.md 存在:
+  → Read 一次（后续 phase 引用已加载内容，不重复 Read）
+  → 继续 Step 3
+ELSE:
+  → 必须执行以下 Agent 调用（不可跳过）:
+    Agent(description="初始化项目画像", run_in_background=true,
+      prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
+        当前项目根：$PROJECT_ROOT。按 init skill 的完整流程执行。")
+  → 告知用户："project-profile.md 不存在，已在后台启动初始化。"
+  → 继续 Step 3（不等待，profile 在 Phase 3 Design 阶段使用时再 Read）
+```
+
+**Step 3 — .ace/config.yaml**：
+
+```
+IF $PROJECT_ROOT/.ace/config.yaml 不存在:
+  → mkdir -p $PROJECT_ROOT/.ace/
   → 使用默认配置创建 .ace/config.yaml（内容见 references/config-template.yaml）
   → 向用户展示配置项：
     "已创建 .ace/config.yaml，当前配置：
@@ -66,10 +76,16 @@ IF .ace/config.yaml 不存在:
      - auto_push: false（不自动提交远程）
      - use_subagent: true（使用子代理执行）
      如需调整，直接编辑 .ace/config.yaml。"
-  → 继续流程（不中断）
+  → 继续
 ELSE:
   → Read .ace/config.yaml → 解析 spec-coding 节
+  → 继续
+
+所有 Step 完成 → 进入"自动恢复检测"（跳转到该节）→ 然后"阶段路由"
 ```
+
+**执行流总结**：`前置检查 (Step 1→2→3)` → `自动恢复检测` → `阶段路由` → `Read phases/{phase}.md`。
+中间的"配置驱动行为"、"状态机"等节是参考文档，不是执行步骤。
 
 ---
 
@@ -161,8 +177,16 @@ ELSE:
 
 ## 自动恢复检测
 
+<HARD-GATE>
+自动恢复检测在前置检查（Step 1-3）**之后**执行。
+即使发现活跃任务，也不得跳过前置检查中的任何 Step。
+执行顺序：前置检查 → 自动恢复检测 → 阶段路由。
+</HARD-GATE>
+
 ```
 启动时（用户调用 /spec-coding 或说"继续"）：
+前提：前置检查已全部完成（Step 1-3）。
+
 1. 检查 .ace/tasks/ 下是否有 type="spec" 的活跃任务
    → Glob `.ace/tasks/*/state.json` → 逐个读取 → 筛选 type=="spec" && status!="completed"
 2. 有活跃 spec 任务 → 读 state.json 的 spec.phase → 路由到对应阶段
@@ -297,7 +321,7 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 | 阶段        | CLI 命令                                                  | 用途                 |
 | ----------- | --------------------------------------------------------- | -------------------- |
 | 启动/恢复   | `openspec list --json`                                  | 检测活跃变更         |
-| Phase 2     | `openspec new change {changeName}`                            | 创建 change 目录结构 |
+| Phase 1     | `openspec new change {changeName}`                            | 创建 change 目录结构 |
 | Phase 2     | `openspec instructions proposal --change {changeName} --json` | 获取写作指令         |
 | Phase 2     | `openspec instructions specs --change {changeName} --json`    | 获取 spec 写作指令   |
 | Phase 2/3/4 | `openspec validate --json`                              | 验证 artifact 格式   |

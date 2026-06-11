@@ -69,10 +69,9 @@ IF none：
 ### 3. 执行
 
 <HARD-GATE>
-每完成一个任务后，必须立即：
-1. 更新 tasks.md 中对应 checkbox：`- [ ]` → `- [x]`
-2. 更新 $TASK_DIR/state.json：对应 tasks 数组项 status → "done"
-未更新 = 任务未完成。不可先执行多个任务再批量更新。
+每完成一个任务后，必须立即更新 tasks.md 中对应 checkbox：`- [ ]` → `- [x]`。
+state.json 更新策略按执行模式区分（见下文）。
+未更新 tasks.md = 任务未完成。不可先执行多个任务再批量更新。
 </HARD-GATE>
 
 #### Subagent 模式（推荐）
@@ -83,13 +82,14 @@ invoke `/subagent-execute`，传入：
 - `pattern_report`: technical-design.md 的 Patterns 节
 
 → /subagent-execute 每完成一个任务就更新 tasks.md checkbox
-→ 全部完成后 spec-coding 更新 state.json
+→ 全部完成后 spec-coding 统一更新 state.json（tasks 数组状态同步）
 
 #### Direct 模式
 
 逐任务执行（主代理直接实现），每任务完成后**立即**：
 1. 执行 /verify Gate Function（运行验证命令）
 2. 更新 tasks.md checkbox：`- [ ]` → `- [x]`
+3. 更新 $TASK_DIR/state.json: 对应 tasks 项 status → "done"
 3. 更新 $TASK_DIR/state.json: 对应 tasks 项 status → "done"
 
 无 spec-reviewer / code-reviewer（轻量模式），但**仍必须运行验证命令**（/verify 铁律不可跳过）。
