@@ -1,0 +1,29 @@
+plugin/skills/spec-coding/SKILL.md
+  s_17b09d4a3dc0d4::t_5093ec70c0aefa 271-278,281-284,286-287,289,291-292
+plugin/skills/spec-coding/phases/understand.md
+  s_17b09d4a3dc0d4::t_7ba03b4490bc7c 94
+  s_17b09d4a3dc0d4::t_9035d2a3b74883 130
+  s_17b09d4a3dc0d4::t_5ebdf24528ff93 11-13,15-18
+  s_17b09d4a3dc0d4::t_b6b88a87ab6552 14
+plugin/skills/spec-coding/phases/design.md
+  s_17b09d4a3dc0d4::t_c3baed2908a2cc 240
+  s_17b09d4a3dc0d4::t_16638a7417a893 84
+plugin/skills/requirement-analysis/SKILL.md
+  s_17b09d4a3dc0d4::t_1540ca922dd49e 368-383
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "2338085a57d84ae2c2c8093c2cd88c05ad990ce3",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
