@@ -4,8 +4,8 @@
 生成 proposal + design + tasks（通过 OpenSpec），形成可追溯的技术方案。
 
 ## 输入
-- `spechub/{reqId}/comprehension.md` — **核心输入：修正后理解 + 代码插入点详情**
-- `spechub/{reqId}/readiness-check.md` — 中间件准备状态
+- `$TASK_DIR/artifacts/comprehension.md` — **核心输入：修正后理解 + 代码插入点详情**
+- `$TASK_DIR/artifacts/readiness-check.md` — 中间件准备状态
 - `.ace/project-profile.md` — 项目编码约定
 - G0 确认的 Scope 裁决
 
@@ -13,18 +13,18 @@
 
 ```
 ⛔ 禁止在 DESIGN 阶段重新探索代码（派 Agent 读项目文件）
-✅ 所有代码定位信息从 comprehension.md §代码插入点详情 获取
-✅ 如需更多详情 → Read spechub/{reqId}/analysis/d2-verification.md 的特定 section
-✅ 如需架构参考 → Read spechub/{reqId}/analysis/d3-architecture.md
+✅ 所有代码定位信息从 $TASK_DIR/artifacts/comprehension.md §代码插入点详情 获取
+✅ 如需更多详情 → Read $TASK_DIR/artifacts/analysis/d2-verification.md 的特定 section
+✅ 如需架构参考 → Read $TASK_DIR/artifacts/analysis/d3-architecture.md
 ```
 
 **理由**：COMPREHEND 阶段已完成代码验证和定位，DESIGN 不应重复此工作。代码插入点信息已包含文件路径、类名、方法名、行号、扩展方式——足够做技术设计。
 
 ## 产出
-- `openspec/changes/{slug}/proposal.md`
-- `openspec/changes/{slug}/design.md`
-- `openspec/changes/{slug}/tasks.md`
-- state.json 更新（含 changeName）
+- `$CHANGE_DIR/proposal.md`
+- `$CHANGE_DIR/design.md`
+- `$CHANGE_DIR/tasks.md`
+- `$TASK_DIR/state.json` 更新（含 changeName）
 
 ---
 
@@ -180,7 +180,7 @@ AskUserQuestion 选项：
 
 ### 7. 更新状态
 
-G2 通过后：
+G2 通过后（`$TASK_DIR/state.json`）：
 ```json
 {
   "currentPhase": "implement",

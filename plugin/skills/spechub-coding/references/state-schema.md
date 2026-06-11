@@ -1,15 +1,17 @@
 # State Schema — state.json 完整定义
 
 ## 文件位置
-`spechub/{reqId}/state.json`
+`.ace/tasks/{changeName}/state.json`
 
 ## 完整结构
 
 ```json
 {
+  "type": "spec",
   "reqId": 1450,
   "title": "黑钻升降保级规则",
   "currentPhase": "design",
+  "changeName": "grade-retention-rules",
   "openspecChange": "grade-retention-rules",
   "phases": {
     "pull":       { "status": "done|pending", "ts": "ISO", "outputs": ["manifest.json", "artifacts/"] },
@@ -54,9 +56,9 @@
 | 新增 divergence | divergences.push(newDiv) |
 | divergence 确认 | divergences[i].userApproved = true, approvedAt = now |
 
-## .active 文件
+## .active-spechub 文件
 
-`spechub/.active` — 内容仅为 reqId 字符串，表示当前活跃需求。
+`.ace/tasks/.active-spechub` — 内容仅为 reqId 字符串，表示当前活跃需求。
 - PULL 阶段创建
 - ARCHIVE 阶段删除
 - 恢复时读取以定位活跃需求

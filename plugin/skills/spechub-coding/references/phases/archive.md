@@ -5,14 +5,14 @@
 
 ## 输入
 - 所有产出文件
-- state.json.divergences[]
+- `$TASK_DIR/state.json` 中的 divergences[]
 - 实现代码
 
 ## 产出
 - OpenSpec archive（本地）
 - Git 分支 + commit + push
 - SpecHub archive（远程 API 上报）
-- state.json → DONE
+- `$TASK_DIR/state.json` → DONE
 
 ---
 
@@ -28,7 +28,7 @@
    ```bash
    openspec archive {slug}
    ```
-3. 如果 openspec CLI 也不可用 → 至少确保 `openspec/changes/{slug}/` 目录下有完整的 proposal.md + design.md + tasks.md（全部 `[x]`），并在完成报告中标注 "OpenSpec 归档需手动执行"
+3. 如果 openspec CLI 也不可用 → 至少确保 `$CHANGE_DIR/` 目录下有完整的 proposal.md + design.md + tasks.md（全部 `[x]`），并在完成报告中标注 "OpenSpec 归档需手动执行"
 
 ⚠️ **跳过此步 = 违规。** OpenSpec 归档是流程完整性的一部分，不可因"不确定如何执行"而静默跳过。
 
@@ -36,7 +36,7 @@
 
 AI 直接执行以下操作（不调脚本）：
 
-1. **更新 state.json**：
+1. **更新 state.json**（`$TASK_DIR/state.json`）：
    ```json
    {
      "currentPhase": "done",
@@ -44,9 +44,9 @@ AI 直接执行以下操作（不调脚本）：
    }
    ```
 
-2. **删除 spechub/.active**：
+2. **删除 .active-spechub**：
    ```bash
-   rm spechub/.active
+   rm .ace/tasks/.active-spechub
    ```
 
 ### 3. Git 提交
@@ -59,7 +59,7 @@ git commit -m "feat(spechub-{reqId}): {title}"
 
 记录 branchName 和 commitHash（从 git log 获取）。
 
-**此时一个 commit 包含全部变更**：功能代码 + 测试 + openspec 归档产物 + state.json + .active 删除。
+**此时一个 commit 包含全部变更**：功能代码 + 测试 + openspec 归档产物 + state.json + .active-spechub 删除。
 
 ### 4. SpecHub 远程上报
 
@@ -78,7 +78,7 @@ python3 {skillDir}/scripts/spechub-workflow.py archive {reqId} --repo-root {repo
   "status": "ok",
   "archiveRecordId": "...",
   "requirementStatus": "...",
-  "decisionsFile": "spechub/{reqId}/decisions.md",
+  "decisionsFile": ".ace/tasks/{changeName}/artifacts/decisions.md",
   "divergenceCount": 3
 }
 ```

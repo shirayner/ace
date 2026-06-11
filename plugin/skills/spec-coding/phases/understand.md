@@ -10,8 +10,8 @@
 
 ### 0. 检测 requirement-analysis 产物
 
-检查 `.ace/changes/{name}/` 是否存在：
-- **存在** → 读取 `prd.md`（替代原始需求输入）、读取 `.ace/changes/{name}/issues/requirement-issues.md`（继承已有澄清结论）
+检查 `.ace/tasks/{changeName}/artifacts/` 是否存在 prd.md：
+- **存在** → 读取 `prd.md`（替代原始需求输入）、读取 `issues/requirement-issues.md`（继承已有澄清结论）
   - 后续 Step A 分析基于 prd.md 内容进行
   - Step B 只识别**技术实现层面**的新 unknowns（业务澄清已在 requirement-analysis 完成）
 - **不存在** → 按当前逻辑从零开始
@@ -70,7 +70,7 @@ IF 触发 → `scope_assessment = "needs_decomposition"`
 - 构建断言的最强版本
 - 尝试攻破（与代码现状矛盾？推理跳跃？）
 
-### 7. 确定 change_name + 创建工作目录
+### 7. 确定 changeName + 创建工作目录
 
 <HARD-GATE>
 Step A 完成后、进入 Step B 之前，必须创建工作目录和状态文件。
@@ -78,31 +78,46 @@ Step A 完成后、进入 Step B 之前，必须创建工作目录和状态文�
 </HARD-GATE>
 
 ```
-1. 根据需求意图生成 change_name（kebab-case，2-4 个英文单词，如 add-avatar-upload）
-2. 执行 openspec new change {change_name}
-   → 创建 openspec/changes/{change_name}/ 目录
-3. 创建 .ace-state.json（参见 references/state-template.jsonc）：
-   Write $PROJECT_ROOT/openspec/changes/{change_name}/.ace-state.json
+1. 根据需求意图生成 changeName（kebab-case，2-4 个英文单词，如 add-avatar-upload）
+2. 创建 ACE 任务目录：
+   mkdir -p $PROJECT_ROOT/.ace/tasks/{changeName}/artifacts/issues
+3. 创建 state.json：
+   Write $PROJECT_ROOT/.ace/tasks/{changeName}/state.json
+4. 创建 context.md：
+   Write $PROJECT_ROOT/.ace/tasks/{changeName}/context.md
+5. 执行 openspec new change {changeName}
+   → 创建 openspec/changes/{changeName}/ 目录
 ```
 
+state.json 初始内容：
 ```json
 {
-  "change_name": "{change_name}",
-  "created_at": "{YYYY-MM-DD}",
-  "phase": "understand",
-  "workflow": "pending",
-  "timestamps": {
-    "understand_started": "{ISO时间}"
-  },
-  "understand": {
-    "scope_assessment": null,
-    "aligned": false,
-    "issues_file": "issues/requirement-issues.md"
+  "name": "{changeName}",
+  "type": "spec",
+  "status": "in-progress",
+  "created_at": "{ISO时间}",
+  "updated_at": "{ISO时间}",
+  "completion_criteria": [],
+  "tasks": [],
+  "spec": {
+    "phase": "understand",
+    "workflow": "pending",
+    "openspec_change": "{changeName}",
+    "timestamps": {
+      "understand_started": "{ISO时间}"
+    },
+    "approvals": {
+      "proposal": false,
+      "design": false,
+      "plan": false
+    }
   }
 }
 ```
 
-后续所有文件操作路径：`$PROJECT_ROOT/openspec/changes/{change_name}/`（简称 `$CHANGE_DIR`）
+后续路径简写：
+- `$TASK_DIR` = `$PROJECT_ROOT/.ace/tasks/{changeName}`
+- `$CHANGE_DIR` = `$PROJECT_ROOT/openspec/changes/{changeName}`
 
 ---
 
@@ -134,7 +149,7 @@ IF scope_assessment == "needs_decomposition":
 基于 Step A 的分析，整理所有 unknowns/待澄清事项，**写入 issues 文件**：
 
 ```
-Write $CHANGE_DIR/issues/requirement-issues.md
+Write $TASK_DIR/artifacts/issues/requirement-issues.md
 ```
 
 ```markdown
@@ -164,7 +179,7 @@ Write $CHANGE_DIR/issues/requirement-issues.md
 
 ```
 LOOP:
-  1. 从 $CHANGE_DIR/issues/requirement-issues.md 中取所有 status=open 的问题
+  1. 从 $TASK_DIR/artifacts/issues/requirement-issues.md 中取所有 status=open 的问题
   2. 按问题澄清模式（参见 references/ask-user-guide.md）向用户提问
      - 每轮 ≤4 个问题
      - 每个问题给推荐选项
@@ -239,22 +254,20 @@ AskUserQuestion(questions: [{
 ```
 
 处理逻辑：
-- 通过 → 更新 .ace-state.json: phase="propose" → Phase 2
+- 通过 → 更新 state.json: spec.phase="propose" → Phase 2
 - Other（用户输入补充）→ 更新 requirement-issues.md → 进入 Phase 2
 - 拒绝 → 回到 Step 9 重新澄清
 
 ### 13. 更新状态 + 事件 `aligned` → Phase 2
 
 ```
-Edit $CHANGE_DIR/.ace-state.json:
-  "phase": "propose",
-  "workflow": "{分级结果: trivial|small|standard|large}",
-  "timestamps.propose_started": "{ISO时间}",
-  "understand": {
-    "scope_assessment": "{appropriate|needs_decomposition}",
-    "aligned": true,
-    "issues_file": "issues/requirement-issues.md"
-  }
+Edit $TASK_DIR/state.json:
+  "spec.phase": "propose",
+  "spec.workflow": "{分级结果: trivial|small|standard|large}",
+  "spec.timestamps.propose_started": "{ISO时间}",
+  "spec.scope_assessment": "{appropriate|needs_decomposition}",
+  "spec.aligned": true,
+  "updated_at": "{ISO时间}"
 ```
 
 ---

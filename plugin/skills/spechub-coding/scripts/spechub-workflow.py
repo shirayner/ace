@@ -202,14 +202,11 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
     check_response_status(resp)
     check_business_status(resp)
 
-    # Write artifacts
+    # Write raw artifacts to .ace/spechub/{reqId}/
     req_id_str = str(req_id)
-    base_dir = repo_root / "spechub" / req_id_str
-    artifacts_dir = base_dir / "artifacts"
+    spechub_dir = repo_root / ".ace" / "spechub" / req_id_str
+    artifacts_dir = spechub_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
-
-    # Also create analysis dir for agent outputs
-    (base_dir / "analysis").mkdir(parents=True, exist_ok=True)
 
     written_files = []
 
@@ -242,14 +239,25 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
 
     # Write manifest
     manifest = resp.get("manifest", {})
-    write_file(base_dir / "manifest.json",
+    write_file(spechub_dir / "manifest.json",
                json.dumps(manifest, ensure_ascii=False, indent=2))
 
-    # Initialize state.json
+    # Derive changeName (slug) from title
     title = manifest.get("title", f"Requirement {req_id}")
+    change_name = _title_to_slug(title)
+
+    # Initialize state.json at .ace/tasks/{changeName}/state.json
+    task_dir = repo_root / ".ace" / "tasks" / change_name
+    task_dir.mkdir(parents=True, exist_ok=True)
+
+    # Create artifacts/analysis dir for COMPREHEND Agent outputs
+    (task_dir / "artifacts" / "analysis").mkdir(parents=True, exist_ok=True)
+
     state = {
+        "type": "spec",
         "reqId": req_id,
         "title": title,
+        "changeName": change_name,
         "currentPhase": "comprehend",
         "openspecChange": "",
         "phases": {
@@ -264,22 +272,39 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
         "gates": {},
         "divergences": []
     }
-    write_file(base_dir / "state.json", json.dumps(state, ensure_ascii=False, indent=2))
+    write_file(task_dir / "state.json", json.dumps(state, ensure_ascii=False, indent=2))
 
-    # Write .active
-    write_file(repo_root / "spechub" / ".active", req_id_str)
+    # Write .active-spechub
+    active_dir = repo_root / ".ace" / "tasks"
+    active_dir.mkdir(parents=True, exist_ok=True)
+    write_file(active_dir / ".active-spechub", req_id_str)
 
     # Output summary
     output = {
         "status": "ok",
         "reqId": req_id,
         "title": title,
+        "changeName": change_name,
         "gitRemoteUrl": git_url,
-        "outputDir": str(base_dir),
+        "taskDir": str(task_dir),
+        "spechubDir": str(spechub_dir),
         "writtenFiles": written_files,
         "nextPhase": "comprehend"
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
+
+
+def _title_to_slug(title: str) -> str:
+    """Convert title to kebab-case slug."""
+    import re
+    # Remove non-alphanumeric (keeping CJK and ascii letters/digits)
+    slug = re.sub(r'[^\w\s-]', '', title.lower())
+    slug = re.sub(r'[\s_]+', '-', slug)
+    slug = slug.strip('-')
+    # Limit length
+    if len(slug) > 50:
+        slug = slug[:50].rstrip('-')
+    return slug or f"req-{id}"
 
 
 # ─── Command: archive ───────────────────────────────────────────────────────
@@ -287,11 +312,29 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
 def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     """Report to SpecHub API. Local state cleanup is handled by AI before commit."""
     git_url = get_git_remote_url(repo_root)
-    base_dir = repo_root / "spechub" / str(req_id)
-    state_path = base_dir / "state.json"
 
-    if not state_path.is_file():
-        print(f"state.json not found at {state_path}", file=sys.stderr)
+    # Find state.json by scanning .ace/tasks/ for matching reqId
+    tasks_dir = repo_root / ".ace" / "tasks"
+    state_path = None
+    change_name = None
+
+    if tasks_dir.is_dir():
+        for child in tasks_dir.iterdir():
+            if child.is_dir():
+                candidate = child / "state.json"
+                if candidate.is_file():
+                    try:
+                        with open(candidate, encoding="utf-8") as f:
+                            s = json.load(f)
+                        if s.get("reqId") == req_id:
+                            state_path = candidate
+                            change_name = child.name
+                            break
+                    except (json.JSONDecodeError, KeyError):
+                        continue
+
+    if not state_path or not state_path.is_file():
+        print(f"state.json not found for reqId {req_id} in .ace/tasks/", file=sys.stderr)
         sys.exit(2)
 
     # Read state to get divergences
@@ -303,8 +346,9 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     # Build decisions markdown from divergences
     decisions_md = _divergences_to_markdown(divergences)
 
-    # Write decisions.md locally (idempotent — may already exist from AI pre-commit step)
-    write_file(base_dir / "decisions.md", decisions_md)
+    # Write decisions.md to task artifacts (idempotent)
+    task_dir = state_path.parent
+    write_file(task_dir / "artifacts" / "decisions.md", decisions_md)
 
     # Report to SpecHub
     payload = {
@@ -326,7 +370,7 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
         "archiveRecordId": resp.get("archiveRecordId"),
         "workspaceProjectId": resp.get("workspaceProjectId"),
         "requirementStatus": resp.get("requirementStatus"),
-        "decisionsFile": str(base_dir / "decisions.md"),
+        "decisionsFile": str(task_dir / "artifacts" / "decisions.md"),
         "divergenceCount": len([d for d in divergences if d.get("severity") != "minor"])
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))

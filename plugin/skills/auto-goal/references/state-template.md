@@ -1,106 +1,80 @@
-# 状态文件模板
+# auto-goal 状态文件参考
 
-## 完整状态文件
+auto-goal 使用统一的 `.ace/tasks/{changeName}/` 目录结构。
 
-创建路径：`.tasks/auto-goal-{id}/state.md`
+详细模板见 `../../shared/state-template.md`。
 
-```markdown
----
-status: in-progress
-last-updated: {timestamp}
 ---
 
-## 目标与完成标准
-[用户确认的目标]
-- [ ] 可测试的完成标准 1
-- [ ] 可测试的完成标准 2
+## auto-goal 的 state.json 示例
 
-## 进度
-### Phase 1: {name} [done]
-### Phase 2: {name} [active]
-- [x] 已完成子任务
-- [ ] → 当前进行中  ⟂
-- [ ] 待做子任务  ⟂
-- [ ] 依赖项 (depends: 上两项)
-### Phase 3: {name} [pending]
-### Phase Final: 收尾 [pending]
-- [ ] 经验进化（如有新发现）
-- [ ] 交付结果
+```jsonc
+{
+  "name": "perf-optimize-api",
+  "type": "goal",
+  "status": "in-progress",
+  "created_at": "2026-06-12T10:00:00",
+  "updated_at": "2026-06-12T14:30:00",
 
-## 已修改文件
+  "completion_criteria": [
+    "API P99 延迟 < 200ms",
+    "无新增内存泄漏"
+  ],
 
-## 下一步
+  "tasks": [
+    {"id": "T1", "title": "性能基线测量", "status": "done", "parallel": true},
+    {"id": "T2", "title": "瓶颈定位", "status": "done", "parallel": true},
+    {"id": "T3", "title": "缓存层优化", "status": "in-progress", "depends": ["T1", "T2"]},
+    {"id": "T4", "title": "SQL 查询优化", "status": "pending", "depends": ["T2"]},
+    {"id": "T5", "title": "集成验证", "status": "pending", "depends": ["T3", "T4"]}
+  ],
 
-## 活跃风险与未确认假设
-
-## Tier 2 索引
-| 文件 | 摘要 | 条目数 |
-|------|------|--------|
+  "goal": {
+    "phase": "executing",
+    "decisions": [
+      {"decision": "使用 Caffeine 本地缓存", "reason": "延迟敏感，Redis 网络开销大", "alternatives": ["Redis", "Guava Cache"]}
+    ]
+  }
+}
 ```
 
-**≤40 行原则**：state.md 是索引，不是文档。超出时移入 Tier 2。
-
 ---
 
-## 轻量 checkpoint
-
-同样创建 `.tasks/auto-goal-{id}/state.md`，但只需：
+## context.md 示例
 
 ```markdown
----
-status: in-progress
-last-updated: {timestamp}
----
+# API 性能优化
 
 ## 目标
-[一句话目标]
+将核心 API 的 P99 延迟从 500ms 降至 200ms 以内。
 
-## 完成标准
-- [ ] 可测试条件 1
-- [ ] 可测试条件 2
+## 过程记录
 
-## 任务分解
-（必须列出所有已通过 TaskCreate 创建的任务，与 TaskList 保持一致）
-- [ ] T1: {任务标题}
-- [ ] T2: {任务标题}
-- [ ] T3: {任务标题}
+### 决策
+- **D1**: 使用 Caffeine 本地缓存 — 理由: 延迟敏感场景，Redis 网络开销 ~5ms，备选: Redis, Guava Cache
+- **D2**: 分批优化而非全量重构 — 理由: 降低风险，可逐步验证，备选: 一次性重构
 
-## 关键决策
-- {决策 1}
+### 中间结论
+- 瓶颈在 DB 查询（占 70% 耗时），缓存命中率提升空间大
+- 热点数据量 < 500MB，本地缓存可承载
 
-## 下一步
-{当前要做的具体事情}
+### 风险
+- 缓存一致性: 使用 TTL 30s + 事件驱动失效双保险
+
+## 已修改文件
+- src/main/java/com/xxx/cache/LocalCacheConfig.java: 新增 Caffeine 配置
+- src/main/java/com/xxx/service/UserService.java: 加缓存注解
 ```
 
 ---
 
-## Tier 2 文件（按需创建）
+## 目录结构
 
 ```
-.tasks/auto-goal-{id}/
-├── state.md       # Tier 1：核心状态索引
-├── context.md     # Tier 2：世界模型详情
-├── decisions.md   # Tier 2：决策日志
-└── reflections.md # Tier 2：反思日志
+.ace/tasks/{changeName}/
+├── state.json       # 状态 (必需)
+├── context.md       # 决策 + 过程 (必需)
+└── artifacts/       # 产物 (按需)
+    ├── perf-baseline.md
+    └── optimization-report.md
 ```
-
-### context.md
-- 环境上下文（技术栈、项目结构发现）
-- 约束空间（不可行路径、硬限制）
-- 信念状态：✓已验证 / ~假设 / ?待验
-
-### decisions.md
-- 每条：决策 + 理由 + 被排除的替代方案
-- 格式：`### D{n}: {决策标题}` + 正文
-
-### reflections.md
-- 失败根因 + 揭示的错误假设 + 策略调整
-- 格式：`### R{n}: {事件}` + 分析
-
----
-
-## 并行标注约定
-
-在 state.md 进度中：
-- `⟂` — 该任务可与同级其他 `⟂` 任务并行
-- `(depends: X, Y)` — 该任务依赖 X 和 Y 完成后才能开始

@@ -38,7 +38,7 @@ AskUserQuestion(questions: [
     header: "隔离方式",
     question: "代码隔离方式？",
     options: [
-      {label: "branch (推荐)", description: "git checkout -b feat/spec-{name}"},
+      {label: "branch (推荐)", description: "git checkout -b feat/spec-{changeName}"},
       {label: "worktree", description: "EnterWorktree 完全隔离"},
       {label: "none", description: "当前分支直接工作"}
     ]
@@ -50,19 +50,17 @@ AskUserQuestion(questions: [
 
 ```
 IF branch：
-  git checkout -b feat/spec-{change-name}
+  git checkout -b feat/spec-{changeName}
 IF worktree：
   EnterWorktree
 IF none：
   → 跳过
 
-更新 .ace-state.json:
-  "apply": {
+更新 $TASK_DIR/state.json:
+  "spec.apply": {
     "mode": "{subagent|direct}",
     "isolation": "{branch|worktree|none}",
-    "branch_name": "feat/spec-{change-name}",
-    "completed_tasks": 0,
-    "current_task": 1
+    "branch_name": "feat/spec-{changeName}"
   }
 ```
 
@@ -73,26 +71,26 @@ IF none：
 <HARD-GATE>
 每完成一个任务后，必须立即：
 1. 更新 tasks.md 中对应 checkbox：`- [ ]` → `- [x]`
-2. 更新 .ace-state.json：`"apply.completed_tasks"++`，`"apply.current_task"` 指向下一个
+2. 更新 $TASK_DIR/state.json：对应 tasks 数组项 status → "done"
 未更新 = 任务未完成。不可先执行多个任务再批量更新。
 </HARD-GATE>
 
 #### Subagent 模式（推荐）
 
 invoke `/subagent-execute`，传入：
-- `tasks_file`: openspec/changes/{name}/tasks.md
-- `design_context`: openspec/changes/{name}/technical-design.md
+- `tasks_file`: openspec/changes/{changeName}/tasks.md
+- `design_context`: .ace/tasks/{changeName}/artifacts/technical-design.md
 - `pattern_report`: technical-design.md 的 Patterns 节
 
 → /subagent-execute 每完成一个任务就更新 tasks.md checkbox
-→ 全部完成后 spec-coding 更新 .ace-state.json
+→ 全部完成后 spec-coding 更新 state.json
 
 #### Direct 模式
 
 逐任务执行（主代理直接实现），每任务完成后**立即**：
 1. 执行 /verify Gate Function（运行验证命令）
 2. 更新 tasks.md checkbox：`- [ ]` → `- [x]`
-3. 更新 .ace-state.json: `completed_tasks++`, `current_task++`
+3. 更新 $TASK_DIR/state.json: 对应 tasks 项 status → "done"
 
 无 spec-reviewer / code-reviewer（轻量模式），但**仍必须运行验证命令**（/verify 铁律不可跳过）。
 

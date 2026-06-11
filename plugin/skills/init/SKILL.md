@@ -19,7 +19,7 @@ description: |
 ## 定位
 
 分析目标仓库代码 → 推断技术画像 → 生成 `.ace/project-profile.md` → CLAUDE.md 引入。
-后续所有 skill（auto-goal / spechub-handoff / code-review / ut）读取此画像作为项目上下文。
+后续所有 skill（auto-goal / spechub-coding / spec-coding / code-review / ut）读取此画像作为项目上下文。
 
 ---
 
@@ -148,7 +148,7 @@ description: |
 
 **排除规则**：project-profile 只描述项目本身的技术特征，不包含以下内容：
 - OpenSpec 工具链（openspec/ 目录、CLI 命令、spec 格式）
-- ACE 框架（.ace/ 目录、config.yaml、experience.md）
+- ACE 框架（.ace/ 目录结构：config.yaml、experience.md、tasks/）
 - Claude Code / CLAUDE.md 相关说明
 - 任何"如何使用 AI 辅助工具"的说明
 

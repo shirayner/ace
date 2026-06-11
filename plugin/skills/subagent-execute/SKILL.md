@@ -26,9 +26,10 @@ description: |
 /subagent-execute [tasks_path]
   tasks_path: 任务文件路径（markdown with checkboxes）
   或通过 ARGUMENTS 直接传入：
-    - tasks_file: 任务文件路径
-    - design_context: 设计文档路径
+    - tasks_file: 任务文件路径（如 openspec/changes/{changeName}/tasks.md）
+    - design_context: 设计文档路径（如 .ace/tasks/{changeName}/artifacts/technical-design.md）
     - pattern_report: Pattern Grounding Report 内容
+    - state_file: 状态文件路径（如 .ace/tasks/{changeName}/state.json）
 ```
 
 **输出**：

@@ -4,15 +4,15 @@
 按 tasks.md 逐 task 实现代码，每个 task 遵循 **Skeleton → Test → Implement → Verify** 微循环，确保每步都有绿灯确认。
 
 ## 输入
-- `openspec/changes/{slug}/design.md` — 决策清单（含接口契约）
-- `openspec/changes/{slug}/tasks.md` — 任务清单（含测试策略标注）
+- `$CHANGE_DIR/design.md` — 决策清单（含接口契约）
+- `$CHANGE_DIR/tasks.md` — 任务清单（含测试策略标注）
 - `.ace/project-profile.md` — 项目编码约定
 
 ## 产出
 - 实际代码变更
 - 对应的单元测试
 - tasks.md 中已完成 task 打勾 `[x]`
-- state.json 更新（含实现偏离记录）
+- `$TASK_DIR/state.json` 更新（含实现偏离记录）
 
 ---
 
@@ -157,7 +157,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 1. 自检：实现是否偏离对应决策点？（见 §3 偏离检测 — 分级处理）
    - 无偏离 → 直接标记完成
    - 有偏离 → 按分级规则处理（AUTO_ABSORB/BATCH_REPORT/IMMEDIATE_ESCALATE）
-2. **[必须执行 Edit]** 打开 `openspec/changes/{slug}/tasks.md`（slug = state.json.openspecChange），将当前 task 的 `- [ ]` 改为 `- [x]`
+2. **[必须执行 Edit]** 打开 `$CHANGE_DIR/tasks.md`（slug = state.json.openspecChange），将当前 task 的 `- [ ]` 改为 `- [x]`
    - 这是文件系统操作（Edit 工具），不是心理标记
    - 每完成一个 task 必须立即 Edit，不可攒到最后批量改
 
@@ -270,7 +270,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 
 ### 5. 更新状态
 
-所有 task 完成后：
+所有 task 完成后（`$TASK_DIR/state.json`）：
 ```json
 {
   "currentPhase": "verify",

@@ -36,14 +36,14 @@ python3 {skillDir}/scripts/spechub-workflow.py start {reqId} --repo-root {repoRo
 - ✅ 前置检查（openspec/ + project-profile.md）
 - ✅ 获取 git remote URL
 - ✅ 调用 SpecHub API 拉取产物
-- ✅ 写入 artifacts/ + manifest.json
-- ✅ 初始化 state.json（phase=comprehend）
-- ✅ 写入 spechub/.active
-- ✅ 创建 analysis/ 目录（供 COMPREHEND Agent 写入）
+- ✅ 写入 .ace/spechub/{reqId}/artifacts/ + .ace/spechub/{reqId}/manifest.json
+- ✅ 初始化 `$TASK_DIR/state.json`（phase=comprehend, type="spec"）
+- ✅ 写入 `.ace/tasks/.active-spechub`
+- ✅ 创建 `$TASK_DIR/artifacts/analysis/` 目录（供 COMPREHEND Agent 写入）
 
 脚本输出：
 ```json
-{"status": "ok", "reqId": 1450, "title": "...", "outputDir": "...", "nextPhase": "comprehend"}
+{"status": "ok", "reqId": 1450, "title": "...", "changeName": "...", "taskDir": "...", "spechubDir": "...", "nextPhase": "comprehend"}
 ```
 
 ### 3. 错误处理

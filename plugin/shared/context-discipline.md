@@ -48,7 +48,7 @@
 
 ## 外化时机
 
-- 重要的技术发现 → state.md 或 experience.md
-- 方案决策（含被否方案）→ state.md Decisions 段
-- 大量代码分析结论 → 提炼为要点写入文件
-- 跨会话需要的信息 → 状态文件
+- 重要的技术发现 → context.md 或 experience.md
+- 方案决策（含被否方案）→ context.md 决策段
+- 大量代码分析结论 → 提炼为要点写入 artifacts/
+- 跨会话需要的信息 → state.json + context.md

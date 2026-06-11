@@ -6,7 +6,7 @@
 {FULL_TASK_TEXT — 完整任务文本，不要从文件中读取}
 
 ## 上下文
-{ARCHITECTURE_CONTEXT — technical-design.md 中的相关段落}
+{ARCHITECTURE_CONTEXT — .ace/tasks/{changeName}/artifacts/technical-design.md 中的相关段落}
 
 ## 单元测试约定
 {TEST_CONVENTIONS — 从 .ace/project-profile.md §单元测试模式 提取}
@@ -37,7 +37,7 @@
 4. **报告**
 
 ## 需遵循的模式
-{PATTERN_GROUNDING_REPORT — 从 technical-design.md Patterns 节提取}
+{PATTERN_GROUNDING_REPORT — 从 .ace/tasks/{changeName}/artifacts/technical-design.md Patterns 节提取}
 
 遵循这些约定。如果没有对应约定，**明确报告"无现有约定"**。
 

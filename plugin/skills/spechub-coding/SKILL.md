@@ -35,10 +35,48 @@ description: |
 
 ---
 
+## 目录结构
+
+```
+$PROJECT_ROOT/
+├── .ace/
+│   ├── tasks/{changeName}/           # $TASK_DIR — ACE 状态与过程产物
+│   │   ├── state.json                # 状态机（type: "spec"）
+│   │   └── artifacts/                # ACE 过程产出物
+│   │       ├── comprehension.md
+│   │       ├── artifact-inventory.json
+│   │       ├── readiness-manifest.json
+│   │       ├── readiness-check.md
+│   │       ├── handoff-check.md
+│   │       ├── decisions.md
+│   │       └── analysis/             # COMPREHEND Agent 并行分析产出
+│   │           ├── d1-semantic.md
+│   │           ├── d2-verification.md
+│   │           ├── d3-architecture.md
+│   │           ├── d4-infra-gaps.md
+│   │           └── d5-simplification.md
+│   ├── tasks/.active-spechub         # 当前活跃需求指针（reqId）
+│   └── spechub/{reqId}/              # SpecHub 拉取的原始产物（脚本管理）
+│       ├── manifest.json
+│       └── artifacts/                # 原始平台产物
+├── openspec/changes/{changeName}/    # $CHANGE_DIR — OpenSpec 标准产物
+│   ├── proposal.md
+│   ├── design.md
+│   └── tasks.md
+```
+
+**变量约定**：
+- `$TASK_DIR` = `$PROJECT_ROOT/.ace/tasks/{changeName}`
+- `$CHANGE_DIR` = `$PROJECT_ROOT/openspec/changes/{changeName}`
+- `$SPECHUB_DIR` = `$PROJECT_ROOT/.ace/spechub/{reqId}`
+- `changeName` = slug（kebab-case 简写，如 `grade-retention-rules`）
+
+---
+
 ## 执行协议
 
 ```
-1. Read spechub/{reqId}/state.json → currentPhase
+1. Read $TASK_DIR/state.json → currentPhase
 2. Read references/phases/{currentPhase}.md → 按指令执行
 3. 执行完毕 → 更新 state.json
 4. 检查 Gate 条件 → 通过则推进到下一 Phase
@@ -127,17 +165,17 @@ description: |
 用户说"继续"时：
 
 ```
-1. Read spechub/.active → reqId（不存在 = 无活跃需求，提示重新开始）
-2. Read spechub/{reqId}/state.json → currentPhase + phases[].outputs
+1. Read .ace/tasks/.active-spechub → reqId（不存在 = 无活跃需求，提示重新开始）
+2. 从 state.json 中获取 changeName，Read $TASK_DIR/state.json → currentPhase + phases[].outputs
 3. 验证当前 Phase 的前置产出都存在：
-   | Phase      | 必须存在                                          |
-   |------------|--------------------------------------------------|
-   | comprehend | artifacts/, manifest.json                         |
-   | readiness  | comprehension.md, artifact-inventory.json, readiness-manifest.json |
-   | design     | readiness-check.md                                |
-   | implement  | openspec/changes/{slug}/design.md, tasks.md       |
-   | verify     | 代码变更（git diff 非空）                          |
-   | archive    | handoff-check.md                                  |
+   | Phase      | 必须存在                                                    |
+   |------------|-------------------------------------------------------------|
+   | comprehend | .ace/spechub/{reqId}/artifacts/, .ace/spechub/{reqId}/manifest.json   |
+   | readiness  | $TASK_DIR/artifacts/comprehension.md, artifact-inventory.json, readiness-manifest.json |
+   | design     | $TASK_DIR/artifacts/readiness-check.md                      |
+   | implement  | $CHANGE_DIR/design.md, $CHANGE_DIR/tasks.md                 |
+   | verify     | 代码变更（git diff 非空）                                    |
+   | archive    | $TASK_DIR/artifacts/handoff-check.md                        |
 4. 前置存在 → 继续当前 Phase；缺失 → 回退到产出该文件的 Phase
 5. Read references/phases/{currentPhase}.md → 执行
 ```

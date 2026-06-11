@@ -68,9 +68,9 @@ IF no → 继续
 ### 5. 读取前置内容 + 获取写作指令
 
 - 引用已加载的 `.ace/project-profile.md` §单元测试模式 → 框架栈 + Mock 模式 + 运行命令 + 典型示例
-- Read `technical-design.md` → 完整设计方案
-- Read `specs/{domain}/spec.md` → 行为契约（每个 scenario = 一个测试用例）
-- 运行 `openspec instructions tasks --change {name} --json`
+- Read `$TASK_DIR/artifacts/technical-design.md` → 完整设计方案
+- Read `$CHANGE_DIR/specs/{domain}/spec.md` → 行为契约（每个 scenario = 一个测试用例）
+- 运行 `openspec instructions tasks --change {changeName} --json`
   → 获取 tasks artifact 的 template + instruction
 
 **关键**：生成 TDD 任务时，Mock 方式和测试框架必须遵循 profile 中记录的项目约定，不可自行选择其他框架。
@@ -127,12 +127,9 @@ AskUserQuestion(questions: [{
 ### 9. 更新状态 + 事件 `planned` → Phase 5
 
 ```
-Edit $CHANGE_DIR/.ace-state.json:
-  "phase": "apply",
-  "timestamps.apply_started": "{ISO时间}",
-  "plan": {
-    "tasks_file": "tasks.md",
-    "total_tasks": N,
-    "approved": true
-  }
+Edit $TASK_DIR/state.json:
+  "spec.phase": "apply",
+  "spec.timestamps.apply_started": "{ISO时间}",
+  "spec.approvals.plan": true,
+  "updated_at": "{ISO时间}"
 ```

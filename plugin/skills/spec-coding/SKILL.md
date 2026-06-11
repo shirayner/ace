@@ -163,21 +163,22 @@ ELSE:
 
 ```
 启动时（用户调用 /spec-coding 或说"继续"）：
-1. 运行 `openspec list --json`（获取活跃变更列表）
-2. 对每个变更检查 .ace-state.json 是否存在
-3. 有 spec-coding 管理的活跃变更 → 读 phase → 路由
-4. 多个活跃变更 → AskUserQuestion 选择
-5. 无活跃变更 → Phase 1 (understand)
+1. 检查 .ace/tasks/ 下是否有 type="spec" 的活跃任务
+   → Glob `.ace/tasks/*/state.json` → 逐个读取 → 筛选 type=="spec" && status!="completed"
+2. 有活跃 spec 任务 → 读 state.json 的 spec.phase → 路由到对应阶段
+3. 多个活跃 spec 任务 → AskUserQuestion 选择
+4. 无活跃 spec 任务 → Phase 1 (understand)
 
-降级路径（.ace-state.json 丢失但 change 存在）：
-  1. 运行 `openspec status --change {name} --json`
-  2. 从 artifact 完成状态推断当前 phase：
+降级路径（state.json 丢失但 openspec change 存在）：
+  1. 运行 `openspec list --json` 获取活跃变更列表
+  2. 运行 `openspec status --change {changeName} --json`
+  3. 从 artifact 完成状态推断当前 phase：
      proposal done + specs done + design done → phase = plan
      proposal done + specs done → phase = design
      proposal done → phase = propose（完成）或 design（开始）
      无 artifact → phase = understand
-  3. 重建 .ace-state.json
-  4. AskUserQuestion 确认推断是否正确
+  4. 重建 .ace/tasks/{changeName}/state.json
+  5. AskUserQuestion 确认推断是否正确
 ```
 
 ---
@@ -217,7 +218,7 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 | large    | ✅ + 分解 | ✅         | ✅      | ✅                 | ✅       | ✅      |
 
 **分级时机**：Phase 1 结束后、进入 Phase 2 前。
-**存储**：写入 `.ace-state.json` 的 `workflow` 字段。
+**存储**：写入 `state.json` 的 `spec.workflow` 字段。
 **降级路径**：执行中发现比预估复杂 → 升级 workflow 等级（不回退已完成阶段）。
 
 ---
@@ -253,37 +254,40 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 
 ---
 
-## 状态文件：`.ace-state.json`
+## 状态文件：`state.json`
 
 **完整模板**：见 `references/state-template.jsonc`
 
-**位置**：`$PROJECT_ROOT/openspec/changes/{name}/.ace-state.json`（与 `.openspec.yaml` 共存）
-**创建时机**：Phase 1 Step A 完成后（Step 7）
+**位置**：`$PROJECT_ROOT/.ace/tasks/{changeName}/state.json`
+**创建时机**：Phase 1 Step A 完成后（确定 changeName 时）
 **更新时机**：每个阶段转换时 + 阶段内关键状态变更时
 
-**为什么放在 openspec/changes/ 下**（而非 .ace/ 目录）：
+**为什么放在 .ace/tasks/ 下**（而非 openspec/changes/）：
 
-- `openspec archive` 会整体移动目录 → 状态文件自动归档
-- 恢复时只需扫描 `openspec/changes/` 一个位置
+- ACE 工作流状态属于 ACE 管理范畴，与 OpenSpec CLI 的产物状态解耦
+- `.ace/tasks/` 统一所有任务类型，通过 `type: "spec"` 区分
+- 恢复时扫描 `.ace/tasks/` 即可发现所有任务（无论 spec 还是 goal）
+
+**与 openspec/ 的关联**：通过 `state.json` 中的 `spec.openspec_change` 字段指向 `openspec/changes/{changeName}/`。
 
 **字段分层**：
 
 | 层级    | 字段路径                                                                                  | 写入时机                      |
 | ------- | ----------------------------------------------------------------------------------------- | ----------------------------- |
-| 基础    | change_name, created_at, workflow                                                         | Phase 1 Step 7 创建时         |
-| 阶段    | phase                                                                                     | 每次阶段转换                  |
-| 时间    | timestamps.{phase}_started, timestamps.completed_at                                       | 进入该阶段时 / 归档完成时     |
-| Phase 1 | understand.scope_assessment, understand.aligned, understand.issues_file                   | Phase 1 完成时                |
-| Phase 2 | propose.proposal, propose.delta_specs                                                     | Phase 2 完成时                |
-| Phase 3 | design.design_doc, design.technical_design, design.issues_file, design.approved           | Phase 3 完成时                |
-| Phase 4 | plan.tasks_file, plan.total_tasks, plan.approved                                          | Phase 4 完成时                |
-| Phase 5 | apply.mode, apply.isolation, apply.branch_name, apply.completed_tasks, apply.current_task | Phase 5 进入时 + 每任务完成时 |
-| Phase 6 | archive.archived, archive.experience_extracted                                            | Phase 6 完成时                |
+| 基础    | name, type("spec"), status, created_at                                                    | Phase 1 创建时                |
+| 阶段    | spec.phase                                                                                | 每次阶段转换                  |
+| 时间    | spec.timestamps.{phase}_started                                                           | 进入该阶段时                  |
+| Phase 1 | spec.scope_assessment, spec.aligned                                                       | Phase 1 完成时                |
+| Phase 2 | spec.openspec_change                                                                      | Phase 2 创建 change 后        |
+| Phase 3 | spec.approvals.design                                                                     | Phase 3 审批后                |
+| Phase 4 | spec.approvals.plan, tasks (数组)                                                         | Phase 4 完成时                |
+| Phase 5 | spec.apply.mode, spec.apply.branch_name, tasks[].status                                   | Phase 5 进入时 + 每任务完成时 |
+| Phase 6 | status → "completed"                                                                      | Phase 6 完成时                |
 
 **更新规则**：
 
-- 阶段转换时更新 `phase` + `phase_started_at`
-- Phase 5 每完成一个任务更新 `completed_tasks` + `current_task`
+- 阶段转换时更新 `spec.phase` + 对应 timestamp
+- Phase 5 每完成一个任务更新 tasks 数组中对应项的 status
 - 只追加/更新字段，不删除已有字段
 
 ---
@@ -293,14 +297,14 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 | 阶段        | CLI 命令                                                  | 用途                 |
 | ----------- | --------------------------------------------------------- | -------------------- |
 | 启动/恢复   | `openspec list --json`                                  | 检测活跃变更         |
-| Phase 2     | `openspec new change {name}`                            | 创建 change 目录结构 |
-| Phase 2     | `openspec instructions proposal --change {name} --json` | 获取写作指令         |
-| Phase 2     | `openspec instructions specs --change {name} --json`    | 获取 spec 写作指令   |
+| Phase 2     | `openspec new change {changeName}`                            | 创建 change 目录结构 |
+| Phase 2     | `openspec instructions proposal --change {changeName} --json` | 获取写作指令         |
+| Phase 2     | `openspec instructions specs --change {changeName} --json`    | 获取 spec 写作指令   |
 | Phase 2/3/4 | `openspec validate --json`                              | 验证 artifact 格式   |
-| Phase 3     | `openspec instructions design --change {name} --json`   | 获取 design 指令     |
-| Phase 4     | `openspec instructions tasks --change {name} --json`    | 获取 tasks 指令      |
-| Phase 5     | `openspec status --change {name} --json`                | 查看工件图状态       |
-| Phase 6     | `openspec archive {name} --yes`                         | 归档合并             |
+| Phase 3     | `openspec instructions design --change {changeName} --json`   | 获取 design 指令     |
+| Phase 4     | `openspec instructions tasks --change {changeName} --json`    | 获取 tasks 指令      |
+| Phase 5     | `openspec status --change {changeName} --json`                | 查看工件图状态       |
+| Phase 6     | `openspec archive {changeName} --yes`                         | 归档合并             |
 
 ---
 
@@ -309,31 +313,50 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 ```
 $PROJECT_ROOT/
 ├── .ace/
-│   │── project-profile.md
-│   ├── experience.md                     # 项目经验库（spec-coding 维护）
-│   ├── config.yaml                       # ACE 框架配置
-│   └── changes/{name}/                   # spec-coding 与 requirement-analysis 共享
-│       ├── prd.md                        # 来自 requirement-analysis（如有）
-│       ├── requirement-anchors-analysis.md  # 来自 requirement-analysis（如有）
-│       └── issues/
-│           ├── requirement-issues.md     # 业务澄清 + 技术澄清
-│           └── design-issues.md          # 设计决策记录（spec-coding）
+│   ├── project-profile.md                  # 项目技术画像
+│   ├── experience.md                       # 项目经验库
+│   ├── config.yaml                         # ACE 框架配置
+│   ├── wiki/                               # 项目知识库
+│   └── tasks/{changeName}/                 # spec 任务工作区
+│       ├── state.json                      # 工作流状态 (type: "spec")
+│       ├── context.md                      # 决策记录 + 中间结论
+│       └── artifacts/                      # ACE 过程产物
+│           ├── technical-design.md         # 完整技术设计
+│           ├── prd.md                      # 需求文档 (来自 requirement-analysis)
+│           ├── requirement-anchors-analysis.md
+│           └── issues/                     # 问题追踪
+│               ├── requirement-issues.md   # 业务/技术澄清
+│               └── design-issues.md        # 设计决策记录
 │
 ├── openspec/
-│   ├── specs/{domain}/spec.md            # 源代码真理（OpenSpec 维护）
-│   ├── changes/{change-name}/            # 由 `openspec new change` 创建
-│   │   ├── .openspec.yaml                # OpenSpec 管理（工件图状态）
-│   │   ├── .ace-state.json               # spec-coding 管理（工作流状态）
-│   │   ├── proposal.md
-│   │   ├── design.md                     # 精简决策记录（OpenSpec validate）
-│   │   ├── technical-design.md           # 完整设计参考（spec-coding 私有）
-│   │   ├── tasks.md
-│   │   ├── specs/{domain}/spec.md        # Delta specs
-│   │   └── notes.md
-│   ├── changes/archive/                  # 已完成（openspec archive 移动至此）
-│   └── config.yaml                       # OpenSpec 项目配置
+│   ├── specs/{domain}/spec.md              # 源代码真理（OpenSpec 维护）
+│   ├── changes/{changeName}/               # 由 `openspec new change` 创建
+│   │   ├── .openspec.yaml                  # OpenSpec 管理（工件图状态）
+│   │   ├── proposal.md                     # 提案
+│   │   ├── design.md                       # 精简设计（OpenSpec validate）
+│   │   ├── tasks.md                        # 任务规划
+│   │   ├── notes.md                        # 归档复盘
+│   │   └── specs/{domain}/spec.md          # Delta specs
+│   ├── changes/archive/                    # 已完成（openspec archive 移动至此）
+│   └── config.yaml                         # OpenSpec 项目配置
 └── ...
 ```
+
+### 产物归属边界
+
+| 产物 | 位置 | 管理者 |
+|------|------|--------|
+| state.json | `.ace/tasks/{changeName}/` | ACE (spec-coding skill) |
+| context.md | `.ace/tasks/{changeName}/` | ACE (spec-coding skill) |
+| technical-design.md | `.ace/tasks/{changeName}/artifacts/` | ACE (spec-coding skill) |
+| issues/ | `.ace/tasks/{changeName}/artifacts/` | ACE (spec-coding skill) |
+| prd.md, anchors-analysis | `.ace/tasks/{changeName}/artifacts/` | ACE (requirement-analysis) |
+| proposal.md | `openspec/changes/{changeName}/` | OpenSpec CLI |
+| design.md | `openspec/changes/{changeName}/` | OpenSpec CLI |
+| tasks.md | `openspec/changes/{changeName}/` | OpenSpec CLI |
+| notes.md | `openspec/changes/{changeName}/` | OpenSpec CLI |
+| specs/ | `openspec/changes/{changeName}/` | OpenSpec CLI |
+| .openspec.yaml | `openspec/changes/{changeName}/` | OpenSpec CLI |
 
 ---
 

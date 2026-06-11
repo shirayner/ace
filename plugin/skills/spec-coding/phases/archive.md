@@ -10,8 +10,8 @@
 
 ### 1. 复盘
 
-- 对照 technical-design.md 检查偏差
-- 写入 notes.md
+- 对照 `$TASK_DIR/artifacts/technical-design.md` 检查偏差
+- 写入 `$CHANGE_DIR/notes.md`
 
 ### 2. 经验提取
 
@@ -23,7 +23,7 @@
 
 格式：
 ```
-E{N}: {描述} | 来源: {change-name} | 日期: {date}
+E{N}: {描述} | 来源: {changeName} | 日期: {date}
 | 详情: {2-3 句} | 适用: {场景}
 ```
 
@@ -43,34 +43,32 @@ openspec validate --json
 
 ```
 IF config.auto_archive == true:
-  → 直接执行 `openspec archive {change-name} --yes`
+  → 直接执行 `openspec archive {changeName} --yes`
 ELSE:
   → 先 markdown 展示即将归档的内容摘要
   → AskUserQuestion 审批确认后再执行
 ```
 
 ```bash
-openspec archive {change-name} --yes
+openspec archive {changeName} --yes
 ```
 
 OpenSpec 自动执行：
 - Delta spec 合并入 `openspec/specs/`（RENAMED→REMOVED→MODIFIED→ADDED 顺序）
 - 保留原始需求排序
-- 目录移动：`changes/{name}/` → `changes/archive/YYYY-MM-DD-{name}/`
+- 目录移动：`changes/{changeName}/` → `changes/archive/YYYY-MM-DD-{changeName}/`
 - 更新 `.openspec.yaml`: `archived: true`
 
 如归档失败 → 读取错误 → 尝试修复 → 重试。
 
-### 5. 更新 .ace-state.json
+### 5. 更新 state.json
 
 ```
-Edit $CHANGE_DIR/.ace-state.json:
-  "phase": "archive",
-  "timestamps.completed_at": "{ISO时间}",
-  "archive": {
-    "archived": true,
-    "experience_extracted": true
-  }
+Edit $TASK_DIR/state.json:
+  "status": "completed",
+  "spec.phase": "archive",
+  "spec.timestamps.archive_started": "{ISO时间}",
+  "updated_at": "{ISO时间}"
 ```
 
 ### 6. 分支处理（配置驱动）
@@ -78,7 +76,7 @@ Edit $CHANGE_DIR/.ace-state.json:
 ```
 IF config.auto_push == true:
   → git add -A
-  → git commit -m "feat(spec): {change-name} 描述本次改动"
+  → git commit -m "feat(spec): {changeName} 描述本次改动"
   → git push -u origin {branch_name}
   → 无需用户确认
 ELSE:

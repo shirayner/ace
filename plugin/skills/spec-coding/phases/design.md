@@ -89,7 +89,7 @@ L4 接口分析：Grep 调用方/被调用方 → 约束清单
 
 ### 7. 落地设计决策文档 + 澄清循环
 
-#### 7a. 写入 .ace/changes/{name}/issues/design-issues.md（先落文档）
+#### 7a. 写入 $TASK_DIR/artifacts/issues/design-issues.md（先落文档）
 
 将所有"需澄清"级决策写入文档：
 
@@ -173,7 +173,7 @@ AskUserQuestion(questions: [
 #### 文档 A: OpenSpec design.md（精简决策记录）
 
 ```bash
-openspec instructions design --change {name} --json
+openspec instructions design --change {changeName} --json
 ```
 
 → 获取 template + instruction + context + rules
@@ -182,7 +182,9 @@ openspec instructions design --change {name} --json
 
 #### 文档 B: technical-design.md（完整设计参考）
 
-spec-coding 增强产物，写入 change 目录但不由 OpenSpec 管理：
+spec-coding 增强产物，写入 ACE 任务目录：
+
+写入路径：`$TASK_DIR/artifacts/technical-design.md`
 
 ```markdown
 # {Change} Technical Design
@@ -201,7 +203,7 @@ spec-coding 增强产物，写入 change 目录但不由 OpenSpec 管理：
 | 文档 | 管理者 | 用途 | 传递给 |
 |------|--------|------|--------|
 | `design.md` | OpenSpec CLI | DAG 依赖满足 + 决策存档 | tasks instructions |
-| `technical-design.md` | spec-coding | 完整设计参考 + Pattern Report | implementer prompt |
+| `technical-design.md` | spec-coding (.ace/tasks/) | 完整设计参考 + Pattern Report | implementer prompt |
 
 ### 11. Spec 自审查（对 technical-design.md 执行 5 项检查）
 
@@ -235,7 +237,7 @@ spec-coding 增强产物，写入 change 目录但不由 OpenSpec 管理：
 
 **影响范围**：{N} 个文件（详见 technical-design.md §Component Design）
 
-📄 完整设计：openspec/changes/{name}/technical-design.md
+📄 完整设计：.ace/tasks/{changeName}/artifacts/technical-design.md
 ```
 
 <HARD-GATE>
@@ -263,20 +265,18 @@ AskUserQuestion(questions: [{
 - Other（用户指出偏差）→ 修正认知 → 更新 technical-design.md → 重新审批
 - 拒绝 → 回退到 Step 1 重新探索设计
 
-### 14. 写入 .ace/changes/{name}/issues/design-issues.md（如有遗留）
+### 14. 写入 design-issues.md（如有遗留）
+
+路径：`$TASK_DIR/artifacts/issues/design-issues.md`
 
 ### 15. 更新状态 + 事件 `designed` → Phase 4
 
 ```
-Edit $CHANGE_DIR/.ace-state.json:
-  "phase": "plan",
-  "timestamps.plan_started": "{ISO时间}",
-  "design": {
-    "design_doc": "design.md",
-    "technical_design": "technical-design.md",
-    "issues_file": "issues/design-issues.md",
-    "approved": true
-  }
+Edit $TASK_DIR/state.json:
+  "spec.phase": "plan",
+  "spec.timestamps.plan_started": "{ISO时间}",
+  "spec.approvals.design": true,
+  "updated_at": "{ISO时间}"
 ```
 
 ---

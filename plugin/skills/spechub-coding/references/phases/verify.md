@@ -11,8 +11,8 @@
 
 ## 产出
 - 全量编译/测试通过
-- `spechub/{reqId}/handoff-check.md`
-- state.json 更新
+- `$TASK_DIR/artifacts/handoff-check.md`
+- `$TASK_DIR/state.json` 更新
 
 ---
 
@@ -59,7 +59,7 @@ git status
 
 ### 5. 生成 Handoff Check
 
-Write `spechub/{reqId}/handoff-check.md`：
+Write `$TASK_DIR/artifacts/handoff-check.md`：
 ```markdown
 # Handoff Check — {title}
 
@@ -140,7 +140,7 @@ else:
 
 ### 归档信息
 - 分支: feature/spechub-{reqId}-{slug}
-- OpenSpec: 归档到 openspec/changes/{slug}/
+- OpenSpec: 归档到 $CHANGE_DIR/
 - SpecHub: 偏离上报（{M} 项 decisions）
 ```
 

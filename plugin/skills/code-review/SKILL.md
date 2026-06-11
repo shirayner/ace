@@ -63,7 +63,7 @@ Bug/坏味道速查：Read `references/code-smells.md`
 Read references → 按文件分析 → 合并输出报告
 
 ### 深度（>500 行 diff / 架构级变更）
-创建 `.tasks/review-{slug}/state.md` → 按模块分批审查
+创建 `.ace/tasks/review-{slug}/state.json` → 按模块分批审查
 可并行：Read `../../shared/parallel-protocol.md`，每个 Agent 审查一个模块
 
 ---
@@ -92,7 +92,7 @@ Read references → 按文件分析 → 合并输出报告
 [Positive] file:line — 值得肯定的点
 ```
 
-深度审查保存到：`.tasks/review-{slug}/code-review-report.md`
+深度审查保存到：`.ace/tasks/review-{slug}/artifacts/code-review-report.md`
 
 ---
 

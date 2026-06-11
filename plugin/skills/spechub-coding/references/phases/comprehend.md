@@ -8,14 +8,14 @@
 用户最终看到的 comprehension.md 是**修正后**的版本，不是"原始产物声明 + 附注冲突"。
 
 ## 输入
-- `spechub/{reqId}/artifacts/` — 原始产物
+- `.ace/spechub/{reqId}/artifacts/` — 原始产物
 - `.ace/project-profile.md` — 项目技术画像
 
 ## 产出（全部 MUST-WRITE）
-- `spechub/{reqId}/comprehension.md` — **修正后**的统一理解
-- `spechub/{reqId}/artifact-inventory.json`
-- `spechub/{reqId}/readiness-manifest.json`
-- state.json 更新
+- `$TASK_DIR/artifacts/comprehension.md` — **修正后**的统一理解
+- `$TASK_DIR/artifacts/artifact-inventory.json`
+- `$TASK_DIR/artifacts/readiness-manifest.json`
+- `$TASK_DIR/state.json` 更新
 
 ---
 
@@ -49,11 +49,11 @@
 ```
 
 **各维度 outputFile 路径**：
-- D1 → `spechub/{reqId}/analysis/d1-semantic.md`
-- D2 → `spechub/{reqId}/analysis/d2-verification.md`
-- D3 → `spechub/{reqId}/analysis/d3-architecture.md`
-- D4 → `spechub/{reqId}/analysis/d4-infra-gaps.md`
-- D5 → `spechub/{reqId}/analysis/d5-simplification.md`
+- D1 → `$TASK_DIR/artifacts/analysis/d1-semantic.md`
+- D2 → `$TASK_DIR/artifacts/analysis/d2-verification.md`
+- D3 → `$TASK_DIR/artifacts/analysis/d3-architecture.md`
+- D4 → `$TASK_DIR/artifacts/analysis/d4-infra-gaps.md`
+- D5 → `$TASK_DIR/artifacts/analysis/d5-simplification.md`
 
 **D2 Agent 额外要求**：对每个 `should-extend` 或 `conflict` 结论，必须同时输出：
 1. **代码插入点**信息（类名、方法名、行号、扩展方式）
@@ -86,7 +86,7 @@
 | [新增] 降级Service | should-extend | GradeChangeService.java:45 handleGradeChange() | IBUErrorCode handleGradeChange(MemberGrade, TriggerSource) | d2-verification.md §2 |
 | [新增] 规则配置 | confirm-new | — | — | d2-verification.md §3 |
 
-详情已写入 spechub/{reqId}/analysis/d2-verification.md
+详情已写入 $TASK_DIR/artifacts/analysis/d2-verification.md
 ```
 
 ---
@@ -368,7 +368,7 @@ G0 用户确认后 → `userApproved: true`
 
 ## 状态更新
 
-state.json：
+state.json（`$TASK_DIR/state.json`）：
 ```json
 {
   "currentPhase": "comprehend",

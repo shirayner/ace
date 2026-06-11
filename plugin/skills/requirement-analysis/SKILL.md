@@ -74,22 +74,50 @@ Phase B: 代码锚点分析 (自动衔接)
 | 对话中的自然语言描述 | 直接提取需求文本 |
 | 以上都没有 | AskUserQuestion 反问"请提供需求文档路径/URL/或直接描述需求" |
 
-### 确定需求名
+### 确定需求名（changeName）
 
 - LLM 根据需求内容生成 kebab-case 短名称（≤30 字符，如 `blacklist-filter`、`team-convention-init`）
 - AskUserQuestion 回显确认：`header: "需求名"`，推荐选项为生成的名称，用户可修改
 
-### 创建目录
+### 确定任务目录
+
+**被 spec-coding 调用时**：使用调用方传入的任务目录（`.ace/tasks/{changeName}/artifacts/`）。
+
+**独立调用时**：创建新任务目录：
 
 ```
-.ace/changes/{{需求名}}/
-└── issues/
+.ace/tasks/{{changeName}}/
+├── state.json
+└── artifacts/
+    └── issues/
 ```
 
-产物路径：
-- `.ace/changes/{{需求名}}/prd.md`
-- `.ace/changes/{{需求名}}/requirement-anchors-analysis.md`
-- `.ace/changes/{{需求名}}/issues/requirement-issues.md`
+创建 `.ace/tasks/{{changeName}}/state.json`：
+
+```json
+{
+  "name": "{{changeName}}",
+  "type": "analysis",
+  "status": "in-progress",
+  "created_at": "{{ISO时间戳}}",
+  "updated_at": "{{ISO时间戳}}",
+  "completion_criteria": [
+    "PRD 生成完成",
+    "锚点分析完成"
+  ],
+  "tasks": [],
+  "analysis": {
+    "skill": "requirement-analysis",
+    "scope": "{{需求范围}}"
+  }
+}
+```
+
+### 产物路径
+
+- `.ace/tasks/{{changeName}}/artifacts/prd.md`
+- `.ace/tasks/{{changeName}}/artifacts/requirement-anchors-analysis.md`
+- `.ace/tasks/{{changeName}}/artifacts/issues/requirement-issues.md`
 
 ---
 
@@ -154,7 +182,7 @@ LOOP:
 
 ### 写入澄清产物
 
-澄清完成后，写入 `.ace/changes/{{需求名}}/issues/requirement-issues.md`。
+澄清完成后，写入 `.ace/tasks/{{changeName}}/artifacts/issues/requirement-issues.md`。
 
 模板参见 `templates/requirement-issues.md`。
 
@@ -217,7 +245,7 @@ AskUserQuestion（审批模式）：
 
 ## A.6 写入 prd.md
 
-按 `templates/prd.md` 格式写入 `.ace/changes/{{需求名}}/prd.md`。
+按 `templates/prd.md` 格式写入 `.ace/tasks/{{changeName}}/artifacts/prd.md`。
 
 **自动衔接 Phase B**，无需用户再次触发。
 
@@ -229,9 +257,9 @@ PRD 用户故事 → wiki 漏斗 → 缺口分析 → 代码确认 → 变更分
 
 ## B.1 加载 PRD
 
-1. 读 `.ace/changes/{{需求名}}/prd.md`
+1. 读 `.ace/tasks/{{changeName}}/artifacts/prd.md`
 2. 提取所有用户故事：标题、验收条件、业务规则
-3. 读 `issues/requirement-issues.md`（如有），复用已有澄清结论
+3. 读 `artifacts/issues/requirement-issues.md`（如有），复用已有澄清结论
 4. 业务层面的歧义已在 Phase A 解决，本阶段只关注技术实现疑点
 
 ---
@@ -357,7 +385,7 @@ PRD 用户故事 → wiki 漏斗 → 缺口分析 → 代码确认 → 变更分
 **目标**：写入产物文件 + 校验完整性。
 
 1. 按 `templates/requirement-anchors-analysis.md` 格式组装最终产物
-2. 写入 `.ace/changes/{{需求名}}/requirement-anchors-analysis.md`
+2. 写入 `.ace/tasks/{{changeName}}/artifacts/requirement-anchors-analysis.md`
 3. 校验：
    - frontmatter 必填字段：requirement、source、generated_at、wiki_available、total_anchors
    - 锚点总览中锚点数 == 锚点变更分析章节数
@@ -369,15 +397,17 @@ PRD 用户故事 → wiki 漏斗 → 缺口分析 → 代码确认 → 变更分
 
 需求分析产物已就绪：
 
-- `.ace/changes/{{需求名}}/prd.md`
-- `.ace/changes/{{需求名}}/requirement-anchors-analysis.md`
-- `.ace/changes/{{需求名}}/issues/requirement-issues.md`
+- `.ace/tasks/{{changeName}}/artifacts/prd.md`
+- `.ace/tasks/{{changeName}}/artifacts/requirement-anchors-analysis.md`
+- `.ace/tasks/{{changeName}}/artifacts/issues/requirement-issues.md`
 
-建议使用 `spec-coding` Skill 进入编码阶段。回复 `spec-coding {{需求名}}` 即可，spec-coding 将：
+独立调用时，更新 `.ace/tasks/{{changeName}}/state.json` 中 `status` 为 `"completed"`。
+
+建议使用 `spec-coding` Skill 进入编码阶段。回复 `spec-coding {{changeName}}` 即可，spec-coding 将：
 
 1. 读取 prd.md 作为需求输入（跳过业务澄清）
 2. 读取 issues/ 继承已有澄清结论
-3. 以相同需求名创建 openspec change（`openspec new change {{需求名}}`）
+3. 以相同 changeName 继续编码任务
 
 ---
 

@@ -4,19 +4,19 @@
 验证所需中间件/服务是否已就位。**本 Phase 是机械执行**——所有"判断"已在 COMPREHEND 阶段完成。
 
 ## 输入
-- `spechub/{reqId}/readiness-manifest.json` — 动态校验实例（COMPREHEND 产出）
+- `$TASK_DIR/artifacts/readiness-manifest.json` — 动态校验实例（COMPREHEND 产出）
 - `references/readiness-schema.json` — 静态校验规则定义
 
 ## 产出
-- `spechub/{reqId}/readiness-check.md`
-- state.json 更新
+- `$TASK_DIR/artifacts/readiness-check.md`
+- `$TASK_DIR/state.json` 更新
 
 ---
 
 ## 执行步骤
 
 ### 1. 读取 Manifest
-Read `spechub/{reqId}/readiness-manifest.json` → `checks[]`
+Read `$TASK_DIR/artifacts/readiness-manifest.json` → `checks[]`
 
 ### 2. 参数自动推断 + 补全
 
@@ -145,7 +145,7 @@ SOA 类型（soa_new_interface / soa_dependency）的 check：
 
 ### 6. 产出
 
-Write `spechub/{reqId}/readiness-check.md`：
+Write `$TASK_DIR/artifacts/readiness-check.md`：
 ```markdown
 # Infrastructure Readiness Check — {title}
 
@@ -184,7 +184,7 @@ SOA 契约/JAR 不存在意味着后续编译必然失败，**不可跳过**：
 
 ### 8. 更新状态
 
-state.json：
+state.json（`$TASK_DIR/state.json`）：
 ```json
 {
   "currentPhase": "design",

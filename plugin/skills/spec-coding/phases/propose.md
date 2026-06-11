@@ -3,9 +3,9 @@
 **目的**：基于已确定的需求，按 OpenSpec CLI 写作指令生成提案和 delta spec。
 
 **前提**：Phase 1 已完成以下操作：
-- `openspec new change {name}` 已执行（目录已存在）
-- `.ace-state.json` 已创建（phase=propose）
-- `issues/requirement-issues.md` 已持久化
+- `openspec new change {changeName}` 已执行（目录已存在）
+- `.ace/tasks/{changeName}/state.json` 已创建（spec.phase=propose）
+- `artifacts/issues/requirement-issues.md` 已持久化
 
 ---
 
@@ -14,14 +14,15 @@
 ### 1. 确认工作目录
 
 ```
-$CHANGE_DIR = $PROJECT_ROOT/openspec/changes/{change_name}/
-验证：$CHANGE_DIR/.ace-state.json 存在且 phase == "propose"
+$TASK_DIR = $PROJECT_ROOT/.ace/tasks/{changeName}/
+$CHANGE_DIR = $PROJECT_ROOT/openspec/changes/{changeName}/
+验证：$TASK_DIR/state.json 存在且 spec.phase == "propose"
 ```
 
 ### 2. 获取 proposal 写作指令
 
 ```bash
-openspec instructions proposal --change {name} --json
+openspec instructions proposal --change {changeName} --json
 ```
 
 返回四层分离的富化指令：
@@ -35,7 +36,7 @@ openspec instructions proposal --change {name} --json
 ### 3. 获取 delta spec 写作指令
 
 ```bash
-openspec instructions specs --change {name} --json
+openspec instructions specs --change {changeName} --json
 ```
 
 返回同样四层分离的富化指令。
@@ -88,13 +89,10 @@ openspec validate --json
 ### 5. 更新状态文件
 
 ```
-Edit $CHANGE_DIR/.ace-state.json:
-  "phase": "design",
-  "timestamps.design_started": "{ISO时间}",
-  "propose": {
-    "proposal": "proposal.md",
-    "delta_specs": ["specs/{domain}/spec.md"]
-  }
+Edit $TASK_DIR/state.json:
+  "spec.phase": "design",
+  "spec.timestamps.design_started": "{ISO时间}",
+  "updated_at": "{ISO时间}"
 ```
 
 ### 6. 事件 `proposed` → Phase 3
@@ -103,9 +101,9 @@ Edit $CHANGE_DIR/.ace-state.json:
 
 ## 关键区分
 
-| 文件 | 管理者 | 职责 |
-|------|--------|------|
-| `.openspec.yaml` | OpenSpec CLI | 工件图状态、spec 版本 |
-| `.ace-state.json` | spec-coding | 工作流阶段、执行模式、恢复点 |
+| 文件 | 位置 | 管理者 | 职责 |
+|------|------|--------|------|
+| `.openspec.yaml` | `openspec/changes/{changeName}/` | OpenSpec CLI | 工件图状态、spec 版本 |
+| `state.json` | `.ace/tasks/{changeName}/` | spec-coding | 工作流阶段、执行模式、恢复点 |
 
-两文件共存于同一 change 目录，各自独立演进。
+两文件位于不同目录，各自独立演进。通过 `state.json` 的 `spec.openspec_change` 字段关联。
