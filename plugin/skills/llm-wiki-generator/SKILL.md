@@ -2,8 +2,8 @@
 name: llm-wiki-generator
 description: 为代码仓库生成 LLM Wiki 知识库,供需求评审/技术方案 Agent 渐进式加载。
   支持后端(api/mq/job)和前端(page/component)锚点。
+  意图识别驱动：指定扫描范围则定向扫描，指定手动则写骨架停止，默认全自动扫描并构建。
   当用户说"生成项目 Wiki"、"更新项目知识库"、"构建 LLM 文档"、"为这个仓库做 Wiki"时触发。
-  锚点由项目根目录 .ace/wiki/_meta.yml 配置驱动,通过对话调整状态。
 ---
 
 # LLM Wiki Generator
@@ -16,50 +16,63 @@ description: 为代码仓库生成 LLM Wiki 知识库,供需求评审/技术方�
 - "生成 Wiki" / "构建 Wiki" / "创建 Wiki" / "初始化 Wiki"
 - "更新 Wiki" / "刷新 Wiki" / "重建 Wiki"
 - "生成项目知识库" / "为这个仓库做 LLM 文档"
-- "自动扫描锚点" / "扫描锚点" (在已有 _meta.yml 但未配置时)
-- "开始构建" / "继续构建" (在配置就绪后)
+- "扫描锚点" / "扫描锚点" / "开始构建" / "继续构建"
 
-## 工作流:三分支锚点
+## 工作流:意图识别
 
-第一步:检查项目根目录 `.ace/wiki/_meta.yml` 是否存在且有内容。
+第一步:LLM 从用户消息中提取意图信号，选择对应路径。
 
-### 分支 A:首次初始化(.ace/wiki/_meta.yml 不存在)
+### 意图识别
 
-流程:
-1. 创建 `.ace/wiki/` 目录
-2. 读取 `~/.claude/skills/llm-wiki-generator/templates/_meta.yml`
-3. 写入 `.ace/wiki/_meta.yml`(空骨架,含注释和示例)
-4. 展示:
+| 意图信号 | 关键词/模式 | 路径 |
+|---------|-----------|------|
+| 手动配置 | "手动"、"自己编辑"、"我来配" | 写骨架 → 停止 |
+| 指定扫描范围 | "扫描 X 包"、"所有 @Consumer"、"src/pages 下"等 | 自然语言解析 → 扫描 → 构建 |
+| 默认无偏好 | "生成 Wiki"、"构建知识库"、无范围关键词 | 自动扫描 → 构建 |
+| 直接构建 | "开始构建"、_meta.yml 已有 anchors 且无新范围 | 解析 → 构建 |
 
+### 路径 1:手动配置
+
+1. 检查 `.ace/wiki/_meta.yml` 是否存在
+   - **不存在** → 创建目录，读取模板 `_meta.yml`，写入骨架
+   - **存在** → 继续
+2. 输出提示:
 ```
-已初始化 .ace/wiki/_meta.yml。锚点配置为空,请选择:
+_meta.yml 已就绪。编辑 anchors 字段配置锚点后回复"开始构建"。
 
-1. 我来手动编辑 .ace/wiki/_meta.yml(参考文件内注释示例)
-2. 自动扫描全仓库(用内置规则识别所有锚点,写回 _meta.yml 后请你确认)
-3. 用自然语言告诉我扫描范围
-   - 例如:"扫 application 包下所有 *Application 类"
-   - 例如:"加上 listener 包的 @QmqConsumer"
-   - 可多轮追加,最后说"开始构建"
-
-配置完成后再次触发 Skill 或说"开始构建"。
+编辑器打开: .ace/wiki/_meta.yml
+参考文档: ~/.claude/skills/llm-wiki-generator/templates/_meta.yml
 ```
+3. **停止**
 
-5. **停止,不进行构建**
+### 路径 2:指定扫描范围
 
-### 分支 B:已初始化但 anchors 为空(或仅含注释)
+1. 从用户消息解析扫描范围（规则见"自然语言扫描范围"章节）
+2. 读取 `.ace/wiki/_meta.yml`，追加 selector 到 `anchors` 对应 type
+3. （如 _meta.yml 不存在则先创建骨架）
+4. 执行自动扫描（规则见 `rules/auto-scan.md`），合并去重
+5. 将扫描结果以精确名字符串列表写入 `_meta.yml`
+6. 输出摘要，**直接进入构建流水线**
 
-流程:
-1. 读取 `.ace/wiki/_meta.yml`
-2. 检查 `anchors` 字段是否为空
-3. 如果为空,展示与分支 A 相同的提示菜单
-4. **停止,不进行构建**
+### 路径 3:默认全自动
 
-### 分支 C:已配置,执行构建
+1. 检查 `.ace/wiki/_meta.yml`
+   - **不存在** → 创建目录，读取模板写入骨架，执行自动扫描 → 写入 → 进入构建
+   - **anchors 为空** → 执行自动扫描 → 写入 → 进入构建
+2. 输出摘要，**直接进入构建流水线**
 
-流程:
-1. 读取 `.ace/wiki/_meta.yml`
-2. 解析 `anchors` 字段(见"锚点解析"章节)
-3. 进入四阶段并行构建流水线(见"构建流水线"章节)
+### 路径 4:直接构建
+
+1. 读取 `.ace/wiki/_meta.yml`，解析 `anchors` 字段
+2. anchors 不为空 → 输出摘要，**直接进入构建流水线**
+3. anchors 为空 → 降级为路径 3（自动扫描 → 构建）
+
+### 摘要格式
+
+构建前输出:
+```
+扫描到 N 个锚点 (api:X mq:Y job:Z page:U component:V)，开始生成 Wiki...
+```
 
 ## 锚点解析
 
@@ -165,16 +178,8 @@ anchors:
    find src/ -path "<Pattern>" -name "*.java" | wc -l
    ```
 
-4. 回显:
-   ```
-   将追加到 _meta.yml.anchors.api:
-     { name: "*Application", in: "**/application/**" }
-   预估命中 12 个类。确认?(yes / no)
-   ```
-
-5. 用户确认后,读取 `.ace/wiki/_meta.yml`,在对应 `anchors.<type>` 下追加 selector。
-
-6. 输出"已写入。继续追加或回复'开始构建'。"
+4. 读取 `.ace/wiki/_meta.yml`,在对应 `anchors.<type>` 下追加 selector。
+5. 继续执行构建流水线（不等待用户确认）。
 
 ### 路径标准化
 
@@ -185,7 +190,7 @@ anchors:
 
 每次追加不覆盖已有条目。用户说"清空"/"重新开始"时才重置。
 
-## 构建流水线(分支 C)
+## 构建流水线
 
 解析 _meta.yml 获得锚点清单后,执行四阶段流水线:
 
@@ -201,18 +206,7 @@ Phase 1: 锚点发现(串行)
 1. 从 _meta.yml.anchors 解析所有规则(字符串/对象,glob/注解/路径)
 2. 对每条规则执行 grep/find,收集命中的类/文件
 3. 合并去重,产出最终清单
-4. 展示:
-
-```
-锚点清单:
-  api:  FlightFillPageComponentApplication, QueryMemberRightsV35Application, ... (共 12)
-  mq:   GradeChangeListener (共 1)
-  job:  CoinsExpireJob (共 1)
-
-共 14 个锚点。开始构建?
-```
-
-5. 等待用户确认"开始构建"。
+4. 输出摘要（格式见工作流章节），直接进入 Phase 2。
 
 ### Phase 2:锚点 Wiki 生成(并行)
 
@@ -335,21 +329,13 @@ Token 消耗:
 
 ## 自动扫描
 
-当用户选择"自动扫描全仓库"时:
+自动扫描（路径 2/3 触发，不等待用户确认）:
 
 1. 读取 `~/.claude/skills/llm-wiki-generator/rules/auto-scan.md`
 2. 按规则扫描项目
 3. 排除测试类、Mapper、RepositoryImpl、通用 UI 组件
 4. 结果以精确名字符串列表写入 `.ace/wiki/_meta.yml` 的 `anchors` 段
-5. 展示:
-   ```
-   扫描到:
-     api: 12 (FlightFillPageComponentApplication, QueryMemberRightsV35Application, ...)
-     mq:  2 (GradeChangeListener, ...)
-     job: 3 (CoinsExpireJob, ...)
-   确认无误后回复"开始构建",或编辑 .ace/wiki/_meta.yml 调整后再触发。
-   ```
-6. 不立即构建,等待用户确认
+5. 输出摘要，直接进入构建流水线（路径 2/3 已决定进入构建，此处不等待确认）
 
 ## 关键约束
 
@@ -360,10 +346,9 @@ Token 消耗:
 - **失败不阻塞**:单锚点失败不影响其他,最后汇总
 
 ### 行为约束
-- **永不静默写入**:任何对 `_meta.yml` 的修改先回显确认
-- **永不静默扫描**:扫描需用户明确选择,扫描结果先写回 _meta.yml 再构建
 - **构建总是全量**:不搞增量更新
-- **对话驱动**:状态在 _meta.yml 和用户消息中,不依赖命令行参数
+- **意图驱动**:从用户消息提取意图，自动选择路径
+- **摘要可见不可阻塞**:扫描/构建前输出摘要，但不等待确认
 
 ## 模板文件引用
 
@@ -371,7 +356,7 @@ Skill 使用以下模板文件,位置相对于 `~/.claude/skills/llm-wiki-genera
 
 | 文件 | 用途 | 何时读取 |
 |------|------|---------|
-| `templates/_meta.yml` | 项目元信息骨架 | 分支 A 初始化时 |
+| `templates/_meta.yml` | 项目元信息骨架 | 初始化 _meta.yml 时 |
 | `templates/INDEX.md` | 项目索引骨架 | Phase 3 生成 INDEX 时 |
 | `templates/SUMMARY.md` | 知识地图骨架 | Phase 3 生成 SUMMARY 时 |
 | `templates/api.md` | API 锚点 Wiki 模板 | Phase 2 生成 api 锚点时 |
@@ -379,7 +364,7 @@ Skill 使用以下模板文件,位置相对于 `~/.claude/skills/llm-wiki-genera
 | `templates/job.md` | Job 锚点 Wiki 模板 | Phase 2 生成 job 锚点时 |
 | `templates/page.md` | 页面锚点 Wiki 模板 | Phase 2 生成 page 锚点时 |
 | `templates/component.md` | 组件锚点 Wiki 模板 | Phase 2 生成 component 锚点时 |
-| `rules/auto-scan.md` | 自动扫描规则 | 用户选择自动扫描时 |
+| `rules/auto-scan.md` | 自动扫描规则 | 自动扫描时（路径 2/3） |
 
 ## Token 估算参考
 
