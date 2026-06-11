@@ -1,0 +1,36 @@
+.ace/wiki/anchors/api/list.md
+  s_17b09d4a3dc0d4::t_c2745923448f5e 61
+.ace/wiki/_meta.yml
+  s_17b09d4a3dc0d4::t_c2745923448f5e 1,8,22
+.ace/wiki/anchors/api/init.md
+  s_17b09d4a3dc0d4::t_c2745923448f5e 98
+plugin/skills/requirement-analysis/templates/requirement-anchors-analysis.md
+  s_17b09d4a3dc0d4::t_bdec6165a7a20b 19,23,25,27,64,66,69-70,101
+.ace/wiki/anchors/api/doctor.md
+  s_17b09d4a3dc0d4::t_c2745923448f5e 59
+plugin/skills/requirement-analysis/SKILL.md
+  s_17b09d4a3dc0d4::t_bdec6165a7a20b 10,241,249-250,252-253,255,261,265,269,271,277,282-286,290,294,303,306,308,310-312,314-317,323,325,327-329,332-333,335-336,340-342,351,363-364,374-375,405
+plugin/skills/llm-wiki-generator/SKILL.md
+  s_17b09d4a3dc0d4::t_34f270a083b8e7 49
+  s_17b09d4a3dc0d4::t_269b69967499ca 246,261,266,291,296,311
+.ace/wiki/anchors/api/spec.md
+  s_17b09d4a3dc0d4::t_c2745923448f5e 67,70,73,97
+.ace/wiki/anchors/api/uninstall.md
+  s_17b09d4a3dc0d4::t_c2745923448f5e 64
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.10-trip",
+  "base_commit_sha": "4c8c0147da1e51c36fea18bce43ae282f549b310",
+  "prompts": {},
+  "sessions": {
+    "s_17b09d4a3dc0d4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "0a367998-13be-4f1b-836b-dc699e243575",
+        "model": "deepseek-v4-pro"
+      },
+      "human_author": "chengzheng <chengzheng@trip.com>"
+    }
+  }
+}
