@@ -89,7 +89,9 @@
       "Bash(sed -i '' 's/entry frontmatter/anchor frontmatter/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
       "Bash(sed -i '' 's/→ entry/→ anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
       "Bash(sed -i '' 's/ entry（/ anchor（/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
-      "Bash(sed -i '' 's/全量 entry/全量 anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)"
+      "Bash(sed -i '' 's/全量 entry/全量 anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(rm -f \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/README.md\")",
+      "Bash(rm -rf \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/docs\")"
     ]
   }
 }
