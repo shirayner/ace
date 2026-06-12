@@ -144,6 +144,28 @@ description: |
    - 不存在 → 进入 Phase 2（全量生成模式）
 2. 确认项目根目录（通过 git rev-parse --show-toplevel）
 
+### Phase 2: 空目录检测（快速通道）
+
+在进入分析之前，先判断项目是否有可分析的代码：
+
+```
+检测条件（满足任意一条 = 空项目）：
+  - src/ 目录不存在
+  - src/main/java 下无 .java 文件（Glob src/main/java/**/*.java 返回空）
+  - 且不存在 package.json / build.gradle（即非 JS/Gradle 项目的备选入口）
+
+IF 空项目：
+  → 跳过 Phase 2 全部分析步骤
+  → 直接生成最小化 project-profile.md：
+     系统定位：（待补充）
+     架构分层：（暂无代码，待项目初始化后运行 /ace:init --refresh）
+     中间件使用：（暂无）
+     编码约定：（暂无）
+     入口点索引：（暂无）
+  → 进入 Phase 3 告知用户："项目目录为空，已生成空白画像骨架，后续有代码后运行 /ace:init --refresh 补全"
+  → 进入 Phase 4 写入文件
+```
+
 ### Phase 2: 自动推断
 
 **排除规则**：project-profile 只描述项目本身的技术特征，不包含以下内容：

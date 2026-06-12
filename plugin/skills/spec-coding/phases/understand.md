@@ -77,8 +77,9 @@ IF 触发 → `scope_assessment = "needs_decomposition"`
 ### 7. 确定 changeName + 创建工作目录
 
 <HARD-GATE>
-Step A 完成后、进入 Step B 之前，必须创建工作目录和状态文件。
-这是后续所有文件操作的基础。
+⛔ BLOCKING — 此步骤是 Step B 的前置条件，未完成本步骤禁止进入 Step B。
+执行顺序：Step A(1-6) → Step A-7（本步）→ Step B → Step C。
+"先澄清再建目录"= 顺序违反，不可接受。
 </HARD-GATE>
 
 ```
@@ -147,6 +148,11 @@ state.json 初始内容：
 ---
 
 ## Step B: 需求澄清（先解决信息缺口，确定需求）
+
+<HARD-GATE>
+⛔ 前置检查：进入 Step B 前，$TASK_DIR/state.json 必须已存在（Step A-7 已完成）。
+state.json 不存在 → 立即中止，返回执行 Step A-7，完成后再回到此处。
+</HARD-GATE>
 
 **配置驱动**：
 
