@@ -16,12 +16,14 @@
 ### 2. 经验提取
 
 触发条件（任一满足）：
+
 - 实施中遇到意外
 - 踩坑后找到更好方案
 - 反直觉行为
 - 可复用模式
 
 格式：
+
 ```
 E{N}: {描述} | 来源: {changeName} | 日期: {date}
 | 详情: {2-3 句} | 适用: {场景}
@@ -54,6 +56,7 @@ openspec archive {changeName} --yes
 ```
 
 OpenSpec 自动执行：
+
 - Delta spec 合并入 `openspec/specs/`（RENAMED→REMOVED→MODIFIED→ADDED 顺序）
 - 保留原始需求排序
 - 目录移动：`changes/{changeName}/` → `changes/archive/YYYY-MM-DD-{changeName}/`
@@ -88,8 +91,8 @@ AskUserQuestion(questions: [{
   header: "分支处理",
   question: "实施分支如何处理？",
   options: [
-    {label: "合并主分支 (推荐)", description: "squash merge 到主分支"},
-    {label: "创建 PR", description: "推送远端，创建 Pull Request"},
+    {label: "创建 PR(推荐)", description: "推送远端，创建 Pull Request"},
+    {label: "合并主分支 ", description: "squash merge 到主分支"},
     {label: "保持", description: "保留分支不做处理"}
   ]
 }])
@@ -99,12 +102,12 @@ AskUserQuestion(questions: [{
 
 ## 职责边界（Phase 6）
 
-| 职责 | 谁做 |
-|------|------|
-| 复盘偏差 | spec-coding |
-| 经验提取 | spec-coding |
-| 格式验证 | OpenSpec CLI |
+| 职责                     | 谁做                   |
+| ------------------------ | ---------------------- |
+| 复盘偏差                 | spec-coding            |
+| 经验提取                 | spec-coding            |
+| 格式验证                 | OpenSpec CLI           |
 | delta spec 合并入 specs/ | **OpenSpec CLI** |
-| 目录归档移动 | **OpenSpec CLI** |
-| 状态更新 | spec-coding |
-| 分支处理 | spec-coding |
+| 目录归档移动             | **OpenSpec CLI** |
+| 状态更新                 | spec-coding            |
+| 分支处理                 | spec-coding            |
