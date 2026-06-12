@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-06-12
+
+### Added
+- **spec-coding** skill：全生命周期规范驱动编码（6 Phase + 门禁系统：understand → propose → design → plan → apply → archive）
+- **spechub-coding** skill：基于 SpecHub 平台产物的本地编码工作流，与 SpecHub API 双向归档
+- **requirement-analysis** skill：需求分析流水线，从原始需求到 PRD + 澄清清单 + anchors 分析
+- **llm-wiki-generator** skill：为代码仓库生成 LLM 可消费的结构化知识库（anchors）
+- **llm-wiki-reader** skill：渐进式消费 wiki 知识库
+- **parallel-dispatch** skill：并行代理调度引擎，支持独立任务并行执行
+- **subagent-execute** skill：子代理驱动执行引擎，支持两阶段审查（规范合规 + 代码质量）
+- **init** skill（`/ace:init`）：项目技术画像初始化，生成 `.ace/project-profile.md`
+
+### Fixed
+- **spechub-coding**：前置检查阶段不再阻塞主流程——`project-profile.md` 不存在时以后台 Agent 并行初始化，PULL 与 init 并行执行，COMPREHEND 阶段才等待 profile 就绪
+- **spechub-workflow.py**：移除 `start` 命令中对 `project-profile.md` 的前置检查（该检查属于 COMPREHEND 阶段，不属于 PULL 阶段）
+
+### Removed
+- **`ace spec init`** 子命令及实现（`src/commands/spec.js`、`src/core/spec-installer.js`）
+- **`ace spec doctor`** 子命令
+- **`ace spec update`** 子命令
+- 项目级 spec 工作流现由 `openspec init` CLI + `/ace:spec-coding` skill 直接承载，不再需要独立命令
+
+### Changed
+- `ace init` 完成提示从 "Go to your project and run ace spec init" 改为引导使用 `/ace:spec-coding` 或 `/ace:spechub-coding`
+
+### Docs
+- **README.md**：重写 Skill 概览、快速开始、CLI 命令表（移除 spec 三命令）
+- **getting-started.md**：更新规范驱动编码前置说明，移除 `ace spec init` 依赖步骤
+
 ## [0.1.11] - 2026-05-26
 
 ### Changed
