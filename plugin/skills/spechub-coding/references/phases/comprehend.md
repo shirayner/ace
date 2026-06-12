@@ -21,6 +21,39 @@
 
 ## 执行步骤（3 阶段）
 
+### Step 0: 等待 project-profile.md 就绪
+
+**为什么在此处检查**：profile 是本 Phase 的直接输入（D2/D3/D4 Agent 都引用它），
+但 profile 初始化（ace:init）是在前置检查阶段以后台 Agent 启动的，不阻塞 PULL。
+PULL 通常需要网络调用（几秒~数十秒），COMPREHEND 开始时 init 大概率已完成。
+
+```
+IF $PROJECT_ROOT/.ace/project-profile.md 存在:
+  → Read 一次，记录到上下文（后续 Step A 各维度 Agent 直接引用，不重复 Read）
+  → 进入 Step A
+
+ELSE:
+  → 通知用户："project-profile.md 尚未生成，等待后台初始化完成（最多 3 分钟）..."
+  → 每 30 秒检查一次文件是否存在（Glob + 判断）
+  → 超时（3 分钟）后仍不存在：
+      AskUserQuestion(questions: [{
+        header: "初始化超时",
+        question: "后台 ace:init 超时未完成，如何处理？",
+        options: [
+          {label: "重新初始化", description: "重新运行 /ace:init，完成后继续"},
+          {label: "手动等待", description: "我去查看后台任务状态，完成后告知继续"},
+          {label: "跳过（风险）", description: "不使用 profile 继续，D2/D3/D4 分析质量会下降"}
+        ]
+      }])
+  → 用户选 "跳过" → 继续 Step A，各 Agent 提示中标注 "⚠️ 无 profile，依赖代码直接分析"
+```
+
+<HARD-GATE>
+不得跳过此步骤直接进入 Step A。
+profile 是 D4（中间件 Gap 识别）的关键输入——没有 profile 的中间件清单会导致 readiness-manifest.json 不完整，后续 READINESS 校验失效。
+</HARD-GATE>
+
+---
 ### Step A: 并行探索（发现原始事实）[MUST PARALLEL]
 
 **必须**以并行 Agent 执行以下 5 个维度：

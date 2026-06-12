@@ -1,7 +1,7 @@
 # ACE — AI Coding Environment
 
 <p align="center">
-  <b>一键配置专业级 Claude Code 开发环境</b>
+  <b>一键配置专业级 AI Coding 开发环境</b>
 </p>
 
 <p align="center">
@@ -15,10 +15,10 @@
 
 ## 什么是 ACE？
 
-ACE 是一个 **AI 编码环境**，为 Claude Code 提供 14 个专业 skill + 8 个共享认知协议 + 10 条编码规则，覆盖编码全生命周期：
+ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 14 个专业 skill + 8 个共享认知协议 + 10 条编码规则，覆盖编码全生命周期：
 
 - **认知基础设施** — 理解协议、对齐协议、验证铁律，确保 AI 做对事
-- **14 个专业 Skill** — 从需求理解到代码实现到复盘归档的完整能力
+- **14 个专业 Skill** — 从PRD撰写到需求理解到代码实现到复盘归档的完整能力
 - **规范驱动工作流** — 门禁系统确保每个决策经过对齐确认
 - **经验进化** — 项目级经验积累，跨会话持续成长
 
@@ -39,11 +39,11 @@ ACE 是一个 **AI 编码环境**，为 Claude Code 提供 14 个专业 skill + 
 
 ### 一、核心编码流水线
 
-| Skill          | 命令                    | 说明                                           |
-| -------------- | ----------------------- | ---------------------------------------------- |
-| auto-goal      | `/ace:auto-goal`      | 自主目标编排——开放式目标、学习需求、多步执行 |
-| spec-coding    | `/ace:spec-coding`    | 全生命周期规范驱动编码（6 Phase + 门禁系统）   |
-| spechub-coding | `/ace:spechub-coding` | 基于 SpecHub 平台产物的本地编码                |
+| Skill          | 命令                    | 说明                                                 |
+| -------------- | ----------------------- | ---------------------------------------------------- |
+| auto-goal      | `/ace:auto-goal`      | 自主目标编排——万能通用，设定定一个目标，AI努力完成 |
+| spec-coding    | `/ace:spec-coding`    | 全生命周期规范驱动编码（6 Phase + 门禁系统）         |
+| spechub-coding | `/ace:spechub-coding` | 基于 SpecHub 平台产物的本地编码                      |
 
 ### 二、质量保障
 
@@ -100,25 +100,23 @@ ACE 自动配置：全局规则、Skills 插件、CLAUDE.md 索引。
 
 ### 4. 开始使用
 
-**开放式目标/学习**：
+**开放式目标**：
 
 ```
-/ace:auto-goal
+/ace:auto-goal  描述你的目标
 ```
 
 **规范驱动开发**：
 
 ```
-/ace:spec-coding
+/ace:spec-coding  描述需求/或飞书需求链接/或文件
 ```
 
 SpecHub接力开发
 
 ```
-/ace:spechub-coding
+/ace:spechub-coding spechub需求ID
 ```
-
-
 
 ---
 

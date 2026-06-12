@@ -16,8 +16,47 @@ description: |
 
 ## 前置检查
 
-1. `openspec/` 目录存在 — 否则提示 `openspec init`
-2. `.ace/project-profile.md` 存在 — 否则**直接调用 `/ace:init` 生成**，完成后继续流程（不终止）
+**项目根目录确定**：运行 `pwd` 获取当前工作目录作为 `$PROJECT_ROOT`。
+
+**Step 1 — openspec/ 目录**：
+
+```
+IF $PROJECT_ROOT/openspec/ 存在:
+  → 继续 Step 2
+ELSE:
+  → 提示用户执行 `openspec init` 初始化项目，终止流程
+```
+
+**Step 2 — .ace/project-profile.md**（与主流程并行，不阻塞）：
+
+```
+IF $PROJECT_ROOT/.ace/project-profile.md 存在:
+  → 记录 profile_ready = true
+  → 继续 Step 3
+ELSE:
+  → 派发后台初始化（不等待，不阻塞）：
+    Agent(description="后台初始化项目画像", run_in_background=true,
+      prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
+        当前项目根：$PROJECT_ROOT。按 init skill 的完整流程执行。")
+  → 记录 profile_ready = false
+  → 告知用户："project-profile.md 不存在，已在后台启动初始化，PULL 与初始化并行执行。"
+  → 继续 Step 3
+```
+
+<HARD-GATE>
+project-profile.md 不存在时：
+- ✅ 必须用 Agent(run_in_background=true) 后台派发
+- ✅ 派发后立即进入 Step 3，不等待
+- ❌ 禁止调用 Skill(ace:init)（同步阻塞）
+- ❌ 禁止等待 init 完成再继续
+
+profile 是 COMPREHEND 阶段的输入，不是 PULL 阶段的前提。
+PULL 完成后进入 COMPREHEND 时，init 后台任务通常已完成。
+</HARD-GATE>
+
+**Step 3 — 继续执行**：
+
+前置检查完成 → 进入状态机执行协议（PULL phase）。
 
 ---
 

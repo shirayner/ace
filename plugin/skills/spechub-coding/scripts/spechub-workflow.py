@@ -123,16 +123,18 @@ def now_iso() -> str:
 # ─── Precondition Checks ───────────────────────────────────────────────────
 
 def check_preconditions(repo_root: Path) -> dict:
-    """Check openspec/ and project-profile.md exist. Return status dict."""
+    """Check openspec/ exists. Return status dict.
+
+    NOTE: project-profile.md is NOT checked here.
+    It belongs to the COMPREHEND phase, not PULL.
+    The AI layer handles profile initialization (background ace:init)
+    before entering COMPREHEND.
+    """
     issues = []
 
     openspec_dir = repo_root / "openspec"
     if not openspec_dir.is_dir():
         issues.append("openspec/ 目录不存在，请先运行: openspec init")
-
-    profile_path = repo_root / ".ace" / "project-profile.md"
-    if not profile_path.is_file():
-        issues.append(".ace/project-profile.md 不存在，请先运行: /ace:init")
 
     if issues:
         return {"ok": False, "issues": issues}
