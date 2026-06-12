@@ -37,30 +37,38 @@ description: |
 不使用 `git rev-parse --show-toplevel`（用户可能不在 git 仓库中，或 git 根不是意图的项目根）。
 所有文件操作使用 `$PROJECT_ROOT` 为基准的绝对路径。
 
-**Step 1 — openspec/ 目录**：
+**Step 1 — .ace/project-profile.md（最高优先级）**：
 
-```
-IF $PROJECT_ROOT/openspec/ 存在:
-  → 继续 Step 2
-ELSE:
-  → 执行: bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
-  → 告知用户："openspec/ 目录不存在，已自动初始化。"
-  → 继续 Step 2
-```
-
-**Step 2 — .ace/project-profile.md**：
+<HARD-GATE>
+project-profile.md 是所有后续阶段（特别是 Phase 3 Design）的基础上下文。
+若不存在，必须立即派遣后台子代理生成。此 Agent 调用不可跳过、不可延迟、不可省略。
+"不阻塞主流程" ≠ "可以不调用"。调用是强制的，只是不等待结果。
+验证方式：执行完 Step 1 后，日志中必须出现 Agent 调用或 Read(profile) 之一。
+</HARD-GATE>
 
 ```
 IF $PROJECT_ROOT/.ace/project-profile.md 存在:
   → Read 一次（后续 phase 引用已加载内容，不重复 Read）
-  → 继续 Step 3
+  → 继续 Step 2
 ELSE:
-  → 必须执行以下 Agent 调用（不可跳过）:
+  → mkdir -p $PROJECT_ROOT/.ace/  （确保目录存在）
+  → 立即调用（不可跳过）:
     Agent(description="初始化项目画像", run_in_background=true,
       prompt="执行 /ace:init 为当前项目生成 .ace/project-profile.md。
         当前项目根：$PROJECT_ROOT。按 init skill 的完整流程执行。")
-  → 告知用户："project-profile.md 不存在，已在后台启动初始化。"
-  → 继续 Step 3（不等待，profile 在 Phase 3 Design 阶段使用时再 Read）
+  → 告知用户："project-profile.md 不存在，已在后台启动画像生成。Phase 3 Design 时将使用其产出。"
+  → 继续 Step 2（不阻塞等待，但 Agent 必须已派遣）
+```
+
+**Step 2 — openspec/ 目录**：
+
+```
+IF $PROJECT_ROOT/openspec/ 存在:
+  → 继续 Step 3
+ELSE:
+  → 执行: bash {skill_dir}/scripts/openspec-init.sh $PROJECT_ROOT
+  → 告知用户："openspec/ 目录不存在，已自动初始化。"
+  → 继续 Step 3
 ```
 
 **Step 3 — .ace/config.yaml**：
@@ -80,11 +88,19 @@ IF $PROJECT_ROOT/.ace/config.yaml 不存在:
 ELSE:
   → Read .ace/config.yaml → 解析 spec-coding 节
   → 继续
-
-所有 Step 完成 → 进入"自动恢复检测"（跳转到该节）→ 然后"阶段路由"
 ```
 
-**执行流总结**：`前置检查 (Step 1→2→3)` → `自动恢复检测` → `阶段路由` → `Read phases/{phase}.md`。
+**Step 4 — 前置检查自检**：
+
+```
+所有 Step 完成后，自检清单（缺项 = 前置检查未完成 = 禁止继续）：
+  □ project-profile.md: 已 Read / 已派遣后台 Agent（二者之一）
+  □ openspec/: 已存在 / 已初始化
+  □ config.yaml: 已 Read / 已创建
+三项全勾 → 进入"自动恢复检测"
+```
+
+**执行流总结**：`前置检查 (Step 1→2→3→4自检)` → `自动恢复检测` → `阶段路由` → `Read phases/{phase}.md`。
 中间的"配置驱动行为"、"状态机"等节是参考文档，不是执行步骤。
 
 ---
