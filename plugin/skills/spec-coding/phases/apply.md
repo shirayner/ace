@@ -15,11 +15,11 @@
 ```
 IF config.use_subagent 已配置:
   → 直接使用配置值决定执行模式
-  → mode=="auto" 时隔离方式默认 branch，跳过交互
-  → mode=="manual" 时只问隔离方式（执行模式已由配置决定）
+  → mode=="auto" 时跳过交互
+  → mode=="manual" 时只问执行模式（隔离方式已在 Phase 1 Step 7 决定）
 
 IF config.use_subagent 未配置（或 config 不存在）:
-  → AskUserQuestion 让用户选择执行模式 + 隔离方式
+  → AskUserQuestion 让用户选择执行模式
 ```
 
 **手动模式下的交互**（仅 config 未明确时）：
@@ -33,34 +33,30 @@ AskUserQuestion(questions: [
       {label: "subagent (推荐)", description: "隔离子代理 + 双重审查，质量更高"},
       {label: "direct", description: "主代理直接执行，轻量快速，无审查"}
     ]
-  },
-  {
-    header: "隔离方式",
-    question: "代码隔离方式？",
-    options: [
-      {label: "branch (推荐)", description: "git checkout -b feat/spec-{changeName}"},
-      {label: "worktree", description: "EnterWorktree 完全隔离"},
-      {label: "none", description: "当前分支直接工作"}
-    ]
   }
 ])
 ```
 
-### 2. 创建隔离环境 + 更新状态
+> **注**：隔离方式已在 Phase 1 Step 7 确定并执行，此处无需再次选择。
+
+### 2. 确认隔离环境 + 更新状态
 
 ```
-IF branch：
-  git checkout -b feat/spec-{changeName}
-IF worktree：
-  EnterWorktree
-IF none：
+读取 state.json 中 spec.isolation 的值，按类型确认环境就绪：
+
+IF isolation == "branch":
+  git branch --show-current
+  → 应输出 feat/spec-{changeName}，否则执行 git checkout feat/spec-{changeName}
+IF isolation == "worktree":
+  → 确认当前工作目录为 worktree 路径
+IF isolation == "none":
   → 跳过
 
 更新 $TASK_DIR/state.json:
   "spec.apply": {
     "mode": "{subagent|direct}",
-    "isolation": "{branch|worktree|none}",
-    "branch_name": "feat/spec-{changeName}"
+    "isolation": "{从 spec.isolation 读取}",
+    "branch_name": "feat/spec-{changeName}"   // 仅 branch 模式有效
   }
 ```
 

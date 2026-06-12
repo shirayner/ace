@@ -11,6 +11,7 @@
 ### 0. 检测 requirement-analysis 产物
 
 检查 `.ace/tasks/{changeName}/artifacts/` 是否存在 prd.md：
+
 - **存在** → 读取 `prd.md`（替代原始需求输入）、读取 `issues/requirement-issues.md`（继承已有澄清结论）
   - 后续 Step A 分析基于 prd.md 内容进行
   - Step B 只识别**技术实现层面**的新 unknowns（业务澄清已在 requirement-analysis 完成）
@@ -31,11 +32,11 @@ Terminal state = 单条 response 中出现 ≥2 个 Agent tool 调用。
 
 并行发起以下 Agent（来源存在则探索，不存在则跳过该 Agent）：
 
-| Agent | 探索目标 | 存在条件 |
-|---|---|---|
+| Agent          | 探索目标                                                                      | 存在条件           |
+| -------------- | ----------------------------------------------------------------------------- | ------------------ |
 | context-reader | `.ace/experience.md` + `openspec/specs/` 下与需求相关的规范文件，返回摘要 | `.ace/` 目录存在 |
-| code-explorer | 定位需求涉及的核心文件，返回文件路径 + 关键接口签名（不深入实现）| 项目有 src 目录 |
-| git-reader | `git log --oneline -20` 近期方向 + `git status` 当前状态 | 有 `.git` |
+| code-explorer  | 定位需求涉及的核心文件，返回文件路径 + 关键接口签名（不深入实现）             | 项目有 src 目录    |
+| git-reader     | `git log --oneline -20` 近期方向 + `git status` 当前状态                  | 有 `.git`        |
 
 **降级路径**：所有来源均不存在（纯新项目）→ 跳过并行 Agent，直接进入 Step 3。
 **来源 < 2 个存在**（如只有 git）→ 仍用单个 Agent 异步执行，不退化为直接工具调用。
@@ -52,12 +53,14 @@ Terminal state = 单条 response 中出现 ≥2 个 Agent tool 调用。
 ### 4. 维度分析
 
 Read `knowledge/dimensions.md`：
+
 - 对照 8 个需求维度识别缺失
 - 生成 unknowns 列表
 
 ### 5. 范围评估（主检测点）
 
 信号检测：
+
 - 描述了 ≥2 个独立子系统？
 - 涉及 ≥3 个无关技术层变更？
 - "平台"、"系统"等宏大词汇 + 无明确边界？
@@ -67,6 +70,7 @@ IF 触发 → `scope_assessment = "needs_decomposition"`
 ### 6. Defeater 搜索
 
 对用户核心断言 Steel-man → Attack：
+
 - 构建断言的最强版本
 - 尝试攻破（与代码现状矛盾？推理跳跃？）
 
@@ -79,17 +83,37 @@ Step A 完成后、进入 Step B 之前，必须创建工作目录和状态文�
 
 ```
 1. 根据需求意图生成 changeName（kebab-case，2-4 个英文单词，如 add-avatar-upload）
-2. 创建 ACE 任务目录：
+2. 确定隔离方式 + 创建隔离环境（如项目有 .git）：
+   IF mode == "auto":
+     → 默认 branch，直接执行：git checkout -b feat/spec-{changeName}
+   IF mode == "manual":
+     → AskUserQuestion 让用户选择隔离方式：
+       {
+         header: "隔离方式",
+         question: "代码隔离方式？",
+         options: [
+           {label: "branch (推荐)", description: "git checkout -b feat/spec-{changeName}"},
+           {label: "worktree", description: "EnterWorktree 完全隔离"},
+           {label: "none", description: "当前分支直接工作"}
+         ]
+       }
+     → 按用户选择执行：
+       branch  → git checkout -b feat/spec-{changeName}
+       worktree → EnterWorktree
+       none    → 跳过
+   将隔离方式记入 state.json: "spec.isolation": "{branch|worktree|none}"
+3. 创建 ACE 任务目录：
    mkdir -p $PROJECT_ROOT/.ace/tasks/{changeName}/artifacts/issues
-3. 创建 state.json：
+4. 创建 state.json（包含 spec.isolation）：
    Write $PROJECT_ROOT/.ace/tasks/{changeName}/state.json
-4. 创建 context.md：
+5. 创建 context.md：
    Write $PROJECT_ROOT/.ace/tasks/{changeName}/context.md
-5. 执行 openspec new change {changeName}
+6. 执行 openspec new change {changeName}
    → 创建 openspec/changes/{changeName}/ 目录
 ```
 
 state.json 初始内容：
+
 ```json
 {
   "name": "{changeName}",
@@ -116,6 +140,7 @@ state.json 初始内容：
 ```
 
 后续路径简写：
+
 - `$TASK_DIR` = `$PROJECT_ROOT/.ace/tasks/{changeName}`
 - `$CHANGE_DIR` = `$PROJECT_ROOT/openspec/changes/{changeName}`
 
@@ -124,6 +149,7 @@ state.json 初始内容：
 ## Step B: 需求澄清（先解决信息缺口，确定需求）
 
 **配置驱动**：
+
 ```
 IF mode == "auto":
   → 跳过 Step B 和 Step C
@@ -162,17 +188,16 @@ Write $TASK_DIR/artifacts/issues/requirement-issues.md
 | R3 | 上传格式支持哪些？ | 记录假设 | assumed | JPEG/PNG/WebP | 参照现有上传逻辑 |
 ```
 
-
 #### 问题分级（VOI 简化模型）
 
-| 维度 | 高 | 低 |
-|------|---|---|
+| 维度                   | 高                          | 低               |
+| ---------------------- | --------------------------- | ---------------- |
 | **假设失败成本** | 错了需回退阶段/重做大量工作 | 错了后续微调即可 |
-| **可推断性** | 代码/文档/上下文无法推断 | 有明确信号可推断 |
+| **可推断性**     | 代码/文档/上下文无法推断    | 有明确信号可推断 |
 
-| 级别 | 判定条件 | 处理方式 |
-|------|---------|---------|
-| 必须澄清 | 假设失败成本高 + 不可推断 | 向用户提问，status=open |
+| 级别     | 判定条件                         | 处理方式                    |
+| -------- | -------------------------------- | --------------------------- |
+| 必须澄清 | 假设失败成本高 + 不可推断        | 向用户提问，status=open     |
 | 记录假设 | 假设失败成本低，或可从上下文推断 | AI 做出假设，status=assumed |
 
 ### 10. 澄清循环（问→回写文件→检查新问题）
@@ -230,6 +255,7 @@ AskUserQuestion 必须严格按审批模式：只有"通过"和"拒绝"两个选
 </HARD-GATE>
 
 **自检**：
+
 - 四要素中是否有问句？→ 有则回到 Step B
 - 关键假设中是否有"待确认"？→ 有则回到 Step B
 - 计划方向中是否有 ⚠️？→ 有则回到 Step B
@@ -254,6 +280,7 @@ AskUserQuestion(questions: [{
 ```
 
 处理逻辑：
+
 - 通过 → 更新 state.json: spec.phase="propose" → Phase 2
 - Other（用户输入补充）→ 更新 requirement-issues.md → 进入 Phase 2
 - 拒绝 → 回到 Step 9 重新澄清
@@ -288,8 +315,8 @@ Edit $TASK_DIR/state.json:
 
 ## Red Flags
 
-| 想法 | 真相 |
-|------|------|
-| "任务很简单" | 简单 = 隐含决策被忽略 |
-| "用户说清楚了" | 说清楚 ≠ 理解正确 |
+| 想法               | 真相                                      |
+| ------------------ | ----------------------------------------- |
+| "任务很简单"       | 简单 = 隐含决策被忽略                     |
+| "用户说清楚了"     | 说清楚 ≠ 理解正确                        |
 | "先探索代码再对齐" | 对齐在深入代码之前（代码探索留给 Design） |
