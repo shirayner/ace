@@ -76,10 +76,13 @@ state.json 更新策略按执行模式区分（见下文）。
 
 #### Subagent 模式（推荐）
 
-invoke `/subagent-execute`，传入：
+Read `{skill_dir}/../subagent-execute/SKILL.md`，按其协议执行。传入：
 - `tasks_file`: openspec/changes/{changeName}/tasks.md
 - `design_context`: .ace/tasks/{changeName}/artifacts/technical-design.md
 - `pattern_report`: technical-design.md 的 Patterns 节
+
+**注意：不使用 `Skill()` 工具调用 subagent-execute**（Skill 工具会将整个 SKILL.md 打印给用户）。
+直接 Read 其 SKILL.md 并按协议执行即可。
 
 → /subagent-execute 每完成一个任务就更新 tasks.md checkbox
 → 全部完成后 spec-coding 统一更新 state.json（tasks 数组状态同步）

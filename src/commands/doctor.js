@@ -41,7 +41,7 @@ export async function doctorCommand() {
     checks.push(await check('plugin: ace directory', Promise.resolve(true)));
     checks.push(await check('plugin: plugin.json', fs.pathExists(pluginJsonPath)));
 
-    const skillNames = ['auto-goal', 'ut', 'code-review', 'skill-creator', 'skill-optimize', 'spechub-coding', 'requirement-analysis'];
+    const skillNames = ['auto-goal', 'ut', 'code-review', 'skill-creator', 'skill-optimize', 'spec-coding', 'spechub-coding', 'requirement-analysis'];
     for (const skill of skillNames) {
       const skillMd = path.join(pluginInstallDir, 'skills', skill, 'SKILL.md');
       checks.push(await check(`plugin: skill ace:${skill}`, fs.pathExists(skillMd)));
@@ -77,9 +77,6 @@ export async function doctorCommand() {
   try {
     const settings = await fs.readJson(path.join(CLAUDE_DIR, 'settings.json'));
     checks.push({ name: 'settings.json valid JSON', ok: true });
-
-    const hasHooks = settings?.permissions?.hooks;
-    checks.push({ name: 'settings.json has hooks config', ok: !!hasHooks });
 
     const hasMemoryDir = settings?.autoMemoryDirectory;
     checks.push({ name: 'settings.json has autoMemoryDirectory', ok: !!hasMemoryDir });

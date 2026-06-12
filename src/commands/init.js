@@ -133,14 +133,15 @@ export async function initCommand(options) {
   p.note(
     [
       'Get started',
-      '  1. cd <your-project> && ace spec init',
-      '  2. Open Claude Code, type: /opsx:propose',
+      '  1. cd <your-project>',
+      '  2. Open Claude Code and type:',
+      '       /spec-coding   spec-driven development',
+      '       /auto-goal     general purpose tasks',
       '',
       'Customize',
-      '  Change role      edit ~/.claude/memory/user_profile.md',
-      '  Adjust rules     edit ~/.claude/ace/rules/',
-      '  Safety guards    edit ~/.claude/hooks/ace.*.sh',
-      '  Verify setup     ace doctor',
+      '  Change role    edit ~/.claude/memory/user_profile.md',
+      '  Adjust rules   edit ~/.claude/ace/rules/',
+      '  Verify setup   ace doctor',
     ].join('\n'),
     'Next steps'
   );

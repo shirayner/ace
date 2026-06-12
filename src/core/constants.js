@@ -17,7 +17,7 @@ export const MARKETPLACE_DIR = path.join(CLAUDE_DIR, 'plugins', 'marketplaces', 
 export const PLUGIN_KEY = `${PLUGIN_NAME}@${MARKETPLACE_NAME}`;
 
 export const PRESETS = {
-  full: ['core', 'rules', 'plugin', 'hooks', 'memory'],
+  full: ['core', 'rules', 'plugin', 'memory'],
   minimal: ['core', 'rules', 'plugin'],
   safe: ['core', 'rules', 'plugin', 'memory'],
 };
@@ -108,15 +108,8 @@ export const COMPONENTS = {
   hooks: {
     description: 'Hook scripts (safety guards + compile checks)',
     required: false,
-    files: [
-      { src: 'hooks/ace.bash-guard.sh', dest: 'hooks/ace.bash-guard.sh' },
-      { src: 'hooks/ace.content-guard.sh', dest: 'hooks/ace.content-guard.sh' },
-      { src: 'hooks/ace.file-guard.sh', dest: 'hooks/ace.file-guard.sh' },
-      { src: 'hooks/ace.stop-verify.sh', dest: 'hooks/ace.stop-verify.sh' },
-    ],
-    conditional: [
-      { src: 'hooks/ace.java-compile-check.sh', dest: 'hooks/ace.java-compile-check.sh', roles: ['backend', 'fullstack'] },
-    ],
+    files: [],
+    conditional: [],
   },
   memory: {
     description: 'Global memory templates',

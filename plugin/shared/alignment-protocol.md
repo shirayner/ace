@@ -43,9 +43,16 @@ Read `understanding-protocol.md`，按其完整流程执行。
 
 **Terminal state = AskUserQuestion 工具调用。** 没有调用 = 此步骤未完成。
 
+> ⛔ **STOP — 等待用户回复**
+> Step 2 的 AskUserQuestion 调用后，**当前 response 必须结束**。
+> Step 3 在**下一个 response**（用户已回答后）才能开始。
+> 在同一 response 里同时执行 Step 2 + Step 3 = 严重违规。
+
 ---
 
 ### Step 3: 对齐确认（输出 AI 补集，形成共识）
+
+**前置条件**：用户已回答 Step 2 的问题。未收到用户回复 = 禁止进入本步骤。
 
 **本质**：将 AI 发现了但人类可能没意识到的呈现出来——包括 Defeater 攻破的认知错误、探索中发现的关联问题、以及对目标的更深层理解。
 
@@ -108,6 +115,7 @@ Read `understanding-protocol.md`，按其完整流程执行。
 | "我理解用户要什么"       | 理解 ≠ 验证，调用 AskUserQuestion 确认 |
 | "我已经写了对齐内容"     | 写了 ≠ 调用了工具，缺工具调用无效      |
 | "用户不会有错"           | 不挑战 = 放弃认知互补，等于谄媚         |
+| "Step 2 和 Step 3 一起发" | Step 2 调用后必须 STOP，Step 3 在用户回复后的下一个 response 才执行 |
 
 **如果正在想上述任何一条 → 回到 Step 1。**
 

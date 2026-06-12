@@ -130,7 +130,7 @@ ELSE:
 
 ## use_subagent 控制执行方式
 IF CONFIG.use_subagent == true:
-  Phase 5 → invoke /subagent-execute
+  Phase 5 → Read subagent-execute/SKILL.md 并按协议执行（不使用 Skill() 工具）
 ELSE:
   Phase 5 → direct 模式（主代理逐任务执行）
 ```
@@ -217,7 +217,7 @@ ELSE:
 | propose    | Read `phases/propose.md` → 创建提案（OpenSpec CLI） |
 | design     | Read `phases/design.md` → 深入代码探索 + 技术设计   |
 | plan       | Read `phases/plan.md` → 任务编排                    |
-| apply      | invoke `/subagent-execute`（或 direct 模式）         |
+| apply      | Read `phases/apply.md` → subagent 或 direct 模式    |
 | archive    | Read `phases/archive.md` → 归档收尾                 |
 
 ---
