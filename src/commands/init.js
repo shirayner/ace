@@ -147,7 +147,7 @@ export async function initCommand(options) {
   );
 
   if (errors.length === 0) {
-    p.outro('Done. Go to your project and run ace spec init.');
+    p.outro('Done. Start using /ace:spec-coding or /ace:spechub-coding in your project.');
   } else {
     p.outro('Done with errors. Run ace doctor to diagnose.');
   }

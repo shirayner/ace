@@ -77,7 +77,9 @@ ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 14 个专业 skill +
 ### 1. 安装
 
 ```bash
-npm install -g @shirayner/ace
+# 安装最新版本到本地
+# 如果之前安装过，会用最新版本覆盖（因此当 ace upgrade 命令不存在时，也可以执行此命令来升级ace）
+npm install -g @shirayner/ace --registry=https://registry.npmjs.org/
 ```
 
 ### 2. 初始化环境
@@ -88,19 +90,9 @@ ace init
 
 ACE 自动配置：全局规则、Skills 插件、CLAUDE.md 索引。
 
-### 3. 初始化项目画像
+### 3. 开始使用
 
-进入目标项目后：
-
-```
-/ace:init
-```
-
-生成 `.ace/project-profile.md`，包含架构、分层、编码约定。后续所有 skill 基于此画像工作。
-
-### 4. 开始使用
-
-**开放式目标**：
+**开放式目标(万能通用)**：
 
 ```
 /ace:auto-goal  描述你的目标
@@ -122,16 +114,13 @@ SpecHub接力开发
 
 ## CLI 命令
 
-| 命令                | 说明                                         |
-| ------------------- | -------------------------------------------- |
-| `ace init`        | 初始化 AI 编码环境（全局配置 + 规则 + 插件） |
-| `ace doctor`      | 检查安装完整性                               |
-| `ace list`        | 查看已安装组件状态                           |
-| `ace upgrade`     | 升级到最新版本                               |
-| `ace uninstall`   | 卸载所有 ace 管理的组件                      |
-| `ace spec init`   | 初始化项目级 spec 工作流                     |
-| `ace spec doctor` | 检查 spec 工作流健康度                       |
-| `ace spec update` | 更新 spec 模板到最新版本                     |
+| 命令              | 说明                                         |
+| ----------------- | -------------------------------------------- |
+| `ace init`      | 初始化 AI 编码环境（全局配置 + 规则 + 插件） |
+| `ace doctor`    | 检查安装完整性                               |
+| `ace list`      | 查看已安装组件状态                           |
+| `ace upgrade`   | 升级到最新版本                               |
+| `ace uninstall` | 卸载所有 ace 管理的组件                      |
 
 ---
 
@@ -142,9 +131,7 @@ SpecHub接力开发
 | [系统架构](docs/architecture.md)             | 三层架构设计与协作模型   |
 | [安装与快速上手](docs/getting-started.md)    | 详细安装步骤与典型工作流 |
 | [Skill 使用手册](docs/skills-guide.md)       | 14 个 skill 的分类详解   |
-| [共享协议说明](docs/shared-protocols.md)     | 8 个认知协议的机制解析   |
 | [产物目录规范](docs/artifacts-convention.md) | .ace/ 目录组织约定       |
-| [Skill 开发指南](docs/skill-development.md)  | 如何开发新 skill         |
 
 ---
 

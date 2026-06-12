@@ -6,7 +6,6 @@ import { initCommand } from '../src/commands/init.js';
 import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
 import { uninstallCommand } from '../src/commands/uninstall.js';
-import { specInitCommand, specDoctorCommand, specUpdateCommand } from '../src/commands/spec.js';
 import { upgradeCommand } from '../src/commands/upgrade.js';
 
 const require = createRequire(import.meta.url);
@@ -47,28 +46,5 @@ program
   .description('Upgrade ace to the latest version')
   .option('-f, --force', 'Force reinstall even if already up to date', false)
   .action(upgradeCommand);
-
-const spec = program
-  .command('spec')
-  .description('Manage spec-driven development workflow (project-level)');
-
-spec
-  .command('init [path]')
-  .description('Initialize spec workflow in a project')
-  .option('-f, --force', 'Overwrite existing configuration', false)
-  .option('--dry-run', 'Preview without making changes', false)
-  .option('--skip-openspec', 'Skip openspec CLI installation', false)
-  .option('--team-repo <url>', 'Git repository URL for team conventions')
-  .action(specInitCommand);
-
-spec
-  .command('doctor [path]')
-  .description('Check spec workflow health')
-  .action(specDoctorCommand);
-
-spec
-  .command('update [path]')
-  .description('Update spec templates to latest version')
-  .action(specUpdateCommand);
 
 program.parse();

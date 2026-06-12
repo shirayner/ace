@@ -2,22 +2,20 @@
 
 ## 分类总览
 
-| 分类 | 名称 | 触发命令 | 一句话用途 |
-|------|------|----------|-----------|
-| 核心编码流水线 | auto-goal | `/ace:auto-goal` | 自主完成开放式目标或学习需求 |
-| 核心编码流水线 | spec-coding | `/ace:spec-coding` | 全生命周期规范驱动编码 |
-| 核心编码流水线 | spechub-coding | `/ace:spechub-coding` | 基于 SpecHub 平台产物的本地编码 |
-| 核心编码流水线 | subagent-execute | `/ace:subagent-execute` | 子代理驱动逐任务执行引擎 |
-| 质量保障 | code-review | `/ace:code-review` | 代码审查，发现 bug 和潜在问题 |
-| 质量保障 | ut | `/ace:ut` | 单元测试生成与修复 |
-| 质量保障 | verify | `/ace:verify` | 横切验证门控，确保变更真正生效 |
-| 知识与分析 | init | `/ace:init` | 初始化项目技术画像 |
-| 知识与分析 | requirement-analysis | `/ace:requirement-analysis` | 需求分析流水线 |
-| 知识与分析 | llm-wiki-generator | `/ace:llm-wiki-generator` | 为仓库生成 LLM-friendly 知识库 |
-| 知识与分析 | llm-wiki-reader | `/ace:llm-wiki-reader` | 渐进式消费 wiki 知识库 |
-| 元工具 | skill-creator | `/ace:skill-creator` | 创建新 skill |
-| 元工具 | skill-optimize | `/ace:skill-optimize` | 深度优化现有 skill |
-| 元工具 | parallel-dispatch | `/ace:parallel-dispatch` | 并行代理调度 |
+| 分类           | 名称                 | 触发命令                      | 一句话用途                                                        |
+| -------------- | -------------------- | ----------------------------- | ----------------------------------------------------------------- |
+| 万能通用       | auto-goal            | `/ace:auto-goal`            | 自主完成开放式目标或学习需求                                      |
+| 需求分析       | requirement-analysis | `/ace:requirement-analysis` | 需求分析流水线                                                    |
+| 核心编码流水线 | spec-coding          | `/ace:spec-coding`          | Spec 驱动开发，交互友好、Spec生命周期管理、并行化、隔离化、配置化 |
+| 核心编码流水线 | spechub-coding       | `/ace:spechub-coding`       | 对接 SpecHub 平台，本地接力开发产物的本地编码                     |
+| 质量保障       | code-review          | `/ace:code-review`          | 代码审查，发现 bug 和潜在问题                                     |
+| 质量保障       | ut                   | `/ace:ut`                   | 单元测试生成与修复                                                |
+| 质量保障       | verify               | `/ace:verify`               | 横切验证门控，确保变更真正生效                                    |
+| 知识与分析     | init                 | `/ace:init`                 | 初始化项目技术画像                                                |
+| 知识与分析     | llm-wiki-generator   | `/ace:llm-wiki-generator`   | 为仓库生成 LLM-friendly 知识库                                    |
+| 知识与分析     | llm-wiki-reader      | `/ace:llm-wiki-reader`      | 渐进式消费 wiki 知识库                                            |
+| 元工具         | skill-creator        | `/ace:skill-creator`        | 创建新 skill                                                      |
+| 元工具         | skill-optimize       | `/ace:skill-optimize`       | 深度优化现有 skill                                                |
 
 ---
 
@@ -208,12 +206,12 @@
 
 ## 常见组合模式
 
-| 场景 | 推荐组合 |
-|------|----------|
-| 新项目首次使用 | `init` → `llm-wiki-generator` |
-| 完整功能开发 | `init` → `spec-coding`（内含 verify） |
-| 平台需求落地 | `init` → `spechub-coding` |
-| 模糊需求澄清后开发 | `requirement-analysis` → `spec-coding` |
-| 批量任务执行 | `spec-coding`(Plan) → `subagent-execute` |
-| 开发后质量检查 | `code-review` → `ut` → `verify` |
-| 技术调研 | `auto-goal` + `parallel-dispatch` |
+| 场景               | 推荐组合                                      |
+| ------------------ | --------------------------------------------- |
+| 新项目首次使用     | `init` → `llm-wiki-generator`            |
+| 完整功能开发       | `init` → `spec-coding`（内含 verify）    |
+| 平台需求落地       | `init` → `spechub-coding`                |
+| 模糊需求澄清后开发 | `requirement-analysis` → `spec-coding`   |
+| 批量任务执行       | `spec-coding`(Plan) → `subagent-execute` |
+| 开发后质量检查     | `code-review` → `ut` → `verify`       |
+| 技术调研           | `auto-goal` + `parallel-dispatch`         |

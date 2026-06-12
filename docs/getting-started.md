@@ -20,6 +20,7 @@ ace init
 ```
 
 自动配置：
+
 - 全局 CLAUDE.md 索引
 - 10 条编码规则（`~/.claude/ace/rules/`）
 - Skills 插件（`~/.claude/plugins/`）
@@ -49,6 +50,7 @@ ace list
 **产出**：`.ace/project-profile.md`
 
 包含：
+
 - 系统定位（做什么、面向谁）
 - 架构分层（层/包路径/职责）
 - 中间件使用模式
@@ -73,6 +75,7 @@ ace list
 ACE 会：首轮对齐 → 任务分解 → 并行执行 → 验证 → 经验沉淀
 
 **示例**：
+
 - "重构这个模块的异常处理"
 - "调研 Redis 集群方案"
 - "帮我理解这个订单系统"
@@ -83,25 +86,20 @@ ACE 会：首轮对齐 → 任务分解 → 并行执行 → 验证 → 经验�
 
 **适用场景**：从零开始做新功能/变更
 
-**前置**：
-```bash
-ace spec init    # 首次使用需初始化
-```
-
 ```
 /ace:spec-coding
 ```
 
 **6 Phase 流转**：
 
-| Phase | 做什么 |
-|-------|--------|
-| Understand | 深度需求分析 + 用户对齐 |
-| Propose | 创建提案（scope/目标/验收标准） |
-| Design | 技术设计（架构/接口/数据模型） |
-| Plan | 原子化任务拆解 |
-| Apply | 代码实施 |
-| Archive | 复盘 + 知识固化 + 归档 |
+| Phase      | 做什么                          |
+| ---------- | ------------------------------- |
+| Understand | 深度需求分析 + 用户对齐         |
+| Propose    | 创建提案（scope/目标/验收标准） |
+| Design     | 技术设计（架构/接口/数据模型）  |
+| Plan       | 原子化任务拆解                  |
+| Apply      | 代码实施                        |
+| Archive    | 复盘 + 知识固化 + 归档          |
 
 每个关键节点有 Hard Gate——必须获得用户确认才能推进。
 
@@ -132,31 +130,34 @@ ace spec init    # 首次使用需初始化
 
 位于 `~/.claude/ace/rules/`，按场景自动加载：
 
-| 规则 | 加载时机 |
-|------|---------|
-| `clean-code.md` | 编辑代码前 |
-| `code-quality.md` | 编辑代码前 |
-| `context-hygiene.md` | 长任务时 |
+| 规则                       | 加载时机   |
+| -------------------------- | ---------- |
+| `clean-code.md`          | 编辑代码前 |
+| `code-quality.md`        | 编辑代码前 |
+| `context-hygiene.md`     | 长任务时   |
 | `interactive-clarify.md` | 需要提问时 |
-| `memory-policy.md` | 保存记忆前 |
-| `reporting.md` | 生成报告前 |
-| `thinking.md` | 始终 |
-| `git.md` | Git 操作时 |
-| `gitflow.md` | 分支管理时 |
-| `task-recovery.md` | 恢复任务时 |
+| `memory-policy.md`       | 保存记忆前 |
+| `reporting.md`           | 生成报告前 |
+| `thinking.md`            | 始终       |
+| `git.md`                 | Git 操作时 |
+| `gitflow.md`             | 分支管理时 |
+| `task-recovery.md`       | 恢复任务时 |
 
 ---
 
 ## 常见问题
 
 **Q: skill 没有被正确触发？**
+
 - 确认 `ace doctor` 状态正常
 - 使用完整命令 `/ace:{skill-name}` 显式触发
 
 **Q: 如何中断后恢复任务？**
+
 - 对 Claude 说"继续"
 - ACE 读取 `.ace/tasks/{changeName}/state.json` 自动恢复
 
 **Q: `/ace:init` 分析不准确？**
+
 - `project-profile.md` 支持手动补充（标注 `[manual]`）
 - 架构变更后重新执行

@@ -98,5 +98,4 @@ keywords: [初始化, 安装, 工具链, init, install, setup, harness, 一键�
 ## 相关锚点
 
 - ace doctor — 安装完成后验证工具链状态
-- ace spec init — 初始化项目级规格文档
 - ace update — 更新已安装的 ace 组件
