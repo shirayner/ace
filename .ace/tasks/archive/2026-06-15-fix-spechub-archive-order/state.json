@@ -1,0 +1,28 @@
+{
+  "changeName": "fix-spechub-archive-order",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-06-15T00:00:00Z",
+  "updated_at": "2026-06-15T15:14:03Z",
+  "completed_at": "2026-06-15T15:14:03Z",
+  "archived_at": "2026-06-15T15:14:03Z",
+  "completion_criteria": [
+    "cmd_archive 扫描 .ace/tasks/ 和 .ace/tasks/archive/*/ 找 state.json",
+    "协议 B 顺序改为：ace task done → SpecHub上报",
+    "spechub archive.md 取消 ace task done 限制改为推荐",
+    "plugin + 已安装版共 4 处文档同步"
+  ],
+  "tasks": [
+    9,
+    10
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "根因：cmd_archive 搜索时明确跳过 archive/ 目录，ace task archive 后文件不可达",
+      "修复：扫描逻辑同时搜索归档路径；decisions.md 写入跟随实际路径",
+      "顺序变更后 ace task done 可用于 spechub-coding 的前两步"
+    ]
+  }
+}

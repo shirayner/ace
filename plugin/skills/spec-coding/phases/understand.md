@@ -104,7 +104,7 @@ IF 触发 → `scope_assessment = "needs_decomposition"`
        none    → 跳过
    将隔离方式记入 state.json: "spec.isolation": "{branch|worktree|none}"
 3. 创建 ACE 任务目录：
-   mkdir -p $PROJECT_ROOT/.ace/tasks/{changeName}/artifacts/issues
+   mkdir -p $PROJECT_ROOT/.ace/tasks/{changeName}/artifacts
 4. 创建 state.json（包含 spec.isolation）：
    Write $PROJECT_ROOT/.ace/tasks/{changeName}/state.json
 5. 创建 context.md：
@@ -117,17 +117,20 @@ state.json 初始内容：
 
 ```json
 {
-  "name": "{changeName}",
+  "changeName": "{changeName}",
   "type": "spec",
-  "status": "in-progress",
+  "skillName": "spec-coding",
+  "status": "in_progress",
   "created_at": "{ISO时间}",
   "updated_at": "{ISO时间}",
+  "completed_at": null,
+  "archived_at": null,
   "completion_criteria": [],
   "tasks": [],
   "spec": {
     "phase": "understand",
     "workflow": "pending",
-    "openspec_change": "{changeName}",
+    "isolation": "{branch|worktree|none}",
     "timestamps": {
       "understand_started": "{ISO时间}"
     },

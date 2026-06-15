@@ -36,7 +36,28 @@ Read `../../shared/alignment-protocol.md`，按其三步流程执行。
 1. `Bash(pwd)` → 获取 `$ROOT`
 2. `mkdir -p $ROOT/.ace/tasks/{changeName}/artifacts`（changeName = 2-4 英文单词 kebab-case，描述任务语义）
 3. TaskCreate 分解为 ≥3 个离散任务
-4. Write `$ROOT/.ace/tasks/{changeName}/state.json`（type: "goal"，参考 `../../shared/state-template.md`）
+4. Write `$ROOT/.ace/tasks/{changeName}/state.json`（统一 schema，参考 `../../shared/state-template.md`）
+
+   state.json 初始内容：
+   ```json
+   {
+     "changeName": "{changeName}",
+     "type": "simple",
+     "skillName": "auto-goal",
+     "status": "in_progress",
+     "created_at": "{ISO时间}",
+     "updated_at": "{ISO时间}",
+     "completed_at": null,
+     "archived_at": null,
+     "completion_criteria": ["可测试完成条件 1"],
+     "tasks": [],
+     "simple": {
+       "phase": "executing",
+       "decisions": []
+     }
+   }
+   ```
+
 5. Write `$ROOT/.ace/tasks/{changeName}/context.md`（目标 + 完成标准）
 6. 完成后才进入执行阶段
 
@@ -85,6 +106,26 @@ TaskCreate 后必须做依赖分析，标注 `⟂` 和 `(depends: X)`。存在 �
 
 标记 TaskUpdate completed 前：
 Read `../../shared/verification-protocol.md`，按 Gate Function 执行。
+
+**验证通过后，必须执行归档。**
+
+<HARD-GATE name="归档门禁">
+归档是任务生命周期的**必要结束步骤**，与对齐门禁同等强制。
+
+禁止以任何理由跳过：
+- "FleetView TaskUpdate completed 了" → 不等于归档。两套系统完全独立。
+- "交付了就算完成" → 未归档 = 任务悬空，state.json 永远 in_progress。
+- "下次再归档" → 没有下次。对话结束后无法补救。
+
+**Terminal state = 以下命令执行成功：**
+
+```bash
+ace task done {changeName}
+```
+
+`ace task done` 内部顺序执行 complete → archive，任一步失败则中止报错。
+没有执行这条命令 = 归档门禁未通过。
+</HARD-GATE>
 
 ---
 

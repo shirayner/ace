@@ -204,7 +204,8 @@ ELSE:
 前提：前置检查已全部完成（Step 1-3）。
 
 1. 检查 .ace/tasks/ 下是否有 type="spec" 的活跃任务
-   → Glob `.ace/tasks/*/state.json` → 逐个读取 → 筛选 type=="spec" && status!="completed"
+   → Glob `.ace/tasks/*/state.json`（显式跳过 .ace/tasks/archive/ 下的文件）
+   → 逐个读取 → 筛选 type=="spec" && status!="completed"
 2. 有活跃 spec 任务 → 读 state.json 的 spec.phase → 路由到对应阶段
 3. 多个活跃 spec 任务 → AskUserQuestion 选择
 4. 无活跃 spec 任务 → Phase 1 (understand)
@@ -296,7 +297,7 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 
 ## 状态文件：`state.json`
 
-**完整模板**：见 `references/state-template.jsonc`
+**完整模板**：见 `../../shared/state-template.md`
 
 **位置**：`$PROJECT_ROOT/.ace/tasks/{changeName}/state.json`
 **创建时机**：Phase 1 Step A 完成后（确定 changeName 时）
@@ -306,23 +307,24 @@ Phase 1 对齐完成后，根据需求特征自动确定流程深度：
 
 - ACE 工作流状态属于 ACE 管理范畴，与 OpenSpec CLI 的产物状态解耦
 - `.ace/tasks/` 统一所有任务类型，通过 `type: "spec"` 区分
-- 恢复时扫描 `.ace/tasks/` 即可发现所有任务（无论 spec 还是 goal）
+- 恢复时扫描 `.ace/tasks/`（排除 `archive/` 子目录）即可发现所有任务
 
-**与 openspec/ 的关联**：通过 `state.json` 中的 `spec.openspec_change` 字段指向 `openspec/changes/{changeName}/`。
+**与 openspec/ 的关联**：通过同名约定（changeName == openspec change 名）确定性推导路径，无需存储 openspec_link 字段。
+活跃 change 路径：`openspec/changes/{changeName}/`
+归档 change 路径：`glob: openspec/changes/archive/*-{changeName}/`
 
 **字段分层**：
 
 | 层级    | 字段路径                                                | 写入时机                      |
 | ------- | ------------------------------------------------------- | ----------------------------- |
-| 基础    | name, type("spec"), status, created_at                  | Phase 1 创建时                |
+| 基础    | changeName, type("spec"), skillName, status, created_at | Phase 1 创建时                |
 | 阶段    | spec.phase                                              | 每次阶段转换                  |
 | 时间    | spec.timestamps.{phase}_started                         | 进入该阶段时                  |
 | Phase 1 | spec.scope_assessment, spec.aligned                     | Phase 1 完成时                |
-| Phase 2 | spec.openspec_change                                    | Phase 2 创建 change 后        |
 | Phase 3 | spec.approvals.design                                   | Phase 3 审批后                |
 | Phase 4 | spec.approvals.plan, tasks (数组)                       | Phase 4 完成时                |
 | Phase 5 | spec.apply.mode, spec.apply.branch_name, tasks[].status | Phase 5 进入时 + 每任务完成时 |
-| Phase 6 | status → "completed"                                   | Phase 6 完成时                |
+| Phase 6 | status → "completed", completed_at                     | Phase 6 完成时                |
 
 **更新规则**：
 

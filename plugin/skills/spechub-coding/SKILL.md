@@ -81,6 +81,9 @@ $PROJECT_ROOT/
 ├── .ace/
 │   ├── tasks/{changeName}/           # $TASK_DIR — ACE 状态与过程产物
 │   │   ├── state.json                # 状态机（type: "spechub"）
+│   │   ├── input/                    # SpecHub 拉取的原始产物（只读，由脚本写入）
+│   │   │   ├── manifest.json
+│   │   │   └── artifacts/            # 原始平台产物
 │   │   └── artifacts/                # ACE 过程产出物
 │   │       ├── comprehension.md
 │   │       ├── artifact-inventory.json
@@ -94,10 +97,7 @@ $PROJECT_ROOT/
 │   │           ├── d3-architecture.md
 │   │           ├── d4-infra-gaps.md
 │   │           └── d5-simplification.md
-│   ├── tasks/.active-spechub         # 当前活跃需求指针（reqId）
-│   └── spechub/{reqId}/              # SpecHub 拉取的原始产物（脚本管理）
-│       ├── manifest.json
-│       └── artifacts/                # 原始平台产物
+│   └── tasks/.active-spechub         # 当前活跃需求指针（reqId）
 ├── openspec/changes/{changeName}/    # $CHANGE_DIR — OpenSpec 标准产物
 │   ├── proposal.md
 │   ├── design.md
@@ -107,7 +107,7 @@ $PROJECT_ROOT/
 **变量约定**：
 - `$TASK_DIR` = `$PROJECT_ROOT/.ace/tasks/{changeName}`
 - `$CHANGE_DIR` = `$PROJECT_ROOT/openspec/changes/{changeName}`
-- `$SPECHUB_DIR` = `$PROJECT_ROOT/.ace/spechub/{reqId}`
+- `$INPUT_DIR` = `$PROJECT_ROOT/.ace/tasks/{changeName}/input/`（替代原 `.ace/spechub/{reqId}/`）
 - `changeName` = slug（kebab-case 简写，如 `grade-retention-rules`）
 
 ---
@@ -205,16 +205,17 @@ $PROJECT_ROOT/
 
 ```
 1. Read .ace/tasks/.active-spechub → reqId（不存在 = 无活跃需求，提示重新开始）
+   或：ace task list → 筛选 type=="spechub" 活跃任务
 2. 从 state.json 中获取 changeName，Read $TASK_DIR/state.json → currentPhase + phases[].outputs
 3. 验证当前 Phase 的前置产出都存在：
-   | Phase      | 必须存在                                                    |
-   |------------|-------------------------------------------------------------|
-   | comprehend | .ace/spechub/{reqId}/artifacts/, .ace/spechub/{reqId}/manifest.json   |
+   | Phase      | 必须存在                                                                          |
+   |------------|-----------------------------------------------------------------------------------|
+   | comprehend | $INPUT_DIR/artifacts/, $INPUT_DIR/manifest.json                                   |
    | readiness  | $TASK_DIR/artifacts/comprehension.md, artifact-inventory.json, readiness-manifest.json |
-   | design     | $TASK_DIR/artifacts/readiness-check.md                      |
-   | implement  | $CHANGE_DIR/design.md, $CHANGE_DIR/tasks.md                 |
-   | verify     | 代码变更（git diff 非空）                                    |
-   | archive    | $TASK_DIR/artifacts/handoff-check.md                        |
+   | design     | $TASK_DIR/artifacts/readiness-check.md                                            |
+   | implement  | $CHANGE_DIR/design.md, $CHANGE_DIR/tasks.md                                       |
+   | verify     | 代码变更（git diff 非空）                                                          |
+   | archive    | $TASK_DIR/artifacts/handoff-check.md                                              |
 4. 前置存在 → 继续当前 Phase；缺失 → 回退到产出该文件的 Phase
 5. Read references/phases/{currentPhase}.md → 执行
 ```
@@ -253,6 +254,7 @@ $PROJECT_ROOT/
 python3 {skillDir}/scripts/spechub-workflow.py inbox --repo-root {repoRoot}
 
 # 前置检查 + 拉取产物 + 初始化状态（有 reqId 时）
+# 产物写入 .ace/tasks/{changeName}/input/（替代原 .ace/spechub/{reqId}/）
 python3 {skillDir}/scripts/spechub-workflow.py start {reqId} --repo-root {repoRoot}
 
 # 归档：构建 decisions + 上报 SpecHub + 清理

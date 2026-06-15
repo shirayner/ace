@@ -1,0 +1,25 @@
+{
+  "changeName": "fix-skill-archive-gap",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-06-15T00:00:00Z",
+  "updated_at": "2026-06-15T14:55:17Z",
+  "completed_at": "2026-06-15T14:55:17Z",
+  "archived_at": "2026-06-15T14:55:17Z",
+  "completion_criteria": [
+    "spec-coding/phases/archive.md（plugin + 已安装版）ACE 归档步骤替换为 ace task done + HARD-GATE",
+    "spechub-coding/references/phases/archive.md（plugin + 已安装版）Step 2 加 HARD-GATE，三步不可中断"
+  ],
+  "tasks": [
+    7,
+    8
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "spec-coding: complete+archive 可合并为 ace task done，无中间步骤",
+      "spechub-coding: 中间有 SpecHub 上报，不可合并命令，用 HARD-GATE 强制约束"
+    ]
+  }
+}

@@ -7,6 +7,8 @@ import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
 import { uninstallCommand } from '../src/commands/uninstall.js';
 import { upgradeCommand } from '../src/commands/upgrade.js';
+import { taskListCommand, taskCompleteCommand, taskDoneCommand } from '../src/commands/task.js';
+import { archiveCommand } from '../src/commands/archive.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -46,5 +48,31 @@ program
   .description('Upgrade ace to the latest version')
   .option('-f, --force', 'Force reinstall even if already up to date', false)
   .action(upgradeCommand);
+
+const task = program
+  .command('task')
+  .description('Manage ACE task lifecycle (.ace/tasks/)');
+
+task
+  .command('list')
+  .description('List all active tasks in .ace/tasks/')
+  .action(taskListCommand);
+
+task
+  .command('complete <changeName>')
+  .description('Mark a task as completed (sets status=completed, writes completed_at)')
+  .action(taskCompleteCommand);
+
+task
+  .command('archive <changeName>')
+  .description('Archive a completed task to .ace/tasks/archive/<date>-<changeName>/')
+  .option('--date <YYYY-MM-DD>', 'Force a specific archive date')
+  .action((changeName, opts) => archiveCommand(changeName, { date: opts.date }));
+
+task
+  .command('done <changeName>')
+  .description('Mark a task as completed AND archive it in one step (recommended)')
+  .option('--date <YYYY-MM-DD>', 'Force a specific archive date')
+  .action((changeName, opts) => taskDoneCommand(changeName, { date: opts.date }));
 
 program.parse();

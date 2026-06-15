@@ -1,0 +1,30 @@
+{
+  "changeName": "fix-archive-gap",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-06-15T00:00:00Z",
+  "updated_at": "2026-06-15T13:47:01Z",
+  "completed_at": "2026-06-15T13:47:01Z",
+  "archived_at": "2026-06-15T13:47:01Z",
+  "completion_criteria": [
+    "ace task done <name> 一条命令完成 complete + archive，任一步失败则中止报错",
+    "ace task list 对 completed-未归档任务展示 ⚠ awaiting-archive",
+    "plugin/skills/auto-goal/SKILL.md 归档节升级为 HARD-GATE，引用 ace task done",
+    "已安装版 ~/.claude/plugins/marketplaces/ace-local/skills/auto-goal/SKILL.md 同步更新",
+    "bin/ace.js 正确注册 task done 子命令"
+  ],
+  "tasks": [
+    4,
+    5,
+    6
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "根因：两步归档被两个独立命令承载，AI 可在执行第一步后停止而无机械阻力",
+      "修复方案：CLI 新增 ace task done（原子合并）+ SKILL.md 归档节升级为 HARD-GATE",
+      "ace task done 内部顺序执行 complete → archive，任一失败中止"
+    ]
+  }
+}

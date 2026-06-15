@@ -1,0 +1,20 @@
+{
+  "type": "goal",
+  "changeName": "ace-full-diagnosis",
+  "goal": "对 ACE 项目做全面诊断：功能缺口、产品定位、架构演进、生态建设",
+  "completionCriteria": [
+    "产出结构化报告，覆盖 ≥4 个维度的分析",
+    "每个缺口/方向有明确的价值论述和优先级建议",
+    "报告可直接用于 ACE 下一阶段的 roadmap 规划"
+  ],
+  "tasks": [
+    {"id": "1", "name": "功能缺口分析", "status": "completed", "parallel": "⟂"},
+    {"id": "2", "name": "竞品对标分析", "status": "completed", "parallel": "⟂"},
+    {"id": "3", "name": "架构演进分析", "status": "completed", "parallel": "⟂"},
+    {"id": "4", "name": "生态与开放性分析", "status": "completed", "parallel": "⟂"},
+    {"id": "5", "name": "综合报告撰写", "status": "completed", "depends": "1,2,3,4"}
+  ],
+  "gates": {},
+  "createdAt": "2026-06-15",
+  "status": "completed"
+}

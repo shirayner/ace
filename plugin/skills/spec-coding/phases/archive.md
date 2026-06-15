@@ -64,15 +64,23 @@ OpenSpec 自动执行：
 
 如归档失败 → 读取错误 → 尝试修复 → 重试。
 
-### 5. 更新 state.json
+### 5. 更新 state.json + ACE 双归档
 
+<HARD-GATE name="ACE 归档门禁">
+ACE 归档是流程的必要终结步骤，与 OpenSpec 归档同等强制。
+禁止以任何理由跳过，包括：
+- "OpenSpec 归档已完成，流程算结束了" → ACE 侧 state.json 仍悬空。
+- "FleetView TaskUpdate completed 了" → 两套系统完全独立，不可替代。
+
+**Terminal state = 以下命令执行成功（协议 A Step 2-3）：**
+
+```bash
+ace task done {changeName}
 ```
-Edit $TASK_DIR/state.json:
-  "status": "completed",
-  "spec.phase": "archive",
-  "spec.timestamps.archive_started": "{ISO时间}",
-  "updated_at": "{ISO时间}"
-```
+
+`ace task done` 内部顺序执行 complete → archive，任一步失败则中止报错。
+没有执行这条命令 = ACE 归档门禁未通过。
+</HARD-GATE>
 
 ### 6. 分支处理（配置驱动）
 

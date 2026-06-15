@@ -32,11 +32,11 @@
 
 ⚠️ **跳过此步 = 违规。** OpenSpec 归档是流程完整性的一部分，不可因"不确定如何执行"而静默跳过。
 
-### 2. 本地状态清理
+### 2. 本地状态清理 + ACE 双归档
 
-AI 直接执行以下操作（不调脚本）：
+AI 直接执行以下操作：
 
-1. **更新 state.json**（`$TASK_DIR/state.json`）：
+1. **更新 state.json 阶段状态**（`$TASK_DIR/state.json`）：
    ```json
    {
      "currentPhase": "done",
@@ -48,6 +48,29 @@ AI 直接执行以下操作（不调脚本）：
    ```bash
    rm .ace/tasks/.active-spechub
    ```
+
+3. **ACE 双归档**（详见 `../../shared/archive-protocol.md` 协议 B）：
+
+   <HARD-GATE name="ACE 归档门禁">
+   ACE 本地归档是流程的必要终结步骤，必须在 SpecHub 上报之前完成。
+   禁止以任何理由跳过，包括：
+   - "交付了就算完成" → 未归档 = state.json 永远 in_progress。
+   - "FleetView TaskUpdate completed 了" → 两套系统完全独立，不可替代。
+
+   **Terminal state = 以下命令执行成功：**
+
+   ```bash
+   # 一条命令完成 complete + archive
+   ace task done {changeName}
+   ```
+
+   `ace task done` 执行成功输出 `✓ Task '...' archived to .ace/tasks/archive/...`
+   未出现此输出 = 归档门禁未通过，禁止继续执行 SpecHub 上报。
+   </HARD-GATE>
+
+   > **顺序说明**：`ace task done`（本地归档）必须先于 SpecHub 上报。
+   > `spechub-workflow.py archive` 已支持扫描已归档目录，不依赖任务在活跃路径。
+   > 注：双归档协议 Step 1（OpenSpec 归档）已在上方 Step 1 完成，SpecHub 上报在下方 Step 4 执行。
 
 ### 3. Git 提交
 

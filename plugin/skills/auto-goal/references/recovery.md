@@ -4,12 +4,14 @@
 
 ## 标准恢复流程
 
-1. **定位** — 读取 `.ace/tasks/{changeName}/state.json`
-2. **验证** — Glob/Read 轻量确认声称的产出是否真实存在
-3. **加载上下文** — 读取 `.ace/tasks/{changeName}/context.md` 获取决策和中间结论
-4. **读经验** — 读取 `.ace/experience.md`（如存在）
-5. **重建 UI** — 用 TaskCreate 重建进度显示
-6. **继续** — 从 state.json 的当前任务状态继续执行
+1. **扫描活跃任务** — Glob `.ace/tasks/*/state.json`（**显式跳过 `.ace/tasks/archive/` 子目录**）
+   筛选 `type=="simple"` 且 `status!="completed"` 的任务
+2. **定位** — 读取 `.ace/tasks/{changeName}/state.json`
+3. **验证** — Glob/Read 轻量确认声称的产出是否真实存在
+4. **加载上下文** — 读取 `.ace/tasks/{changeName}/context.md` 获取决策和中间结论
+5. **读经验** — 读取 `.ace/experience.md`（如存在）
+6. **重建 UI** — 用 TaskCreate 重建进度显示
+7. **继续** — 从 state.json 的当前任务状态继续执行
 
 ## Fallback：state.json 不存在时
 

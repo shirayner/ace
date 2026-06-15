@@ -96,19 +96,22 @@ Phase B: 代码锚点分析 (自动衔接)
 
 ```json
 {
-  "name": "{{changeName}}",
-  "type": "analysis",
-  "status": "in-progress",
+  "changeName": "{{changeName}}",
+  "type": "simple",
+  "skillName": "requirement-analysis",
+  "status": "in_progress",
   "created_at": "{{ISO时间戳}}",
   "updated_at": "{{ISO时间戳}}",
+  "completed_at": null,
+  "archived_at": null,
   "completion_criteria": [
     "PRD 生成完成",
     "锚点分析完成"
   ],
   "tasks": [],
-  "analysis": {
-    "skill": "requirement-analysis",
-    "scope": "{{需求范围}}"
+  "simple": {
+    "phase": "executing",
+    "decisions": []
   }
 }
 ```
@@ -401,7 +404,12 @@ PRD 用户故事 → wiki 漏斗 → 缺口分析 → 代码确认 → 变更分
 - `.ace/tasks/{{changeName}}/artifacts/requirement-anchors-analysis.md`
 - `.ace/tasks/{{changeName}}/artifacts/issues/requirement-issues.md`
 
-独立调用时，更新 `.ace/tasks/{{changeName}}/state.json` 中 `status` 为 `"completed"`。
+独立调用时，更新 `.ace/tasks/{{changeName}}/state.json` 中 `status` 为 `"completed"`，并执行 simple 类型归档：
+
+```bash
+ace task complete {{changeName}}
+ace task archive {{changeName}}
+```
 
 建议使用 `spec-coding` Skill 进入编码阶段。回复 `spec-coding {{changeName}}` 即可，spec-coding 将：
 

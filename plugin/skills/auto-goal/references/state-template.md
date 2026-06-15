@@ -10,11 +10,14 @@ auto-goal 使用统一的 `.ace/tasks/{changeName}/` 目录结构。
 
 ```jsonc
 {
-  "name": "perf-optimize-api",
-  "type": "goal",
-  "status": "in-progress",
-  "created_at": "2026-06-12T10:00:00",
-  "updated_at": "2026-06-12T14:30:00",
+  "changeName": "perf-optimize-api",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "in_progress",
+  "created_at": "2026-06-12T10:00:00Z",
+  "updated_at": "2026-06-12T14:30:00Z",
+  "completed_at": null,
+  "archived_at": null,
 
   "completion_criteria": [
     "API P99 延迟 < 200ms",
@@ -29,7 +32,7 @@ auto-goal 使用统一的 `.ace/tasks/{changeName}/` 目录结构。
     {"id": "T5", "title": "集成验证", "status": "pending", "depends": ["T3", "T4"]}
   ],
 
-  "goal": {
+  "simple": {
     "phase": "executing",
     "decisions": [
       {"decision": "使用 Caffeine 本地缓存", "reason": "延迟敏感，Redis 网络开销大", "alternatives": ["Redis", "Guava Cache"]}

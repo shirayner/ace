@@ -204,10 +204,13 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
     check_response_status(resp)
     check_business_status(resp)
 
-    # Write raw artifacts to .ace/spechub/{reqId}/
-    req_id_str = str(req_id)
-    spechub_dir = repo_root / ".ace" / "spechub" / req_id_str
-    artifacts_dir = spechub_dir / "artifacts"
+    # Write raw artifacts to .ace/tasks/{changeName}/input/  (formerly .ace/spechub/{reqId}/)
+    change_name_early = _title_to_slug(
+        resp.get("manifest", {}).get("title", f"req-{req_id}"), req_id
+    )
+    task_dir_early = repo_root / ".ace" / "tasks" / change_name_early
+    input_dir = task_dir_early / "input"
+    artifacts_dir = input_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
     written_files = []
@@ -239,40 +242,56 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
         write_file(artifacts_dir / "database-design.md", database_design["content"])
         written_files.append("database-design.md")
 
-    # Write manifest
+    # Write manifest to input/manifest.json
     manifest = resp.get("manifest", {})
-    write_file(spechub_dir / "manifest.json",
+    write_file(input_dir / "manifest.json",
                json.dumps(manifest, ensure_ascii=False, indent=2))
 
     # Derive changeName (slug) from title
     title = manifest.get("title", f"Requirement {req_id}")
     change_name = _title_to_slug(title, req_id)
 
-    # Initialize state.json at .ace/tasks/{changeName}/state.json
+    # Rename input dir if slug differs from early estimate
     task_dir = repo_root / ".ace" / "tasks" / change_name
+    if change_name != change_name_early and task_dir_early.exists():
+        import shutil
+        shutil.move(str(task_dir_early), str(task_dir))
+        input_dir = task_dir / "input"
+        artifacts_dir = input_dir / "artifacts"
+
+    # Initialize state.json at .ace/tasks/{changeName}/state.json
     task_dir.mkdir(parents=True, exist_ok=True)
 
     # Create artifacts/analysis dir for COMPREHEND Agent outputs
     (task_dir / "artifacts" / "analysis").mkdir(parents=True, exist_ok=True)
 
     state = {
-        "type": "spechub",
-        "reqId": req_id,
-        "title": title,
         "changeName": change_name,
-        "currentPhase": "comprehend",
-        "openspecChange": "",
-        "phases": {
-            "pull": {"status": "done", "ts": now_iso(), "outputs": ["manifest.json", "artifacts/"]},
-            "comprehend": {"status": "pending"},
-            "readiness": {"status": "pending"},
-            "design": {"status": "pending"},
-            "implement": {"status": "pending"},
-            "verify": {"status": "pending"},
-            "archive": {"status": "pending"}
-        },
-        "gates": {},
-        "divergences": []
+        "type": "spechub",
+        "skillName": "spechub-coding",
+        "status": "in_progress",
+        "created_at": now_iso(),
+        "updated_at": now_iso(),
+        "completed_at": None,
+        "archived_at": None,
+        "completion_criteria": [],
+        "tasks": [],
+        "spechub": {
+            "reqId": req_id,
+            "title": title,
+            "currentPhase": "comprehend",
+            "phases": {
+                "pull": {"status": "done", "ts": now_iso(), "outputs": ["input/manifest.json", "input/artifacts/"]},
+                "comprehend": {"status": "pending"},
+                "readiness": {"status": "pending"},
+                "design": {"status": "pending"},
+                "implement": {"status": "pending"},
+                "verify": {"status": "pending"},
+                "archive": {"status": "pending"}
+            },
+            "gates": {},
+            "divergences": []
+        }
     }
     write_file(task_dir / "state.json", json.dumps(state, ensure_ascii=False, indent=2))
 
@@ -289,7 +308,7 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
         "changeName": change_name,
         "gitRemoteUrl": git_url,
         "taskDir": str(task_dir),
-        "spechubDir": str(spechub_dir),
+        "inputDir": str(input_dir),
         "writtenFiles": written_files,
         "nextPhase": "comprehend"
     }
@@ -311,32 +330,70 @@ def _title_to_slug(title: str, req_id: int = 0) -> str:
 
 # ─── Command: archive ───────────────────────────────────────────────────────
 
+def _find_state_by_req_id(tasks_dir: Path, req_id: int):
+    """Find state.json for a given reqId.
+
+    Searches both active tasks (.ace/tasks/{changeName}/) and archived tasks
+    (.ace/tasks/archive/*-{changeName}/) so that this script can be called
+    AFTER `ace task archive` has already moved the directory.
+
+    Returns (state_path, task_dir) or (None, None) if not found.
+    """
+    candidates = []
+
+    if not tasks_dir.is_dir():
+        return None, None
+
+    # Active tasks: .ace/tasks/{changeName}/
+    for child in tasks_dir.iterdir():
+        if child.name == 'archive' or not child.is_dir():
+            continue
+        candidates.append(child)
+
+    # Archived tasks: .ace/tasks/archive/*-{changeName}/
+    archive_dir = tasks_dir / "archive"
+    if archive_dir.is_dir():
+        for child in archive_dir.iterdir():
+            if child.is_dir():
+                candidates.append(child)
+
+    for task_dir in candidates:
+        candidate = task_dir / "state.json"
+        if not candidate.is_file():
+            continue
+        try:
+            with open(candidate, encoding="utf-8") as f:
+                s = json.load(f)
+            s_req_id = (
+                s.get("spechub", {}).get("reqId")
+                or s.get("reqId")
+            )
+            if s_req_id == req_id:
+                return candidate, task_dir
+        except (json.JSONDecodeError, KeyError):
+            continue
+
+    return None, None
+
+
 def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
-    """Report to SpecHub API. Local state cleanup is handled by AI before commit."""
+    """Report to SpecHub API.
+
+    Can be called before OR after `ace task archive`:
+    - Before archive: task_dir is the active path (.ace/tasks/{changeName}/)
+    - After archive:  task_dir is the archived path (.ace/tasks/archive/<date>-{changeName}/)
+
+    The recommended order is:
+      ace task done {changeName}   ← complete + archive in one step
+      python3 spechub-workflow.py archive ...   ← then report to SpecHub
+    """
     git_url = get_git_remote_url(repo_root)
 
-    # Find state.json by scanning .ace/tasks/ for matching reqId
     tasks_dir = repo_root / ".ace" / "tasks"
-    state_path = None
-    change_name = None
-
-    if tasks_dir.is_dir():
-        for child in tasks_dir.iterdir():
-            if child.is_dir():
-                candidate = child / "state.json"
-                if candidate.is_file():
-                    try:
-                        with open(candidate, encoding="utf-8") as f:
-                            s = json.load(f)
-                        if s.get("reqId") == req_id:
-                            state_path = candidate
-                            change_name = child.name
-                            break
-                    except (json.JSONDecodeError, KeyError):
-                        continue
+    state_path, task_dir = _find_state_by_req_id(tasks_dir, req_id)
 
     if not state_path or not state_path.is_file():
-        print(f"state.json not found for reqId {req_id} in .ace/tasks/", file=sys.stderr)
+        print(f"state.json not found for reqId {req_id} in .ace/tasks/ (active or archive)", file=sys.stderr)
         sys.exit(2)
 
     # Read state to get divergences

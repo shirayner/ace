@@ -63,8 +63,29 @@ Bug/坏味道速查：Read `references/code-smells.md`
 Read references → 按文件分析 → 合并输出报告
 
 ### 深度（>500 行 diff / 架构级变更）
-创建 `.ace/tasks/review-{slug}/state.json` → 按模块分批审查
-可并行：Read `../../shared/parallel-protocol.md`，每个 Agent 审查一个模块
+创建如下 state.json 后按模块分批审查：
+```json
+{
+  "changeName": "review-{slug}",
+  "type": "simple",
+  "skillName": "code-review",
+  "status": "in_progress",
+  "created_at": "{ISO时间}",
+  "updated_at": "{ISO时间}",
+  "completed_at": null,
+  "archived_at": null,
+  "completion_criteria": ["审查报告已生成"],
+  "tasks": [],
+  "simple": { "phase": "executing", "decisions": [] }
+}
+```
+可并行：Read `../../shared/parallel-protocol.md`，每个 Agent 审查一个模块。
+
+审查完成后执行归档：
+```bash
+ace task complete review-{slug}
+ace task archive review-{slug}
+```
 
 ---
 
