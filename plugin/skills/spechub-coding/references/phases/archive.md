@@ -92,8 +92,9 @@ python3 {skillDir}/scripts/spechub-workflow.py archive {reqId} --repo-root {repo
 ```
 
 脚本职责（仅 API 调用，不修改本地文件）：
-- ✅ 读取 state.json.divergences[] → 生成 decisions.md（幂等）
+- ✅ 读取 divergences（优先 `state.spechub.divergences`，回退 `state.divergences`，兼容新旧 schema）→ 生成 decisions.md（幂等）
 - ✅ 调用 SpecHub archiveHandoff API（带 branch + commitHash）
+- ✅ **已支持扫描归档目录**：`ace task done` 之后调用本命令，脚本能在 `.ace/tasks/archive/` 中找到 state.json
 
 脚本输出：
 ```json

@@ -400,7 +400,13 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     with open(state_path, encoding="utf-8") as f:
         state = json.load(f)
 
-    divergences = state.get("divergences", [])
+    # Support both new nested schema (state["spechub"]["divergences"])
+    # and legacy flat schema (state["divergences"])
+    divergences = (
+        state.get("spechub", {}).get("divergences")
+        or state.get("divergences")
+        or []
+    )
 
     # Build decisions markdown from divergences
     decisions_md = _divergences_to_markdown(divergences)
