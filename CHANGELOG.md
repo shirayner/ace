@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-06-25
+
+### Added
+- **text-to-image** skill：基于 Python 脚本的文生图能力，集成到 plugin 体系
+- **test-case-gen** skill：测试用例生成器，含 case-template 与 test-design-methods 参考文档
+- **tech-design** skill：技术方案设计 skill 全面重构，新增 forward-design / review / tech-selection 三 phase 流程，含 estimation-guide / quality-attributes / review-checklist / full-design-template / knowledge-anchors 参考文档
+- **code-review** skill：独立代码评审 skill，含 code-review-guide 与 code-smells 参考
+- **spechub-coding**：新增 `references/phases/prepare.md`（产物消化 + 条件触发的基础设施校验）与 `references/testing-guide.md`（测试框架检测、Mock 陷阱速查）
+- **spechub-coding**：`scripts/openspec-init.sh` 一键完成 openspec CLI 安装与目录初始化（取代手动 `openspec init`）
+- **spec-coding**：`scripts/openspec-init.sh` 与 spechub 共享初始化逻辑
+- **ACE 任务管理**：`ace task` 命令族（`ace task done` 一键 complete + archive），`src/commands/task.js` + `src/core/task-utils.js`
+- **shared 协议**：新增 `shared/archive-protocol.md`、`shared/artifacts-schema.md`、`shared/state-template.md` 三份共享规范
+
+### Changed
+- **spechub-coding** 状态机重构：原 6-phase（pull/comprehend/readiness/design/implement/verify/archive）合并为 5-phase（pull/prepare/design/implement/verify/archive），COMPREHEND + READINESS 合并为 PREPARE，gate 重新编号 G1/G2/G3
+- **spechub-coding** SKILL.md：新增分级介入架构（Tiered Intervention，Level 0-3），G2 改为基于方案确定性的条件式判定（HIGH/MEDIUM/LOW）
+- **spechub-coding** 文档语言 HARD RULE：所有生成的文档产物（proposal.md / design.md / tasks.md / prepare-summary.md / handoff-check.md）必须使用中文（代码标识符保持英文）
+- **spechub-coding** PULL phase Step 4：分支管理升级为 HARD-GATE，脚本层强制检查（exit 12 = branch_mismatch），AI 无法绕过分支切换
+- **spechub-workflow.py**：`start` 命令新增 `enforce_branch_for_start()` 自检，未在 `feat/{changeName}` 分支时拒绝执行并输出 `status: branch_mismatch`；新增 `--allow-branch-mismatch` 逃生口
+- **auto-goal** skill：状态模板对齐统一 schema，恢复协议优化
+- **requirement-analysis** skill：流程指令收敛
+- **spec-coding** archive phase：归档流程优化
+
+### Removed
+- **spechub-coding** 旧 reference 文件：`dimensions.md`、`divergence-protocol.md`、`gate-formats.md`、`quality-criteria.md`、`phases/comprehend.md`、`phases/readiness.md`（被新的 prepare.md + state-schema.md 替代）
+
+### Fixed
+- **spechub-coding archive**：Git 完整性检查与 ACE 本地归档 mv 步骤补强，避免遗漏
+
 ## [1.0.0] - 2026-06-12
 
 ### Added
