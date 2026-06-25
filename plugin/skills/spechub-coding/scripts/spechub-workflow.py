@@ -3,12 +3,14 @@
 spechub-workflow.py — SpecHub Coding 工作流统一 CLI
 
 子命令:
+  info    仅获取需求元信息（标题/状态），不拉取产物、不创建目录
   start   前置检查 + 获取需求 + 拉取产物 + 初始化状态
   inbox   仅列出 inbox（供 AI 让用户选择）
   archive 构建 decisions + 上报 SpecHub + 清理状态
 
 用法:
-  python3 spechub-workflow.py start [reqId] --repo-root <path>
+  python3 spechub-workflow.py info <reqId> --repo-root <path>
+  python3 spechub-workflow.py start <reqId> --change-name <name> --repo-root <path>
   python3 spechub-workflow.py inbox --repo-root <path>
   python3 spechub-workflow.py archive <reqId> --repo-root <path> --branch <name> --commit <hash>
 
@@ -24,7 +26,8 @@ spechub-workflow.py — SpecHub Coding 工作流统一 CLI
   2 = 响应解析失败
   3 = 业务错误
   10 = 前置检查失败（openspec/ 或 profile 不存在）
-  11 = git remote 获取失败
+  11 = git remote 获取失败 / changeName 无效
+  12 = 分支不匹配（start 必须在 feat/{changeName} 分支上执行）
 """
 
 import argparse
@@ -81,10 +84,12 @@ def post_json(endpoint: str, payload: dict) -> dict:
         with urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode("utf-8"))
     except HTTPError as e:
-        print(f"HTTP {e.code}: {e.reason}", file=sys.stderr)
+        error_output = {"status": "http_error", "errorCode": e.code, "errorMessage": e.reason, "url": url}
+        print(json.dumps(error_output, ensure_ascii=False, indent=2))
         sys.exit(1)
     except URLError as e:
-        print(f"Network error: {e.reason}", file=sys.stderr)
+        error_output = {"status": "network_error", "errorMessage": str(e.reason), "url": url}
+        print(json.dumps(error_output, ensure_ascii=False, indent=2))
         sys.exit(1)
 
 
@@ -97,14 +102,28 @@ def check_response_status(resp: dict) -> None:
         sys.exit(1)
 
 
-def check_business_status(resp: dict) -> None:
-    """Check businessResponsesStatus, exit 3 on business error."""
+def check_business_status(resp: dict, allow_incomplete: bool = False) -> str | None:
+    """Check businessResponsesStatus.
+
+    If allow_incomplete=True, ARTIFACTS_INCOMPLETE is treated as a warning
+    (returns the status code) instead of a fatal error.
+    Returns the statusCode if it's a non-fatal warning, None otherwise.
+    On fatal business error, prints JSON error info to stdout and exits with code 3.
+    """
     brs = resp.get("businessResponsesStatus", {})
     status_code = brs.get("statusCode", "")
     if status_code and status_code != "OK":
+        if allow_incomplete and status_code == "ARTIFACTS_INCOMPLETE":
+            return status_code
         error_msg = brs.get("errorMessage", "Unknown error")
-        print(f"Business error [{status_code}]: {error_msg}", file=sys.stderr)
+        error_output = {
+            "status": "business_error",
+            "errorCode": status_code,
+            "errorMessage": error_msg
+        }
+        print(json.dumps(error_output, ensure_ascii=False, indent=2))
         sys.exit(3)
+    return None
 
 
 # ─── File Helpers ───────────────────────────────────────────────────────────
@@ -125,16 +144,14 @@ def now_iso() -> str:
 def check_preconditions(repo_root: Path) -> dict:
     """Check openspec/ exists. Return status dict.
 
-    NOTE: project-profile.md is NOT checked here.
-    It belongs to the COMPREHEND phase, not PULL.
-    The AI layer handles profile initialization (background ace:init)
-    before entering COMPREHEND.
+    NOTE: project-profile.md is optional and NOT checked here.
+    Each phase handles its absence gracefully (falls back to code exploration).
     """
     issues = []
 
     openspec_dir = repo_root / "openspec"
     if not openspec_dir.is_dir():
-        issues.append("openspec/ 目录不存在，请先运行: openspec init")
+        issues.append("openspec/ 目录不存在，需先由 AI 前置检查初始化")
 
     if issues:
         return {"ok": False, "issues": issues}
@@ -155,6 +172,89 @@ def get_git_remote_url(repo_root: Path) -> str:
     except FileNotFoundError:
         print("git command not found", file=sys.stderr)
         sys.exit(11)
+
+
+def get_current_branch(repo_root: Path) -> str:
+    """Get the current git branch name. Returns empty string on failure."""
+    try:
+        result = subprocess.run(
+            ["git", "branch", "--show-current"],
+            capture_output=True, text=True, cwd=str(repo_root)
+        )
+        if result.returncode != 0:
+            return ""
+        return result.stdout.strip()
+    except FileNotFoundError:
+        return ""
+
+
+def enforce_branch_for_start(repo_root: Path, change_name: str, allow_mismatch: bool) -> None:
+    """Enforce branch convention before pulling artifacts.
+
+    Required branch: feat/{changeName}
+    Rejects execution if current branch is master/main or any other branch,
+    unless --allow-branch-mismatch is explicitly set (after user confirmation).
+
+    Exit code 12 = branch_mismatch.
+    """
+    if allow_mismatch:
+        return
+
+    current_branch = get_current_branch(repo_root)
+    expected_branch = f"feat/{change_name}"
+
+    if current_branch == expected_branch:
+        return
+
+    print(json.dumps({
+        "status": "branch_mismatch",
+        "currentBranch": current_branch,
+        "expectedBranch": expected_branch,
+        "changeName": change_name,
+        "error": (
+            f"Refusing to pull artifacts: current branch is '{current_branch}' "
+            f"but expected '{expected_branch}'. PULL phase requires branch "
+            f"switching BEFORE artifact pull (see references/phases/pull.md Step 4)."
+        ),
+        "hint": (
+            f"Run one of:\n"
+            f"  git checkout {expected_branch}                # if branch exists\n"
+            f"  git checkout -b {expected_branch}             # if creating new\n"
+            f"Then re-run start. If user explicitly confirmed using a different "
+            f"branch, pass --allow-branch-mismatch to override."
+        )
+    }, ensure_ascii=False, indent=2))
+    sys.exit(12)
+
+
+# ─── Command: info ─────────────────────────────────────────────────────────
+
+def cmd_info(repo_root: Path, req_id: int) -> None:
+    """Fetch requirement metadata only. No directory creation, no artifact download."""
+    pre = check_preconditions(repo_root)
+    if not pre["ok"]:
+        print(json.dumps({"status": "precondition_failed", "issues": pre["issues"]},
+                         ensure_ascii=False, indent=2))
+        sys.exit(10)
+
+    git_url = get_git_remote_url(repo_root)
+
+    resp = post_json("/getHandoffBundle", {
+        "requirementId": str(req_id),
+        "gitRemoteUrl": git_url
+    })
+    check_response_status(resp)
+    check_business_status(resp)
+
+    manifest = resp.get("manifest", {})
+    output = {
+        "status": "ok",
+        "reqId": req_id,
+        "title": manifest.get("requirementTitle", f"Requirement {req_id}"),
+        "requirementStatus": manifest.get("requirementStatus", ""),
+        "gitRemoteUrl": git_url
+    }
+    print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
 # ─── Command: inbox ─────────────────────────────────────────────────────────
@@ -185,7 +285,7 @@ def cmd_inbox(repo_root: Path) -> None:
 
 # ─── Command: start ─────────────────────────────────────────────────────────
 
-def cmd_start(repo_root: Path, req_id: int) -> None:
+def cmd_start(repo_root: Path, req_id: int, change_name: str = None, allow_branch_mismatch: bool = False) -> None:
     """Pull artifacts and initialize state."""
     # Precondition check
     pre = check_preconditions(repo_root)
@@ -202,14 +302,44 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
         "gitRemoteUrl": git_url
     })
     check_response_status(resp)
-    check_business_status(resp)
+    incomplete_warning = check_business_status(resp, allow_incomplete=True)
 
-    # Write raw artifacts to .ace/tasks/{changeName}/input/  (formerly .ace/spechub/{reqId}/)
-    change_name_early = _title_to_slug(
-        resp.get("manifest", {}).get("title", f"req-{req_id}"), req_id
-    )
-    task_dir_early = repo_root / ".ace" / "tasks" / change_name_early
-    input_dir = task_dir_early / "input"
+    # Write raw artifacts to .ace/tasks/{changeName}/input/
+    # Use externally provided change_name if given, otherwise derive from title
+    title = resp.get("manifest", {}).get("requirementTitle", f"Requirement {req_id}")
+    effective_change_name = change_name if change_name else _title_to_slug(title, req_id)
+
+    # Validate changeName against openspec CLI requirement.
+    # Failure modes:
+    #   1. Title is fully non-ASCII (e.g. Chinese) and no --change-name provided
+    #      → _title_to_slug returns "" → reject with actionable error.
+    #   2. Caller passed a malformed --change-name → reject early.
+    if not _validate_change_name(effective_change_name):
+        print(json.dumps({
+            "status": "invalid_change_name",
+            "reqId": req_id,
+            "title": title,
+            "derivedChangeName": effective_change_name,
+            "providedChangeName": change_name,
+            "error": (
+                "changeName must match ^[a-z0-9]+(-[a-z0-9]+)*$ "
+                "(openspec CLI requirement). "
+                "Title appears to contain non-ASCII characters (e.g. CJK) — "
+                "auto-derivation cannot produce a valid slug. "
+                "Please re-invoke with --change-name <english-kebab-case>, "
+                "e.g. --change-name black-diamond-retention-rules."
+            ),
+            "hint": "AI caller should translate the Chinese title to a 2-5 word English kebab-case slug and pass via --change-name."
+        }, ensure_ascii=False, indent=2))
+        sys.exit(11)
+
+    # HARD GATE: branch must be feat/{changeName} before pulling artifacts.
+    # AI tends to skip the documented branch-switch step; enforce it in the
+    # script so artifacts cannot be pulled onto the wrong branch.
+    enforce_branch_for_start(repo_root, effective_change_name, allow_branch_mismatch)
+
+    task_dir = repo_root / ".ace" / "tasks" / effective_change_name
+    input_dir = task_dir / "input"
     artifacts_dir = input_dir / "artifacts"
     artifacts_dir.mkdir(parents=True, exist_ok=True)
 
@@ -247,26 +377,14 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
     write_file(input_dir / "manifest.json",
                json.dumps(manifest, ensure_ascii=False, indent=2))
 
-    # Derive changeName (slug) from title
-    title = manifest.get("title", f"Requirement {req_id}")
-    change_name = _title_to_slug(title, req_id)
-
-    # Rename input dir if slug differs from early estimate
-    task_dir = repo_root / ".ace" / "tasks" / change_name
-    if change_name != change_name_early and task_dir_early.exists():
-        import shutil
-        shutil.move(str(task_dir_early), str(task_dir))
-        input_dir = task_dir / "input"
-        artifacts_dir = input_dir / "artifacts"
-
     # Initialize state.json at .ace/tasks/{changeName}/state.json
     task_dir.mkdir(parents=True, exist_ok=True)
 
-    # Create artifacts/analysis dir for COMPREHEND Agent outputs
+    # Create artifacts/analysis dir for PREPARE phase outputs
     (task_dir / "artifacts" / "analysis").mkdir(parents=True, exist_ok=True)
 
     state = {
-        "changeName": change_name,
+        "changeName": effective_change_name,
         "type": "spechub",
         "skillName": "spechub-coding",
         "status": "in_progress",
@@ -279,11 +397,10 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
         "spechub": {
             "reqId": req_id,
             "title": title,
-            "currentPhase": "comprehend",
+            "currentPhase": "prepare",
             "phases": {
                 "pull": {"status": "done", "ts": now_iso(), "outputs": ["input/manifest.json", "input/artifacts/"]},
-                "comprehend": {"status": "pending"},
-                "readiness": {"status": "pending"},
+                "prepare": {"status": "pending"},
                 "design": {"status": "pending"},
                 "implement": {"status": "pending"},
                 "verify": {"status": "pending"},
@@ -295,37 +412,62 @@ def cmd_start(repo_root: Path, req_id: int) -> None:
     }
     write_file(task_dir / "state.json", json.dumps(state, ensure_ascii=False, indent=2))
 
-    # Write .active-spechub
-    active_dir = repo_root / ".ace" / "tasks"
-    active_dir.mkdir(parents=True, exist_ok=True)
-    write_file(active_dir / ".active-spechub", req_id_str)
+    # Detect which optional artifacts are missing (for AI layer awareness)
+    missing_artifacts = []
+    if not resp.get("contracts"):
+        missing_artifacts.append("contracts")
+    if not (resp.get("databaseDesign", {}).get("exists")):
+        missing_artifacts.append("database-design")
+    if not (resp.get("qmqDesign", {}).get("exists")):
+        missing_artifacts.append("qmq-design")
 
     # Output summary
     output = {
         "status": "ok",
         "reqId": req_id,
         "title": title,
-        "changeName": change_name,
+        "changeName": effective_change_name,
         "gitRemoteUrl": git_url,
         "taskDir": str(task_dir),
         "inputDir": str(input_dir),
         "writtenFiles": written_files,
-        "nextPhase": "comprehend"
+        "missingArtifacts": missing_artifacts,
+        "artifactsIncomplete": incomplete_warning == "ARTIFACTS_INCOMPLETE",
+        "nextPhase": "prepare"
     }
     print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
 def _title_to_slug(title: str, req_id: int = 0) -> str:
-    """Convert title to kebab-case slug."""
+    """Convert title to kebab-case slug.
+
+    Only ASCII letters/digits/hyphens are preserved (openspec CLI requires
+    [a-z0-9-] only). Non-ASCII characters (e.g. CJK) are stripped — if the
+    title is fully non-ASCII the function returns an empty slug, which the
+    caller must detect and reject (see cmd_start validation).
+    """
     import re
-    # Remove non-alphanumeric (keeping CJK and ascii letters/digits)
-    slug = re.sub(r'[^\w\s-]', '', title.lower())
+    # Strip everything except ASCII letters, digits, whitespace, hyphens, underscores
+    # (underscores are kept here so the next pass can normalize them to hyphens)
+    slug = re.sub(r'[^a-z0-9\s\-_]', '', title.lower())
     slug = re.sub(r'[\s_]+', '-', slug)
+    slug = re.sub(r'-+', '-', slug)
     slug = slug.strip('-')
     # Limit length
     if len(slug) > 50:
         slug = slug[:50].rstrip('-')
-    return slug or f"req-{req_id}"
+    return slug or ""
+
+
+_SLUG_PATTERN = __import__('re').compile(r'^[a-z0-9]+(-[a-z0-9]+)*$')
+
+
+def _validate_change_name(name: str) -> bool:
+    """Validate changeName matches openspec CLI requirement: lowercase letters,
+    digits, and hyphens only (no leading/trailing/double hyphens)."""
+    if not name:
+        return False
+    return bool(_SLUG_PATTERN.match(name))
 
 
 # ─── Command: archive ───────────────────────────────────────────────────────
@@ -400,20 +542,33 @@ def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     with open(state_path, encoding="utf-8") as f:
         state = json.load(f)
 
-    # Support both new nested schema (state["spechub"]["divergences"])
-    # and legacy flat schema (state["divergences"])
-    divergences = (
-        state.get("spechub", {}).get("divergences")
-        or state.get("divergences")
-        or []
-    )
-
-    # Build decisions markdown from divergences
-    decisions_md = _divergences_to_markdown(divergences)
-
-    # Write decisions.md to task artifacts (idempotent)
+    # Read divergences: prefer divergences.jsonl (new format), fall back to state.json
     task_dir = state_path.parent
-    write_file(task_dir / "artifacts" / "decisions.md", decisions_md)
+    divergences_file = task_dir / "artifacts" / "divergences.jsonl"
+    if divergences_file.is_file():
+        divergences = []
+        with open(divergences_file, encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        divergences.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+    else:
+        # Legacy: read from state.json (nested or flat)
+        divergences = (
+            state.get("spechub", {}).get("divergences")
+            or state.get("divergences")
+            or []
+        )
+
+    # Read existing decisions.md (written by AI in Step 3), fallback to generating from divergences
+    decisions_file = task_dir / "artifacts" / "decisions.md"
+    if decisions_file.exists():
+        decisions_md = decisions_file.read_text(encoding="utf-8")
+    else:
+        decisions_md = _divergences_to_markdown(divergences)
 
     # Report to SpecHub
     payload = {
@@ -484,6 +639,11 @@ def main():
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
+    # info
+    p_info = subparsers.add_parser("info", help="获取需求元信息（不拉取产物）")
+    p_info.add_argument("req_id", type=int, help="需求 ID")
+    p_info.add_argument("--repo-root", required=True, help="项目根目录")
+
     # inbox
     p_inbox = subparsers.add_parser("inbox", help="列出 inbox 需求列表")
     p_inbox.add_argument("--repo-root", required=True, help="项目根目录")
@@ -492,6 +652,11 @@ def main():
     p_start = subparsers.add_parser("start", help="前置检查 + 拉取产物 + 初始化状态")
     p_start.add_argument("req_id", type=int, help="需求 ID")
     p_start.add_argument("--repo-root", required=True, help="项目根目录")
+    p_start.add_argument("--change-name", dest="change_name", default=None,
+                         help="指定 changeName（AI 从标题翻译生成）；为空则 fallback 到 _title_to_slug")
+    p_start.add_argument("--allow-branch-mismatch", dest="allow_branch_mismatch",
+                         action="store_true",
+                         help="允许在非 feat/{changeName} 分支上执行（仅当用户已确认时）")
 
     # archive
     p_archive = subparsers.add_parser("archive", help="构建 decisions + 上报 + 清理")
@@ -504,10 +669,12 @@ def main():
 
     repo_root = Path(args.repo_root).resolve()
 
-    if args.command == "inbox":
+    if args.command == "info":
+        cmd_info(repo_root, args.req_id)
+    elif args.command == "inbox":
         cmd_inbox(repo_root)
     elif args.command == "start":
-        cmd_start(repo_root, args.req_id)
+        cmd_start(repo_root, args.req_id, args.change_name, args.allow_branch_mismatch)
     elif args.command == "archive":
         cmd_archive(repo_root, args.req_id, args.branch, args.commit)
 

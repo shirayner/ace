@@ -6,7 +6,7 @@
 ## 输入
 - `$CHANGE_DIR/design.md` — 决策清单（含接口契约）
 - `$CHANGE_DIR/tasks.md` — 任务清单（含测试策略标注）
-- `.ace/project-profile.md` — 项目编码约定
+- `.ace/project-profile.md` — 项目编码约定（可选，无则从已有代码/pom.xml 推导）
 
 ## 产出
 - 实际代码变更
@@ -54,7 +54,8 @@
 **Step A — 签名预读 + 提取接口契约**
 
 1. 从 design.md 中提取当前 task 关联决策的接口信息（类名、方法签名、返回类型、异常声明、依赖）
-2. **签名预读（Read-Before-Write）[HARD RULE]**：对该 task 涉及的**跨层调用**，编写代码前必须 Read 目标类/接口文件，提取精确方法签名
+2. **利用 DESIGN 探索结果**：如果 design.md 决策中包含"代码事实"/"扩展点"/"签名"信息，直接引用（DESIGN 阶段已探索过的无需重复 Read）
+3. **签名预读（Read-Before-Write）[HARD RULE]**：对该 task 涉及的**跨层调用**，编写代码前必须 Read 目标类/接口文件，提取精确方法签名
 
 **签名预读触发条件**（满足任一即触发）：
 - 调用 domain 层 Repository 接口的方法
@@ -62,6 +63,11 @@
 - 继承/实现 base 类的方法
 - 使用其他模块的实体类 getter
 - 调用枚举的静态值或方法
+
+**快速定位策略**（代替原来的预定位信息）：
+- 优先从 design.md 决策描述中获取文件路径和类名
+- 不确定时用 Grep 精确搜索类名/方法名（而非全目录遍历）
+- 单次 Read 控制在目标方法 ±20 行范围内（不读整个文件）
 
 **违规判定**：编写调用代码时未在同一 turn 内 Read 过目标接口/类 = 违规。
 
@@ -118,7 +124,7 @@ mvn compile -pl {module} -am -DskipTests
 **编写规则**：
 - 第一个 task 的测试 → Write 新测试类
 - 后续 task 同类的测试 → Edit 追加到已有测试类
-- 参照 project-profile.md 确定框架（JUnit4/5 + Mockito/PowerMock）
+- 参照 project-profile.md（如存在）或 Grep 已有测试类确定框架（JUnit4/5 + Mockito/PowerMock）
 - 参照 ut skill 的 `unit-test-guide.md` Mock 陷阱避坑
 
 **Step E — 编译测试（COMPILE GATE #2）**
@@ -135,7 +141,7 @@ mvn compile -pl {module} -am
 
 将 Step B 的空骨架填充为真实实现：
 - 参照 design.md 对应决策方案
-- 参照 project-profile.md 编码约定
+- 参照 project-profile.md（如存在）或已有代码风格确定编码约定
 - 不超出当前 task scope
 - **注意**：此时方法签名已锁定（Step C 确认），只需填充方法体
 
@@ -157,7 +163,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 1. 自检：实现是否偏离对应决策点？（见 §3 偏离检测 — 分级处理）
    - 无偏离 → 直接标记完成
    - 有偏离 → 按分级规则处理（AUTO_ABSORB/BATCH_REPORT/IMMEDIATE_ESCALATE）
-2. **[必须执行 Edit]** 打开 `$CHANGE_DIR/tasks.md`（slug = state.json.openspecChange），将当前 task 的 `- [ ]` 改为 `- [x]`
+2. **[必须执行 Edit]** 打开 `$CHANGE_DIR/tasks.md`（`$CHANGE_DIR` = `openspec/changes/{changeName}/`），将当前 task 的 `- [ ]` 改为 `- [x]`
    - 这是文件系统操作（Edit 工具），不是心理标记
    - 每完成一个 task 必须立即 Edit，不可攒到最后批量改
 
@@ -203,7 +209,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 |------|------|---------|------|
 | **AUTO_ABSORB** | minor：不改变对外接口签名的实现细节差异 | 记录 + 继续（不中断） | 方法名微调、参数顺序、内部算法选择、类型精确化 |
 | **BATCH_REPORT** | significant：改变了方法签名/依赖/流程，但不影响其他未完成 task 的前提 | 累积 → VERIFY 完成后统一展示 | 方法签名变更、依赖替换、流程调整 |
-| **IMMEDIATE_ESCALATE** | blocker：scope 蠕动、架构模式偏离、影响其他 task 前提 | 立即 AskUserQuestion | 新增 Scope Out 功能、改变分层方向、≥2 task 累积偏离 |
+| **IMMEDIATE_ESCALATE** | blocker：scope 蠕动、架构模式偏离、影响其他 task 前提 | 立即 AskUserQuestion | 超出产物定义范围的功能、改变分层方向、≥2 task 累积偏离 |
 
 #### AUTO_ABSORB 处理
 
@@ -222,7 +228,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 }
 ```
 
-记录到 state.json → 继续下一个 task。无需任何中断。
+记录到 `$TASK_DIR/artifacts/divergences.jsonl`（追加一行）→ 继续下一个 task。无需任何中断。
 
 #### BATCH_REPORT 处理
 
@@ -241,7 +247,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 }
 ```
 
-记录到 state.json → 继续下一个 task。在 VERIFY 完成后的最终确认中统一展示。
+记录到 `$TASK_DIR/artifacts/divergences.jsonl`（追加一行）→ 继续下一个 task。在 VERIFY 完成后的最终确认中统一展示。
 
 #### IMMEDIATE_ESCALATE 处理
 
@@ -288,51 +294,17 @@ IMPLEMENT 阶段的上下文消耗应受控：
 
 | 操作 | 允许？ | 说明 |
 |------|--------|------|
-| 大范围探索（派 Agent 遍历项目） | ⛔ 禁止 | COMPREHEND 已完成，不应重新探索 |
+| 大范围探索（派 Agent 遍历项目） | ⛔ 禁止 | PREPARE 已完成，不应重新探索 |
 | 精确签名确认（Read 特定接口文件的特定方法声明，≤10 行） | ✅ 允许 | Step A 签名预读的必要支撑 |
 | 增量编译验证 | ✅ 允许 | COMPILE GATE 的必要支撑 |
-| 读取 comprehension.md / design.md / tasks.md 引用 | ✅ 允许 | 正常实现流程 |
-| 读取 project-profile.md 查编码约定 | ✅ 允许 | 正常实现流程 |
+| 读取 prepare-summary.md / design.md / tasks.md 引用 | ✅ 允许 | 正常实现流程 |
+| 读取 project-profile.md 查编码约定 | ✅ 允许（可选） | 有则读，无则从代码推导 |
 
 **设计原理**：DESIGN 阶段禁止重新探索是合理的（产物已固定）。但 IMPLEMENT 阶段**必须允许精确的签名确认 Read**——因为"不再探索"≠"不可确认事实"。记忆 ≠ 事实，签名确认是低成本高收益的防错手段。
 
 ---
 
-## 测试编写参考
+## 测试问题排查
 
-### 框架检测
-
-读取 pom.xml/build.gradle 确定框架组合：
-
-| 框架组合 | 类注解 | Mock 注入 |
-|---------|--------|----------|
-| JUnit 5 + Mockito | `@ExtendWith(MockitoExtension.class)` | `@InjectMocks` 自动注入 |
-| JUnit 4 + Mockito | `@RunWith(MockitoJUnitRunner.class)` | `@InjectMocks` 自动注入 |
-| JUnit 4 + PowerMock | `@RunWith(PowerMockRunner.class)` | 必须手动反射注入 @Autowired 字段 |
-
-### Mock 陷阱速查
-
-| 陷阱 | 现象 | 解法 |
-|------|------|------|
-| PowerMock + @Autowired | NPE: 字段为 null | 反射注入（详见 unit-test-guide.md） |
-| thenReturn 中调 mock | UnfinishedStubbingException | 用固定值或 thenAnswer |
-| stream 内隐藏依赖 | NPE in lambda | 完整阅读方法体，列出调用清单 |
-| 外部 SDK 无 setter | 编译错误 | 用 mock() + when().thenReturn() |
-| 父类已有 mock 定义 | 重复 mock 冲突 | 检查测试父类 |
-
-### Mock 决策速查
-
-| 依赖位置 | 是否已实现 | 决策 |
-|---------|-----------|------|
-| 同模块 | ✅ 已实现（前序 task） | **用真实实现**（更高置信度） |
-| 同模块 | ❌ 骨架/return null | **mock** |
-| 跨模块 | 无论 | **mock** |
-| 外部（DB/MQ/HTTP） | 无论 | **mock** |
-
-### 粒度控制
-
-- 每个测试方法验证**一个行为**
-- 每个 task 产出 1~3 个测试方法
-- 避免在一个测试中验证多个 task 的逻辑
-- 测试命名：`test{MethodName}_{Scenario}_{ExpectedResult}`
-- 结构：Given-When-Then
+遇到测试编译失败、Mock NPE、框架选择不确定时 → Read `references/testing-guide.md`。
+包含：框架检测表、Mock 陷阱速查、Mock 决策速查、粒度控制规则。
