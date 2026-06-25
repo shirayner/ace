@@ -193,11 +193,55 @@ function findRefLine(content, ref) {
 }
 
 /**
+ * Check if a hook entry is ACE-managed by inspecting its command strings.
+ * ACE hooks are identified by the "ace." prefix in the hook script filename.
+ */
+function isAceHookEntry(entry) {
+  if (!entry.hooks) return false;
+  return entry.hooks.some(h => h.command && /ace\.[\w-]+\.sh/.test(h.command));
+}
+
+/**
+ * Remove all ACE-managed hooks from existing settings.
+ * Preserves non-ACE hooks (e.g. cc-viewer hooks).
+ * Returns { cleaned, removedCount }.
+ */
+export function removeAceHooks(existing) {
+  if (!existing.hooks) return { cleaned: existing, removedCount: 0 };
+
+  let removedCount = 0;
+  const cleanedHooks = {};
+
+  for (const [event, entries] of Object.entries(existing.hooks)) {
+    if (!Array.isArray(entries)) {
+      cleanedHooks[event] = entries;
+      continue;
+    }
+    const kept = entries.filter(entry => {
+      if (isAceHookEntry(entry)) {
+        removedCount++;
+        return false;
+      }
+      return true;
+    });
+    if (kept.length > 0) {
+      cleanedHooks[event] = kept;
+    }
+  }
+
+  const cleaned = { ...existing, hooks: cleanedHooks };
+  return { cleaned, removedCount };
+}
+
+/**
  * Deep merge settings.json: add hooks, plugins, keep existing permissions.
+ * Cleans up stale ACE hooks before merging so outdated entries don't accumulate.
  * Uses array-append strategy for hooks (deduplicated by matcher).
  */
 export function mergeSettingsJson(existing, template) {
-  const merged = deepmerge(existing, template, {
+  const { cleaned } = removeAceHooks(existing);
+
+  const merged = deepmerge(cleaned, template, {
     arrayMerge: mergeHooksArrays,
     customMerge: (key) => {
       // For these keys, template should not override existing
@@ -208,7 +252,7 @@ export function mergeSettingsJson(existing, template) {
     },
   });
 
-  return merged;
+  return { merged };
 }
 
 /**

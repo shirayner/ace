@@ -442,7 +442,7 @@ export class Installer {
   async mergeSettingsJsonFile(srcPath, destPath, fileSpec) {
     const existing = await fs.readJson(destPath);
     const template = await fs.readJson(srcPath);
-    const merged = mergeSettingsJson(existing, template);
+    const { merged } = mergeSettingsJson(existing, template);
 
     if (JSON.stringify(existing) === JSON.stringify(merged)) {
       this.results.skipped.push(fileSpec.dest);

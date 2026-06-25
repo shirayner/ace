@@ -1,0 +1,57 @@
+{
+  "changeName": "tech-design-skill-overhaul",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-06-24T10:00:00Z",
+  "updated_at": "2026-06-24T13:44:33Z",
+  "completed_at": "2026-06-24T13:44:33Z",
+  "archived_at": "2026-06-24T13:44:33Z",
+  "completion_criteria": [
+    "SKILL.md 包含完整协议层（Hard Gate/状态管理/归档/心跳/恢复）",
+    "forward-design.md 修正为八阶段(0-7)、六大维度，每阶段 AskUserQuestion 硬门禁",
+    "references/ 精简为 checklist，knowledge-anchors 增加回退策略",
+    "所有 phases 文件与协议层对齐"
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "name": "重写 SKILL.md",
+      "status": "pending",
+      "dep": "⟂"
+    },
+    {
+      "id": 2,
+      "name": "重构 forward-design.md",
+      "status": "pending",
+      "dep": "(depends: 1)"
+    },
+    {
+      "id": 3,
+      "name": "精简 references/",
+      "status": "pending",
+      "dep": "⟂"
+    },
+    {
+      "id": 4,
+      "name": "更新 review/tech-selection",
+      "status": "pending",
+      "dep": "(depends: 1)"
+    },
+    {
+      "id": 5,
+      "name": "验证与归档",
+      "status": "pending",
+      "dep": "(depends: 1,2,3,4)"
+    }
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "内聚原则：shared 协议核心逻辑以 tech-design 语境重写进 skill 内部",
+      "保留阶段 0-7 编号，修正描述为八阶段",
+      "归档走 ace task done 统一路径",
+      "全量改造含 references 精简"
+    ]
+  }
+}

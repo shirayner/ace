@@ -11,8 +11,8 @@
 
 ## 产出
 - 全量编译/测试通过
-- `spechub/{reqId}/handoff-check.md`
-- state.json 更新
+- `$TASK_DIR/artifacts/handoff-check.md`
+- `$TASK_DIR/state.json` 更新
 
 ---
 
@@ -41,14 +41,13 @@ mvn test
 
 ### 3. Scope 覆盖检查
 
-对照 G0 确认的 Scope In 功能点：
-| 功能点 | Scope 决策 | 代码覆盖 | 测试覆盖 | 状态 |
-|--------|-----------|---------|---------|------|
-| ... | Scope In | ✅ 已实现 | ✅ 有测试 | OK |
-| ... | Scope Out | ❌ 未出现 | — | OK |
+对照 prepare-summary.md 中的功能点清单：
+| 功能点 | 产物定义 | 代码覆盖 | 测试覆盖 | 状态 |
+|--------|---------|---------|---------|------|
+| ... | 需实现 | ✅ 已实现 | ✅ 有测试 | OK |
 
-任何 Scope In 未覆盖 → 告警
-任何 Scope In 无测试 → 补充测试
+任何功能点未覆盖 → 告警
+任何功能点无测试 → 补充测试
 
 ### 4. 清理临时文件
 
@@ -59,7 +58,7 @@ git status
 
 ### 5. 生成 Handoff Check
 
-Write `spechub/{reqId}/handoff-check.md`：
+Write `$TASK_DIR/artifacts/handoff-check.md`：
 ```markdown
 # Handoff Check — {title}
 
@@ -67,7 +66,7 @@ Write `spechub/{reqId}/handoff-check.md`：
 （`git diff --stat` 输出）
 
 ## Scope 覆盖矩阵
-| 功能点 | Scope 决策 | 代码覆盖 | 测试覆盖 | 状态 |
+| 功能点 | 产物定义 | 代码覆盖 | 测试覆盖 | 状态 |
 
 ## 测试摘要
 - 测试类数: N
@@ -109,11 +108,10 @@ else:
 **覆盖**: Scope In 功能 100% 覆盖
 **偏离**: 无（或仅 minor 自动吸收 ×{K}）
 
-即将自动归档到分支 feature/spechub-{reqId}-{slug}。
-[查看 handoff-check.md] [有异议?]
+即将进入 ARCHIVE 归档流程（OpenSpec 归档 → Git 提交 → ACE 归档 → SpecHub 上报 → Push）。
 ```
 
-行为：不阻塞，直接进入 ARCHIVE。
+行为：不阻塞，直接进入 ARCHIVE phase（仍需 Read archive.md 再执行）。
 
 #### Level 2：展示偏离摘要 + 确认归档
 
@@ -139,13 +137,13 @@ else:
 | 2 | T5 | 同步调用 | 改为异步 QMQ | 避免阻塞主流程 | ✅/❌ |
 
 ### 归档信息
-- 分支: feature/spechub-{reqId}-{slug}
-- OpenSpec: 归档到 openspec/changes/{slug}/
+- 分支: feature/spechub-{reqId}-{changeName}
+- OpenSpec: 归档到 $CHANGE_DIR/
 - SpecHub: 偏离上报（{M} 项 decisions）
 ```
 
 AskUserQuestion 选项：
-- "全部接受，确认归档" — 所有 batchDeferred 偏离 userApproved=true，进入 ARCHIVE
+- "验证通过，进入归档流程" — 所有 batchDeferred 偏离 userApproved=true，进入 ARCHIVE phase（AI 需 Read archive.md 后按 6 步执行）
 - "逐项审查" — 用户逐个确认/拒绝
 - "有问题需修复" — 回到 IMPLEMENT 修复
 
@@ -157,7 +155,7 @@ AskUserQuestion 选项：
 - 修复建议
 
 AskUserQuestion 选项：
-- "接受违规，继续归档"
+- "接受违规，进入归档流程" — 进入 ARCHIVE phase（AI 需 Read archive.md 后按 6 步执行）
 - "修复后重新验证" — 回到 IMPLEMENT 修复
 - "终止" — 用户处理
 

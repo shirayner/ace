@@ -1,0 +1,63 @@
+// state.json 完整模板 (spec 类型)
+//
+// 位置：$PROJECT_ROOT/.ace/tasks/{changeName}/state.json
+// 创建时机：Phase 1 Step 7（确定 changeName 时）
+// 更新规则：每次阶段转换 + 阶段内关键状态变更时立即更新
+// 字段策略：渐进填充——创建时只有基础字段，后续阶段按需追加，不删除已有字段
+//
+// openspec 关联：通过同名约定推导（changeName == openspec change 名），不存储冗余链接字段
+
+{
+  // === 统一基础字段 ===
+  "changeName": "add-avatar-upload",
+  "type": "spec",
+  "skillName": "spec-coding",
+  "status": "in_progress",
+  "created_at": "2026-06-12T10:00:00Z",
+  "updated_at": "2026-06-12T14:30:00Z",
+  "completed_at": null,       // ace task complete 写入
+  "archived_at": null,        // ace task archive 写入
+
+  "completion_criteria": [
+    "头像上传 API 可用",
+    "文件大小校验通过",
+    "测试覆盖核心路径"
+  ],
+
+  "tasks": [
+    {"id": "T1", "title": "写失败测试: 上传接口", "status": "done", "parallel": true},
+    {"id": "T2", "title": "实现上传服务", "status": "in-progress", "depends": ["T1"]},
+    {"id": "T3", "title": "添加大小校验", "status": "pending", "depends": ["T2"]},
+    {"id": "T4", "title": "集成测试", "status": "pending", "depends": ["T3"]}
+  ],
+
+  // === spec 类型扩展 ===
+  "spec": {
+    "phase": "apply",
+    "workflow": "standard",
+    "isolation": "branch",
+
+    "timestamps": {
+      "understand_started": "2026-06-12T10:00:00Z",
+      "propose_started": "2026-06-12T10:30:00Z",
+      "design_started": "2026-06-12T11:00:00Z",
+      "plan_started": "2026-06-12T12:00:00Z",
+      "apply_started": "2026-06-12T13:00:00Z",
+      "archive_started": null
+    },
+
+    "scope_assessment": "appropriate",
+    "aligned": true,
+
+    "approvals": {
+      "proposal": true,
+      "design": true,
+      "plan": true
+    },
+
+    "apply": {
+      "mode": "subagent",
+      "branch_name": "feat/spec-add-avatar-upload"
+    }
+  }
+}

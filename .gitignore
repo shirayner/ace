@@ -8,3 +8,4 @@ tempdoc/
 package-lock.json
 .npmrc
 .idea/
+docs/superpowers

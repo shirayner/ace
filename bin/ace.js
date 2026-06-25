@@ -6,7 +6,9 @@ import { initCommand } from '../src/commands/init.js';
 import { doctorCommand } from '../src/commands/doctor.js';
 import { listCommand } from '../src/commands/list.js';
 import { uninstallCommand } from '../src/commands/uninstall.js';
-import { specInitCommand, specDoctorCommand, specUpdateCommand } from '../src/commands/spec.js';
+import { upgradeCommand } from '../src/commands/upgrade.js';
+import { taskListCommand, taskCompleteCommand, taskDoneCommand } from '../src/commands/task.js';
+import { archiveCommand } from '../src/commands/archive.js';
 
 const require = createRequire(import.meta.url);
 const pkg = require('../package.json');
@@ -41,27 +43,36 @@ program
   .option('-y, --yes', 'Skip confirmation prompt', false)
   .action(uninstallCommand);
 
-const spec = program
-  .command('spec')
-  .description('Manage spec-driven development workflow (project-level)');
+program
+  .command('upgrade')
+  .description('Upgrade ace to the latest version')
+  .option('-f, --force', 'Force reinstall even if already up to date', false)
+  .action(upgradeCommand);
 
-spec
-  .command('init [path]')
-  .description('Initialize spec workflow in a project')
-  .option('-f, --force', 'Overwrite existing configuration', false)
-  .option('--dry-run', 'Preview without making changes', false)
-  .option('--skip-openspec', 'Skip openspec CLI installation', false)
-  .option('--team-repo <url>', 'Git repository URL for team conventions')
-  .action(specInitCommand);
+const task = program
+  .command('task')
+  .description('Manage ACE task lifecycle (.ace/tasks/)');
 
-spec
-  .command('doctor [path]')
-  .description('Check spec workflow health')
-  .action(specDoctorCommand);
+task
+  .command('list')
+  .description('List all active tasks in .ace/tasks/')
+  .action(taskListCommand);
 
-spec
-  .command('update [path]')
-  .description('Update spec templates to latest version')
-  .action(specUpdateCommand);
+task
+  .command('complete <changeName>')
+  .description('Mark a task as completed (sets status=completed, writes completed_at)')
+  .action(taskCompleteCommand);
+
+task
+  .command('archive <changeName>')
+  .description('Archive a completed task to .ace/tasks/archive/<date>-<changeName>/')
+  .option('--date <YYYY-MM-DD>', 'Force a specific archive date')
+  .action((changeName, opts) => archiveCommand(changeName, { date: opts.date }));
+
+task
+  .command('done <changeName>')
+  .description('Mark a task as completed AND archive it in one step (recommended)')
+  .option('--date <YYYY-MM-DD>', 'Force a specific archive date')
+  .action((changeName, opts) => taskDoneCommand(changeName, { date: opts.date }));
 
 program.parse();

@@ -79,7 +79,23 @@
       "Bash(cp \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/references/phases/design.md\" \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/spechub-coding/references/phases/design.md\")",
       "Bash(rm \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-pull-bundle.py\")",
       "Bash(rm \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/spechub-coding/scripts/spechub-archive-report.py\")",
-      "mcp__feishu2md__md2feishu"
+      "mcp__feishu2md__md2feishu",
+      "Bash(sed -i '' 's/入口/锚点/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's|entries/|anchors/|g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/目标 entry/目标 anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/指定 entry/指定 anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/关联 entry/关联 anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/SUMMARY→INDEX→entries/SUMMARY→INDEX→anchors/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/entry frontmatter/anchor frontmatter/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/→ entry/→ anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/ entry（/ anchor（/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(sed -i '' 's/全量 entry/全量 anchor/g' plugin/skills/llm-wiki-reader/SKILL.md ~/.claude/skills/llm-wiki-reader/SKILL.md)",
+      "Bash(rm -f \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/README.md\")",
+      "Bash(rm -rf \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/docs\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/SKILL.md\" \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/text-to-image/SKILL.md\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/SKILL.md\" \"D:/Users/r.shi/.claude/plugins/cache/ace-local/ace/1.0.0/skills/text-to-image/SKILL.md\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/scripts/text_to_image.py\" \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/text-to-image/scripts/text_to_image.py\")",
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/scripts/text_to_image.py\" \"D:/Users/r.shi/.claude/plugins/cache/ace-local/ace/1.0.0/skills/text-to-image/scripts/text_to_image.py\")"
     ]
   }
 }

@@ -76,4 +76,4 @@
 - 向用户报告"已完成""搞定了""done"之前
 - 标记 Phase done 之前
 - 准备进入下一个任务之前
-- aspec apply 完成后检查 Spec-Code 一致性
+- spec coding apply 完成后检查 Spec-Code 一致性

@@ -1,7 +1,7 @@
-# `<img src="https://raw.githubusercontent.com/shirayner/ace/main/assets/logo.svg" width="48" align="center">` ACE
+# ACE — AI Coding Environment
 
 <p align="center">
-  <b>AI Coding Environment</b> — 一键配置专业级 Claude Code 开发环境
+  <b>一键配置专业级 AI Coding 开发环境</b>
 </p>
 
 <p align="center">
@@ -11,224 +11,75 @@
   <a href="#"><img src="https://img.shields.io/badge/Claude%20Code-Compatible-purple?style=flat-square" alt="Claude Code"></a>
 </p>
 
-<p align="center">
-  <a href="README.zh-CN.md">中文</a> | 
-  <a href="docs/getting-started/index.md">快速开始</a> | 
-  <a href="docs/why-ace/index.md">为什么选 ACE</a> | 
-  <a href="docs/architecture/index.md">架构详解</a> | 
-  <a href="docs/theory/index.md">理论基础</a>
-</p>
+---
+
+## 什么是 ACE？
+
+ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 14 个专业 skill + 8 个共享认知协议 + 10 条编码规则，覆盖编码全生命周期：
+
+- **认知基础设施** — 理解协议、对齐协议、验证铁律，确保 AI 做对事
+- **14 个专业 Skill** — 从PRD撰写到需求理解到代码实现到复盘归档的完整能力
+- **规范驱动工作流** — 门禁系统确保每个决策经过对齐确认
+- **经验进化** — 项目级经验积累，跨会话持续成长
 
 ---
 
-## 🎯 什么是 ACE？
+## 核心理念
 
-ACE 是一个**AI 开发环境配置工具**，基于 Claude Code 官方最佳实践构建，融合认知科学、控制论、软件工程等领域的深度理论，为开发者提供：
-
-- 🧠 **认知增强规则** — 8 条基于认知科学的深度思考与代码质量原则
-- 🤖 **专业级 AI Skills** — 4 个面向不同开发场景的智能技能
-- 🛡️ **安全防护体系** — Shell Hooks 守卫 + Settings Deny 规则双重保障
-- 📝 **规范驱动工作流** — OpenSpec 集成的需求管理体系
-- 🧩 **跨会话记忆系统** — 持久化的开发者画像与项目记忆
-
-### 视频教程
-
-从下载安装到实际使用的完整演示：
-
-![ACE 使用示例](assets/ace-demo.gif)
-
-动图速度过快，另有示例视频：[ACE 使用示例](assets/ace-demo.mp4)
+| 原则                   | 含义                                                 |
+| ---------------------- | ---------------------------------------------------- |
+| **深度思考**     | 理解先于规划，规划先于行动。用事实闭环，不以假设收尾 |
+| **对齐优先**     | 准确完成用户真正想要的，胜过高效完成 agent 以为的    |
+| **Clean Code**   | 正确性 > 可读性 > 清晰 > 简单 > 显式                 |
+| **规范先于代码** | 决策先于实现，验证闭环先于归档                       |
 
 ---
 
-## ✨ 一分钟速览
+## Skill 概览
 
-### 安装
+### 一、核心编码流水线
 
-```bash
-# 一键安装，即刻拥有专业级 AI 开发环境
-npm install -g @shirayner/ace
-```
+| Skill          | 命令                    | 说明                                                 |
+| -------------- | ----------------------- | ---------------------------------------------------- |
+| auto-goal      | `/ace:auto-goal`      | 自主目标编排——万能通用，设定定一个目标，AI努力完成 |
+| spec-coding    | `/ace:spec-coding`    | 全生命周期规范驱动编码（6 Phase + 门禁系统）         |
+| spechub-coding | `/ace:spechub-coding` | 基于 SpecHub 平台产物的本地编码                      |
 
+### 二、质量保障
 
-### 初始化
+| Skill       | 命令                 | 说明                                          |
+| ----------- | -------------------- | --------------------------------------------- |
+| code-review | `/ace:code-review` | 代码审查（正确性→设计→风格三层分析）        |
+| ut          | `/ace:ut`          | 单元测试生成/修复（行覆盖 ≥80%、分支 ≥70%） |
+| verify      | `/ace:verify`      | 横切验证门控（无证据不可声称通过）            |
 
-```bash
-$ ace init
-◇  ace v0.1.6
-│
-◇  Installed to ~/.claude/
-│
-│  ◆ Core Config     2 files
-│  ◆ Rules           8 files
-│  ◆ Plugin          installed
-│  ◆ Hooks           1 file
-│  ◆ Safety Guards   7 files
-│  ◆ Memory          2 files
-│
-◆  20 installed
-│
-┌  Next steps
-│  Get started
-│    1. cd <your-project> && ace spec init
-│    2. Open Claude Code, type: /opsx:propose
-│
-│  Customize
-│    Change role      edit ~/.claude/memory/user_profile.md
-│    Adjust rules     edit ~/.claude/rules/ace/
-│    Safety guards    edit ~/.claude/settings.json (deny rules)
-│    Verify setup     ace doctor
-└
-└  Done. Go to your project and run ace spec init.
-```
+### 三、知识与分析
 
-### Spec Coding 完整流程
+| Skill                | 命令                          | 说明                   |
+| -------------------- | ----------------------------- | ---------------------- |
+| init                 | `/ace:init`                 | 项目技术画像初始化     |
+| requirement-analysis | `/ace:requirement-analysis` | 需求分析流水线         |
+| llm-wiki-generator   | `/ace:llm-wiki-generator`   | 为仓库生成 LLM 知识库  |
+| llm-wiki-reader      | `/ace:llm-wiki-reader`      | 渐进式消费 wiki 知识库 |
 
-进入工作目录
+### 四、元工具
 
-```bash
-# 进入工作目录
-$ mkdir my-project 
-$ cd my-project
-
-```
-
-Spec 初始化
-
-```bash
-# 执行 aspec 初始化
-$ ace spec init
-✓ aspec 工作流已初始化
-Done! 规范驱动开发已就绪。
-
-```
-
-Spec驱动开发
-
-```bash
-# 在 Claude Code 中体验Spec开发流程：
-# 输入 /opsx:proposal 命令后，一路交互式澄清、确认，然后需求完成，Spec归档
-$ claude
-
-> /opsx:proposal 帮我实现用户积分系统
-
-Claude: 【需求澄清】对需求不确定的地方提出疑问？→  请求人工澄清
-人工：选择选项，或者进行纠正，然后点击submit
-
-Claude: 【需求对齐】Claude输出自己对本需求的理解 → 请求人工确认
-人工：选择确认，或者纠正信息，然后点击submit
-
--- 人工确认之后，Cluade会创建提案
-
-Claude: 【技术设计澄清】对技术不确定的地方提出疑问 → 请求人工确认
-人工：选择确认，或者纠正信息，然后点击submit
-
-Claude: 【技术设计对齐】Claude输出自己对本需求的技术方案设计的理解 → 请求人工确认
-人工：选择确认，或者纠正信息，然后点击submit
-
--- 人工确认之后，Cluade会创建Design
-
-Claude: 【Design审批并创建Tasks】Claude请求人工确认Design设计，然后创建Tasks → 请求人工审批
-人工：选择确认，或者纠正信息，然后点击submit
-
--- 人工确认之后，Cluade会创建tasks
-
-Claude: 【执行】Claude 请求按规划的任务进行代码实现 → 请求人工审批
-人工：选择确认，或者纠正信息，然后点击submit
-
--- 人工确认之后，Cluade会进行代码实现，然后进行经验收集
-
-Claude: 【归档同步】Claude 会请求进行归档同步→ 请求人工审批
-人工：选择确认，或者纠正信息，然后点击submit
-
--- 人工确认之后，Cluade会对Spec进行归档同步
-```
-
-### 健康检查
-
-```bash
-$ ace doctor
-✓ CLAUDE.md 配置正常
-✓ 8 条规则文件完整
-✓ 4 个 Skills 可正常加载
-✓ Hooks 安全守卫运行中
-✓ 记忆目录可访问
-All systems operational.
-```
+| Skill             | 命令                       | 说明               |
+| ----------------- | -------------------------- | ------------------ |
+| skill-creator     | `/ace:skill-creator`     | 创建新 skill       |
+| skill-optimize    | `/ace:skill-optimize`    | 深度优化现有 skill |
+| parallel-dispatch | `/ace:parallel-dispatch` | 并行代理调度       |
 
 ---
 
-## 🏗️ 架构概览
+## 快速开始
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        ACE 架构全景                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │   Rules     │  │   Skills    │  │   Hooks   │         │
-│  │  (8 规则)    │  │  (4 技能)    │  │  (Shell守卫) │         │
-│  ├─────────────┤  ├─────────────┤  ├─────────────┤         │
-│  │ • thinking  │  │ • auto-goal │  │ • bash-     │         │
-│  │ • clean-code│  │ • coding    │  │   guard     │         │
-│  │ • code-qual │  │ • skill-    │  │ • file-     │         │
-│  │ • reporting │  │   creator   │  │   guard     │         │
-│  │ • task-rec  │  │ • skill-    │  │ • content-  │         │
-│  │ • context-  │  │   optimize  │  │   guard     │         │
-│  │   hygiene   │  │             │  │ • java-     │         │
-│  │ • memory-   │  │             │  │   compile   │         │
-│  │   policy    │  │             │  │             │         │
-│  │ • interactive│  │             │  │             │         │
-│  └─────────────┘  └─────────────┘  └─────────────┘         │
-│                                                             │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
-│  │    Hooks    │  │   Memory    │  │    Spec     │         │
-│  │ (角色脚本)   │  │  (记忆系统)  │  │ (规范驱动)   │         │
-│  ├─────────────┤  ├─────────────┤  ├─────────────┤         │
-│  │ • Java 编译 │  │ • MEMORY.md │  │ • config    │         │
-│  │   检查      │  │ • user_     │  │   .yaml     │         │
-│  │ • TypeScript│  │   profile   │  │ • dimensions│         │
-│  │   检查      │  │ • roles/    │  │   .md       │         │
-│  │ • 更多...   │  │             │  │ • experience│         │
-│  └─────────────┘  └─────────────┘  └─────────────┘         │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## 🎓 核心设计理念
-
-ACE 的设计融合了多学科的深层洞察：
-
-### 认知科学
-
-- **双过程理论** (Kahneman) — 简单任务快速响应，复杂任务深度分析
-- **认知负荷理论** (Sweller) — 渐进式信息披露，避免工作记忆过载
-- **元认知监控** — 持续自我监控与策略调整
-
-### 控制论
-
-- **OODA 循环** (Boyd) — 观察-定向-决策-行动的快速迭代
-- **必要多样性定律** (Ashby) — 策略库必须匹配任务复杂度
-- **闭环控制** — 每个操作都内建验证
-
-### 软件工程
-
-- **Clean Code 原则** (Robert C. Martin)
-- **单一职责** (SOLID)
-- **渐进式复杂度** (OpenAI Agent 最佳实践)
-
-> 📖 详细理论解读请查看 [理论基础文档](docs/theory/index.md)
-
----
-
-## 🚀 快速开始
-
-### 1. 安装 ACE
+### 1. 安装
 
 ```bash
-npm install -g @shirayner/ace
+# 安装最新版本到本地
+# 如果之前安装过，会用最新版本覆盖（因此当 ace upgrade 命令不存在时，也可以执行此命令来升级ace）
+npm install -g @shirayner/ace --registry=https://registry.npmjs.org/
 ```
 
 ### 2. 初始化环境
@@ -237,105 +88,72 @@ npm install -g @shirayner/ace
 ace init
 ```
 
-按提示选择你的角色和预设。ACE 会自动配置：
+ACE 自动配置：全局规则、Skills 插件、CLAUDE.md 索引。
 
-- 全局 CLAUDE.md 索引
-- 8 条认知规则
-- 4 个 AI Skills
-- Shell Hooks 安全守卫
-- 角色特定脚本和开发者画像
+### 3. 开始使用
 
-### 3. 验证安装
+**开放式目标(万能通用)**：
 
-```bash
-ace doctor
+```
+/ace:auto-goal  描述你的目标
 ```
 
-### 4. 开始项目（可选）
+**规范驱动开发**：
 
-```bash
-# 初始化规范驱动开发工作流
-ace spec init ./my-project
-cd my-project
+```
+/ace:spec-coding  描述需求/或飞书需求链接/或文件
+```
 
-# 开始开发
-claude
+SpecHub接力开发
+
+```
+/ace:spechub-coding spechub需求ID
 ```
 
 ---
 
-## 📚 文档导航
+## CLI 命令
 
-### 新手入门
-
-- [5 分钟快速开始](docs/getting-started/index.md) — 从零到专业开发环境
-- [安装指南](docs/getting-started/installation.md) — 详细安装与配置
-- [第一个项目](docs/getting-started/first-project.md) — 手把手入门教程
-
-### 理解 ACE
-
-- [为什么选 ACE](docs/why-ace/index.md) — 价值主张与核心优势
-- [解决的问题](docs/why-ace/problems-solved.md) — ACE 如何应对开发痛点
-- [方案对比](docs/why-ace/comparisons.md) — 与其他工具的比较
-
-### 深度架构
-
-- [架构全景](docs/architecture/index.md) — 完整组件关系图
-- [8 条规则详解](docs/architecture/rules.md) — 每条规则的用途与设计
-- [4 个 Skills 详解](docs/architecture/skills.md) — 工作原理与最佳实践
-- [aspec 规范驱动](docs/architecture/aspec.md) — spec coding 完整工作流
-- [Shell Hooks 安全体系](docs/architecture/hooks.md)
-- [Hooks 角色脚本](docs/architecture/hooks.md)
-- [记忆系统](docs/architecture/memory.md)
-- [OpenSpec 集成](docs/architecture/spec.md)
-
-### 理论基础
-
-- [理论总览](docs/theory/index.md)
-- [认知科学基础](docs/theory/cognitive-science.md)
-- [控制论与系统论](docs/theory/cybernetics.md)
-- [哲学基础](docs/theory/philosophy.md)
-- [心理学洞察](docs/theory/psychology.md)
-- [社会学视角](docs/theory/sociology.md)
-
-### 参考手册
-
-- [CLI 完整参考](docs/reference/cli.md)
-- [合并策略](docs/reference/merge-strategy.md)
-- [角色说明](docs/reference/roles.md)
+| 命令              | 说明                                         |
+| ----------------- | -------------------------------------------- |
+| `ace init`      | 初始化 AI 编码环境（全局配置 + 规则 + 插件） |
+| `ace doctor`    | 检查安装完整性                               |
+| `ace list`      | 查看已安装组件状态                           |
+| `ace upgrade`   | 升级到最新版本                               |
+| `ace uninstall` | 卸载所有 ace 管理的组件                      |
 
 ---
 
-## 🛡️ 非破坏性设计
+## 文档
 
-ACE 遵循**零侵入**原则：
-
-- **智能合并** — CLAUDE.md 使用标记区块替换，settings.json 深度合并，用户配置始终保留
-- **ACE 文件自动覆盖** — rules/ace/*、hooks/* 等 ACE 自有文件升级时自动更新，无需用户决策
-- **自动备份** — 首次安装前创建完整快照
-- **干净卸载** — `ace uninstall` 一键恢复原始状态
-- **命名空间隔离** — 所有文件使用 `ace/` 前缀，避免冲突
-
----
-
-## 🤝 贡献
-
-欢迎贡献！我们同时在 GitHub 和 GitLab 维护代码库。
-
-- 报告问题：使用 GitHub Issues
-- 提交改进：Fork & Pull Request
-- 讨论想法：GitHub Discussions
-
-查看 [CONTRIBUTING.md](CONTRIBUTING.md) 了解详情。
+| 文档                                      | 说明                     |
+| ----------------------------------------- | ------------------------ |
+| [系统架构](docs/architecture.md)             | 三层架构设计与协作模型   |
+| [安装与快速上手](docs/getting-started.md)    | 详细安装步骤与典型工作流 |
+| [Skill 使用手册](docs/skills-guide.md)       | 14 个 skill 的分类详解   |
+| [产物目录规范](docs/artifacts-convention.md) | .ace/ 目录组织约定       |
 
 ---
 
-## 📄 License
+## 项目结构
 
-[MIT](LICENSE) © 2024
+```
+ace/
+├── bin/                  # CLI 入口
+├── src/                  # CLI 源码
+│   ├── commands/         #   命令实现
+│   ├── core/             #   核心逻辑
+│   └── utils/            #   工具函数
+├── plugin/               # Claude Code 插件（安装到 ~/.claude/plugins/）
+│   ├── shared/           #   共享协议层
+│   ├── skills/           #   14 个 skill
+│   └── commands/         #   插件命令
+├── docs/                 # 文档库
+└── package.json
+```
 
 ---
 
-<p align="center">
-  <sub>Built with ❤️ for developers who care about code quality</sub>
-</p>
+## License
+
+MIT

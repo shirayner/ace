@@ -34,10 +34,32 @@ Read `../../shared/alignment-protocol.md`，按其三步流程执行。
 ### 规则 2：状态初始化（对齐通过后第一个动作）
 
 1. `Bash(pwd)` → 获取 `$ROOT`
-2. `mkdir -p $ROOT/.tasks/auto-goal-{id}`（id = 2-4 英文单词 kebab-case）
+2. `mkdir -p $ROOT/.ace/tasks/{changeName}/artifacts`（changeName = 2-4 英文单词 kebab-case，描述任务语义）
 3. TaskCreate 分解为 ≥3 个离散任务
-4. Write `$ROOT/.tasks/auto-goal-{id}/state.md`（参考 `../../shared/state-template.md`）
-5. 完成后才进入执行阶段
+4. Write `$ROOT/.ace/tasks/{changeName}/state.json`（统一 schema，参考 `../../shared/state-template.md`）
+
+   state.json 初始内容：
+   ```json
+   {
+     "changeName": "{changeName}",
+     "type": "simple",
+     "skillName": "auto-goal",
+     "status": "in_progress",
+     "created_at": "{ISO时间}",
+     "updated_at": "{ISO时间}",
+     "completed_at": null,
+     "archived_at": null,
+     "completion_criteria": ["可测试完成条件 1"],
+     "tasks": [],
+     "simple": {
+       "phase": "executing",
+       "decisions": []
+     }
+   }
+   ```
+
+5. Write `$ROOT/.ace/tasks/{changeName}/context.md`（目标 + 完成标准）
+6. 完成后才进入执行阶段
 
 路径硬规则：禁止 `~`、`$HOME`、裸相对路径。所有 Write/Edit 使用 `$ROOT` 前缀。
 
@@ -85,6 +107,26 @@ TaskCreate 后必须做依赖分析，标注 `⟂` 和 `(depends: X)`。存在 �
 标记 TaskUpdate completed 前：
 Read `../../shared/verification-protocol.md`，按 Gate Function 执行。
 
+**验证通过后，必须执行归档。**
+
+<HARD-GATE name="归档门禁">
+归档是任务生命周期的**必要结束步骤**，与对齐门禁同等强制。
+
+禁止以任何理由跳过：
+- "FleetView TaskUpdate completed 了" → 不等于归档。两套系统完全独立。
+- "交付了就算完成" → 未归档 = 任务悬空，state.json 永远 in_progress。
+- "下次再归档" → 没有下次。对话结束后无法补救。
+
+**Terminal state = 以下命令执行成功：**
+
+```bash
+ace task done {changeName}
+```
+
+`ace task done` 内部顺序执行 complete → archive，任一步失败则中止报错。
+没有执行这条命令 = 归档门禁未通过。
+</HARD-GATE>
+
 ---
 
 ## 经验进化
@@ -109,8 +151,9 @@ Read `../../shared/experience-protocol.md`，满足条件时执行。
 
 ## 运行时规则
 
-- TaskUpdate 每次变更后同步更新 state.md
-- TaskCreate 累计 ≥6 → 升级为完整状态管理（参考 `../../shared/state-template.md` 完整模板）
+- TaskUpdate 每次变更后同步更新 state.json
+- 重要决策和中间结论写入 context.md
+- 分析报告等产物写入 artifacts/ 目录
 - 新目标 = 新目录，不复用上一个
 
 ---
@@ -118,7 +161,7 @@ Read `../../shared/experience-protocol.md`，满足条件时执行。
 ## 恢复协议
 
 用户说"继续"时：Read `references/recovery.md`。
-简要：读 state.md → 验证产出存在 → 读 experience.md → TaskCreate 重建进度 → 继续。
+简要：读 state.json → 验证产出存在 → 读 experience.md → TaskCreate 重建进度 → 继续。
 
 ---
 

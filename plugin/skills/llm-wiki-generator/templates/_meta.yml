@@ -1,0 +1,48 @@
+# LLM Wiki 锚点配置
+# 此文件由 llm-wiki-generator Skill 生成和维护。
+# 配置 anchors 后触发 Skill 或说"开始构建"。
+
+type: backend  # backend | frontend | hybrid
+
+# ─────────────────────────────────────────────
+# anchors:锚点识别规则
+# ─────────────────────────────────────────────
+# 每条规则是一个 selector 字符串或对象:
+#
+# 字符串简写(自动判定):
+#   精确类名     → FlightFillPageComponentApplication
+#   类名 glob    → "*Application"
+#   注解(@前缀)  → "@RestController"
+#   路径 glob    → "**/application/**"
+#
+# 对象组合(需要 WHAT + WHERE 时):
+#   { name: "*Service", in: "**/api/**" }
+#   { annotation: "@QmqConsumer", in: "**/listener/**" }
+#
+# 多条规则 OR 合并(命中任一即算锚点)
+
+anchors:
+  api:
+    # 示例:
+    # - "*Application"                          # 类名 glob
+    # - "@RestController"                       # 注解
+    # - { name: "*Application", in: "**/application/**" }  # 组合
+    # - FlightFillPageComponentApplication      # 精确
+
+  mq:
+    # 示例:
+    # - "@QmqConsumer"
+    # - "@KafkaListener"
+
+  job:
+    # 示例:
+    # - "@QSchedule"
+    # - "*Job"
+
+  # 前端项目额外类型(当 type: frontend 或 hybrid):
+  # page:
+  #   - "src/pages/**/*.tsx"
+  #   - { name: "*Page", in: "src/pages/**" }
+  #
+  # component:
+  #   - { name: "*Card", in: "src/components/business/**" }
