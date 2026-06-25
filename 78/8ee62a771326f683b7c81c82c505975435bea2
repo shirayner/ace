@@ -1,0 +1,229 @@
+plugin/skills/tech-design/phases/review.md
+  s_1ef9086e44367b::t_03cc221a310401 60-64
+  s_1ef9086e44367b::t_23e39c78ea1cc8 40-44
+  s_1ef9086e44367b::t_6111c19e24493e 89-93
+  s_1ef9086e44367b::t_8eb01e0708be90 130-134
+  s_1ef9086e44367b::t_c9fd47aa51a9d4 3-4
+  s_1ef9086e44367b::t_a8939375da7d8b 17-29
+plugin/skills/spechub-coding/references/phases/design.md
+  s_10603aed504153::t_297e363ae7f039 76
+  s_10603aed504153::t_bb4f43b78cc77a 108
+  s_10603aed504153::t_a6a5c40723c170 213-227
+  s_10603aed504153::t_53f18920e11924 10
+  s_f135e8615ad16e::t_ed97c53ff127fc 24-28,30-38,40-52
+  s_10603aed504153::t_73b3a85d669a1d 171
+  s_10603aed504153::t_05fe38e76cb1b1 81-82
+  s_381e3b5f9a7932::t_95f31c8d8e2e72 116,126
+  s_10603aed504153::t_f4c1fd6b924835 125
+  s_10603aed504153::t_c63e15895649e4 245,248-249
+  s_10603aed504153::t_e5a56d69a37d20 68,71
+  s_10603aed504153::t_6bb7f90fb782e6 90
+  s_10603aed504153::t_350eac6b3bb027 95
+  s_381e3b5f9a7932::t_c07b637aaa6cee 85
+  s_10603aed504153::t_9670213f12b00e 9
+  s_10603aed504153::t_0768fadc7b99fb 146-147
+plugin/skills/spechub-coding/scripts/openspec-init.sh
+  s_10603aed504153::t_e8f682ff7b0547 1,3-7,20-32
+  s_10603aed504153::t_a18914e4003be5 2,8-19
+plugin/skills/spec-coding/scripts/openspec-init.sh
+  s_10603aed504153::t_3710e25b314590 2,8-19
+plugin/skills/spechub-coding/references/phases/implement.md
+  s_f135e8615ad16e::t_f32f21f53fcb77 57-58,67-70
+  s_10603aed504153::t_71fab1c25db546 231
+  s_10603aed504153::t_dd15330a5e0a17 297
+  s_10603aed504153::t_20f9d1bf7df7e0 127
+  s_10603aed504153::t_b8cf570350f694 9
+  s_10603aed504153::t_ce653311d731ab 144
+  s_10603aed504153::t_a7f0844d5e321f 250
+  s_10603aed504153::t_3f20026874e9d6 300
+  s_10603aed504153::t_1dc87394d001f0 301
+  s_10603aed504153::t_22ffb5daf178c8 307,309-310
+  s_10603aed504153::t_2f6cfd2f8c1893 166
+plugin/skills/spechub-coding/references/phases/pull.md
+  s_381e3b5f9a7932::t_4d7e3249c00adf 90-91
+  s_381e3b5f9a7932::t_4cc99bdbce45a5 63-68
+  s_381e3b5f9a7932::t_7366f9e23fd273 92-93,97-100
+  s_10603aed504153::t_aba46a516d3929 111,114,116-119
+  s_7461ba044b8b4f::t_27de904fba9c28 1,4,29,32,35-62,69-89,94-96,101,103,106-107,121,177
+  s_10603aed504153::t_262a83120881b5 120,122-175,179
+plugin/skills/spechub-coding/references/phases/prepare.md
+  s_10603aed504153::t_17d429613b167c 76-78
+  s_10603aed504153::t_f39d1872eefc79 12
+  s_381e3b5f9a7932::t_2a65d63162184a 103
+  s_10603aed504153::t_d3acf8f16f0bbe 1,4,7,13,16,25,32,35-42,45,47,49,51,53,72,84,86,90,112,117,122-123,134
+  s_10603aed504153::t_180b43bec986f2 3,6,9-11,15,17,19,21,23,27-30,55-69,74-75,80-82,87-88,91-92,94-97,99,101,106,108-110,113-114,116,118,121,124-133,135-136
+plugin/skills/tech-design/SKILL.md
+  s_1ef9086e44367b::t_c13b1e32db2ea4 25,27-33,37-57,59-101,119,123-124,129,134-142,146,149-153,157-171,191,196-201,207,215,223,229-259,261-266,274-276,284-285
+plugin/skills/tech-design/phases/forward-design.md
+  s_1ef9086e44367b::t_a4c9795692f267 1,5-6,33-51,65-71,95-101,121,127-133,164-170,194-200,234-240,269-275,282,326-347
+.ace/tasks/archive/2026-06-24-tech-design-skill-overhaul/state.json
+  s_1ef9086e44367b::t_cba9a58cb2f03d 1-57
+plugin/skills/spechub-coding/references/testing-guide.md
+  s_10603aed504153::t_c6431223e56d54 1-56
+plugin/skills/spechub-coding/SKILL.md
+  s_10603aed504153::t_78370c17ab9ea3 210-225,238-248,261-269,271-277
+  s_10603aed504153::t_5567fd3ea3fcd1 27,29-33
+  s_10603aed504153::t_8ebf7451268182 6
+  s_10603aed504153::t_43c6d7f84f1ce5 203-206
+  s_10603aed504153::t_c6803ecf0a6bc8 85-86,91-93,95-98
+  s_10603aed504153::t_7fa61e564dbd77 89
+  s_10603aed504153::t_b4e2a8c6846481 291
+  s_10603aed504153::t_da5d8f25219233 52-53
+  s_c8241569954178::t_227a307cd3c0bc 172-176
+  s_10603aed504153::t_e8fc970e2fd984 301,303,305
+  s_10603aed504153::t_349ea233b77d80 286
+  s_7461ba044b8b4f::t_13cee70e6f514c 333
+  s_10603aed504153::t_09bc3a62ca6ca8 39,43-44
+  s_10603aed504153::t_41563046173ea1 295-299,307
+  s_10603aed504153::t_47381b099c1b5e 155
+  s_f135e8615ad16e::t_88365fe0112cf1 21
+  s_10603aed504153::t_4831f76cbc696e 135,138
+  s_c8241569954178::t_d0bf4679e2e40a 57
+  s_381e3b5f9a7932::t_17874a8d9f6868 283
+plugin/skills/spechub-coding/references/phases/archive.md
+  s_10603aed504153::t_b71fcce58d2473 5-7,17,38,41,44,82,141,173
+  s_c8241569954178::t_ea60a6013266db 25-27,34-35,92-94,97-100,105,110-120,122,153,162,174-175
+  s_10603aed504153::t_acbb861ab782e7 12
+  s_c8241569954178::t_283f0f0220f9ac 4,8,28-33,36,50,52-53,55,57-63,65-74,76-77,79,81,83-86,88,90,101-104,106-107,124,131-132,148,150,156-157,176-182
+plugin/skills/tech-design/references/quality-attributes.md
+  s_1ef9086e44367b::t_38a8abed8cd9ad 28-31,37,42-45,51-54,56-59,65-67,69,78-80,82-85,96-99
+plugin/skills/tech-design/references/knowledge-anchors.md
+  s_1ef9086e44367b::t_708a6aea0ac99e 91-112
+plugin/skills/spechub-coding/references/phases/verify.md
+  s_10603aed504153::t_5184f34b22dcef 44
+  s_10603aed504153::t_9fdd97ea154e45 140
+  s_c8241569954178::t_8ab4dd531fe726 111,114
+  s_c8241569954178::t_e0f63a9c6a4957 146
+  s_c8241569954178::t_ec38f8d193be4e 158
+plugin/skills/tech-design/references/review-checklist.md
+  s_1ef9086e44367b::t_9588351a2660e8 17-20,26-30,36-39,45-48,54-58,64-66,73-74
+plugin/skills/spechub-coding/scripts/spechub-workflow.py
+  s_7461ba044b8b4f::t_699c14ebdf538e 387
+  s_7461ba044b8b4f::t_10ccde6ca09880 230-252,254-259
+  s_8399644b519484::t_f4e82ef17ff1da 309
+  s_5f89acda469199::t_a283b23366a0bc 566-571
+  s_7461ba044b8b4f::t_a5874556df4031 642-646,655-656,672-674
+  s_8b687242f0d3fa::t_c3555a40702460 312-334,340
+  s_8b687242f0d3fa::t_f88fcd45623c7e 450-452
+  s_10603aed504153::t_250732ed6ff941 305
+  s_10603aed504153::t_0a2c88fd5d0ba5 306,565
+  s_10603aed504153::t_cac3818dc84ba4 87-88,91-92
+  s_381e3b5f9a7932::t_671f26d744ac25 177-229
+  s_10603aed504153::t_186da77de07916 154
+  s_8b687242f0d3fa::t_4ad2205fba7828 442-448,454,459-470
+  s_10603aed504153::t_6e0cbdf054d63d 383
+  s_10603aed504153::t_f0a7817c569a00 105,107-110,112,116-117,126
+  s_8399644b519484::t_1f69a03a583eb4 253
+  s_381e3b5f9a7932::t_06b47e8a5b75d8 288,336-339
+  s_10603aed504153::t_2550a13488cc97 545,547-564
+  s_10603aed504153::t_bfae53e9a072ab 415-422,434-435
+  s_381e3b5f9a7932::t_80af07d6cf75cb 29-30
+  s_10603aed504153::t_4b8aba609432a7 436
+  s_381e3b5f9a7932::t_85a394529736b5 677
+  s_10603aed504153::t_3effd15dab90d9 400,403
+  s_381e3b5f9a7932::t_b3e3dd123513b4 657-659
+  s_10603aed504153::t_34e273755e8627 106,111,119-124
+  s_7461ba044b8b4f::t_bbe3f1cc865fc7 307-308,310-311,341-342
+  s_7461ba044b8b4f::t_6d929cf89a7987 6,12-13
+  s_7461ba044b8b4f::t_af115a8abf1967 429
+  s_10603aed504153::t_50c695bf9d98d3 147-148
+plugin/skills/tech-design/references/estimation-guide.md
+  s_1ef9086e44367b::t_43ccc81f54040f 7
+plugin/skills/tech-design/phases/tech-selection.md
+  s_1ef9086e44367b::t_0a0a2dcbeaec7c 17-30
+  s_1ef9086e44367b::t_a7bb20de3d3130 3-4
+  s_1ef9086e44367b::t_f8f6bc57737575 83-89
+  s_1ef9086e44367b::t_a3f51fbf27a29c 39-43
+  s_1ef9086e44367b::t_8b1ed38cbfb237 62-66
+  s_1ef9086e44367b::t_14248bc3a0d3b2 120-124
+  s_1ef9086e44367b::t_8ec2bd93fe260d 147-151
+plugin/skills/spechub-coding/references/state-schema.md
+  s_f135e8615ad16e::t_e010d7ca920334 56,59
+  s_10603aed504153::t_9c11741b7d20c1 58
+  s_10603aed504153::t_ed1134cb11a69e 3-4,6-7,11,13-14,17-18,20,23-24,26-29,35,37,74,80,83,112-113,136-144
+  s_10603aed504153::t_09a42550509df9 42,45
+  s_10603aed504153::t_e9f2041ffb9076 60,67-73,75-79
+  s_10603aed504153::t_7f3ca5101937e8 15,134,148,150-151
+  s_10603aed504153::t_57fbd4bf6e8094 103
+  s_10603aed504153::t_8c4c83d6a510dd 127-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.18-trip",
+  "base_commit_sha": "788ee62a771326f683b7c81c82c505975435bea2",
+  "prompts": {},
+  "sessions": {
+    "s_10603aed504153": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "498e71e1-3e8a-4a2c-aeba-e465bc9b1faa",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_1ef9086e44367b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "43062c66-72d4-498c-8249-43b07452852e",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_381e3b5f9a7932": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aec76a49-8ea9-4534-85d5-688b8941b5a9",
+        "model": "arn:aws:bedrock:us-west-2:133197901387:application-inference-profile/ypvzpmevzxdl"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_5f89acda469199": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9f180dd3-420c-4e6c-8cf6-6d591bfb4feb",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_7461ba044b8b4f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "c7c3efec-032b-42c5-ade3-db031d927c67",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_8399644b519484": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b6dd87ad-b65a-4d67-9fa6-2ccf964f9d58",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_8b687242f0d3fa": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "82a32bd9-f307-4491-96dd-832745c7453c",
+        "model": "kimi-k2.6"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_c8241569954178": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "80605bf5-f925-41b0-96d7-cd029fb8cf1b",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    },
+    "s_f135e8615ad16e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "acec5abf-7feb-47f9-b3f8-7d87841de063",
+        "model": "claude-opus-4-6-v1"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    }
+  }
+}
