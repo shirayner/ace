@@ -1,0 +1,21 @@
+CHANGELOG.md
+  s_381e3b5f9a7932::t_4813813c4e298a 10-38
+package.json
+  s_381e3b5f9a7932::t_a5f73f37a89408 3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.18-trip",
+  "base_commit_sha": "6b7b6be8bf2d458bc6414959659a712a4b7eeeaf",
+  "prompts": {},
+  "sessions": {
+    "s_381e3b5f9a7932": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "aec76a49-8ea9-4534-85d5-688b8941b5a9",
+        "model": "arn:aws:bedrock:ap-southeast-1:133197901387:application-inference-profile/0z1wuygvdv4h"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    }
+  }
+}
