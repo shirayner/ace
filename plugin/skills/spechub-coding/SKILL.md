@@ -327,6 +327,9 @@ python3 {skillDir}/scripts/spechub-workflow.py start {reqId} --change-name {chan
 # 归档：构建 decisions + 上报 SpecHub + 清理
 python3 {skillDir}/scripts/spechub-workflow.py archive {reqId} --repo-root {repoRoot} \
   --branch {branchName} --commit {commitHash}
+
+# ACE 本地归档（complete + archive 一步完成）
+python3 {skillDir}/scripts/ace-done.py {changeName} --repo-root {repoRoot}
 ```
 
 脚本职责：前置检查、git remote 获取、SpecHub API 调用、state.json 初始化/更新、divergences 聚合。

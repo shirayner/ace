@@ -477,7 +477,7 @@ def _find_state_by_req_id(tasks_dir: Path, req_id: int):
 
     Searches both active tasks (.ace/tasks/{changeName}/) and archived tasks
     (.ace/tasks/archive/*-{changeName}/) so that this script can be called
-    AFTER `ace task archive` has already moved the directory.
+    AFTER ace-done.py has already moved the directory.
 
     Returns (state_path, task_dir) or (None, None) if not found.
     """
@@ -521,13 +521,13 @@ def _find_state_by_req_id(tasks_dir: Path, req_id: int):
 def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     """Report to SpecHub API.
 
-    Can be called before OR after `ace task archive`:
+    Can be called before OR after ace-done.py:
     - Before archive: task_dir is the active path (.ace/tasks/{changeName}/)
     - After archive:  task_dir is the archived path (.ace/tasks/archive/<date>-{changeName}/)
 
     The recommended order is:
-      ace task done {changeName}   ← complete + archive in one step
-      python3 spechub-workflow.py archive ...   ← then report to SpecHub
+      python3 ace-done.py {changeName} --repo-root ...   ← complete + archive
+      python3 spechub-workflow.py archive ...             ← then report to SpecHub
     """
     git_url = get_git_remote_url(repo_root)
 

@@ -20,8 +20,8 @@
   "status": "in_progress",                // "in_progress" | "completed"
   "created_at": "2026-06-15T10:00:00Z",
   "updated_at": "2026-06-15T14:30:00Z",
-  "completed_at": null,                    // ace task complete 写入
-  "archived_at": null,                     // ace task archive 写入
+  "completed_at": null,                    // scripts/ace-done.py 写入
+  "archived_at": null,                     // scripts/ace-done.py 写入
   "completion_criteria": [],
   "tasks": [
     {"id": "T1", "title": "...", "status": "done", "parallel": true},
@@ -126,8 +126,7 @@
 | Gate 通过        | spechub.gates[G].passed = true, spechub.currentPhase = nextPhase |
 | 新增 divergence  | 追加一行到 `$TASK_DIR/artifacts/divergences.jsonl`            |
 | divergence 确认  | 读取 divergences.jsonl → 更新对应行的 userApproved 字段       |
-| 任务完成         | status = "completed", completed_at = now（由 ace task complete 写）|
-| 归档             | archived_at = now（由 ace task archive 写）                        |
+| 任务完成+归档    | status = "completed", completed_at/archived_at = now（由 scripts/ace-done.py 一步完成）|
 
 ---
 

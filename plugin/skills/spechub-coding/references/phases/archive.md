@@ -37,13 +37,13 @@ Step 5 仅做 API 调用（脚本的 decisions.md 幂等写入不影响 git stat
 
 **changeName 即 OpenSpec slug**（同名耦合，无需额外字段）。
 
-按优先级执行：
-1. 调用 `/opsx:archive` — 如果可用，直接调用并传入 changeName
-2. 如果 `/opsx:archive` 不可用 → 执行 CLI：
-   ```bash
-   openspec archive {changeName} --yes
-   ```
-3. 如果 openspec CLI 也不可用 → 至少确保 `$CHANGE_DIR/` 目录下有完整的 proposal.md + design.md + tasks.md（全部 `[x]`），并在完成报告中标注 "OpenSpec 归档需手动执行"
+执行 OpenSpec CLI 归档：
+
+```bash
+openspec archive {changeName} --yes
+```
+
+如果 openspec CLI 不可用（openspec-init.sh 未成功安装）→ 至少确保 `$CHANGE_DIR/` 目录下有完整的 proposal.md + design.md + tasks.md（全部 `[x]`），并在完成报告中标注 "OpenSpec 归档需手动执行"。
 
 ⚠️ **跳过此步 = 违规。** OpenSpec 归档是流程完整性的一部分，不可因"不确定如何执行"而静默跳过。
 
@@ -52,28 +52,17 @@ Step 5 仅做 API 调用（脚本的 decisions.md 幂等写入不影响 git stat
 <HARD-GATE name="ACE 归档门禁">
 ACE 本地归档必须在 Git commit 之前完成（确保归档后的目录结构被 commit 捕获）。
 
-**执行方式**：直接执行以下命令（内联逻辑，无外部 CLI 依赖）：
+**执行方式**：调用 skill 自带脚本完成 complete + archive 一步操作：
 
 ```bash
-# 计算归档路径
-ARCHIVE_DIR="$PROJECT_ROOT/.ace/tasks/archive/$(date +%Y%m%d)-{changeName}"
-# 移动任务目录到归档位置
-mkdir -p "$PROJECT_ROOT/.ace/tasks/archive"
-mv "$PROJECT_ROOT/.ace/tasks/{changeName}" "$ARCHIVE_DIR"
+python3 {skillDir}/scripts/ace-done.py {changeName} --repo-root {repoRoot}
 ```
 
-移动完成后，更新归档目录中的 state.json：
-```json
-{
-  "status": "completed",
-  "completed_at": "{ISO时间}",
-  "archived_at": "{ISO时间}",
-  "spechub.currentPhase": "archive",
-  "spechub.phases.archive.status": "done"
-}
-```
+脚本自动完成：
+- 更新 state.json：status → "completed"，写入 completed_at/archived_at
+- 移动目录：`.ace/tasks/{changeName}` → `.ace/tasks/archive/{YYYYMMDD}-{changeName}/`
 
-**成功判定**：`$ARCHIVE_DIR/state.json` 存在且 status == "completed"。
+**成功判定**：脚本输出 `{"status": "ok", ...}` 且 exit 0。
 </HARD-GATE>
 
 ### Step 3. 生成 decisions.md
