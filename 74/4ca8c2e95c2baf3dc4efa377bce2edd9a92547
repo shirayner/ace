@@ -1,0 +1,33 @@
+plugin/skills/spechub-coding/scripts/ace-done.py
+  s_c07011a6099a72::t_0b1136baed9789 1-89
+plugin/skills/spechub-coding/scripts/spechub-workflow.py
+  s_c07011a6099a72::t_b0f51d538fe2a7 524,529-530
+  s_c07011a6099a72::t_42a0a70afa2c7b 480
+plugin/skills/spechub-coding/references/phases/implement.md
+  s_c07011a6099a72::t_a0205b286cc7be 122
+  s_c07011a6099a72::t_5cce36446beb6d 27
+plugin/skills/spechub-coding/SKILL.md
+  s_c07011a6099a72::t_f6f56d32a24e3e 330-332
+plugin/skills/spechub-coding/references/state-schema.md
+  s_c07011a6099a72::t_584e5f71b6b5f5 129
+  s_c07011a6099a72::t_b37065f8a87209 23-24
+plugin/skills/spechub-coding/references/phases/archive.md
+  s_c07011a6099a72::t_492ca108162caa 55,58,61-63,65
+  s_c07011a6099a72::t_e5df7955b730ae 40-46
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.28-trip",
+  "base_commit_sha": "744ca8c2e95c2baf3dc4efa377bce2edd9a92547",
+  "prompts": {},
+  "sessions": {
+    "s_c07011a6099a72": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "704ef55a-4d97-4092-912d-305dac163cd9",
+        "model": "claude-opus-4-6-v1"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    }
+  }
+}
