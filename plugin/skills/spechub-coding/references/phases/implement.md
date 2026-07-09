@@ -24,13 +24,7 @@
 
 ## 执行步骤
 
-### 1. 调用 OpenSpec Apply
-
-调用 `/opsx:apply` — 这将读取 change 的完整上下文并逐步实现。
-
-如果 `/opsx:apply` 不可用，则手动逐 task 实现：
-
-### 2. 逐 Task TDD 微循环
+### 逐 Task TDD 微循环
 
 对 tasks.md 中的每个 task，根据其**测试策略标注**执行对应循环：
 
@@ -125,7 +119,7 @@ mvn compile -pl {module} -am -DskipTests
 - 第一个 task 的测试 → Write 新测试类
 - 后续 task 同类的测试 → Edit 追加到已有测试类
 - 参照 project-profile.md（如存在）或 Grep 已有测试类确定框架（JUnit4/5 + Mockito/PowerMock）
-- 参照 ut skill 的 `unit-test-guide.md` Mock 陷阱避坑
+- 参照 `references/testing-guide.md` Mock 陷阱避坑
 
 **Step E — 编译测试（COMPILE GATE #2）**
 
@@ -197,7 +191,7 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 
 ---
 
-### 3. 偏离检测（分级处理）
+### 偏离检测（分级处理）
 
 每完成一个 task，检查实际实现与 design.md 决策是否一致。
 
@@ -268,13 +262,13 @@ mvn test -pl {module} -Dtest={TestClass}#{method1}+{method2} -am
 - "按设计重新实现" → 回退当前 task
 - "回退到 DESIGN 重新规划" → re-spec
 
-### 4. 回退条件
+### 回退条件
 
 **≥2 个 IMMEDIATE_ESCALATE 级别偏离** → 建议回退到 DESIGN Phase（re-spec）：
 - AskUserQuestion 自动触发（在第 2 个 IMMEDIATE_ESCALATE 时）："已有 {N} 处重大偏离设计，建议回到设计阶段重新规划。继续/回退？"
 - 回退 → state.json.currentPhase = "design"，重新进入 DESIGN
 
-### 5. 更新状态
+### 更新状态
 
 所有 task 完成后（`$TASK_DIR/state.json`）：
 ```json

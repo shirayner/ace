@@ -27,7 +27,7 @@ spechub-workflow.py — SpecHub Coding 工作流统一 CLI
   3 = 业务错误
   10 = 前置检查失败（openspec/ 或 profile 不存在）
   11 = git remote 获取失败 / changeName 无效
-  12 = 分支不匹配（start 必须在 feat/{changeName} 分支上执行）
+  12 = 分支不匹配（start 必须在 feature/spec-{reqId}-{changeName} 分支上执行）
 """
 
 import argparse
@@ -188,11 +188,12 @@ def get_current_branch(repo_root: Path) -> str:
         return ""
 
 
-def enforce_branch_for_start(repo_root: Path, change_name: str, allow_mismatch: bool) -> None:
+def enforce_branch_for_start(repo_root: Path, change_name: str, req_id: int, allow_mismatch: bool) -> None:
     """Enforce branch convention before pulling artifacts.
 
-    Required branch: feat/{changeName}
-    Rejects execution if current branch is master/main or any other branch,
+    Required branch: feature/spec-{reqId}-{changeName}
+    Also accepts legacy format: feat/{changeName}
+    Rejects execution if current branch doesn't match,
     unless --allow-branch-mismatch is explicitly set (after user confirmation).
 
     Exit code 12 = branch_mismatch.
@@ -201,24 +202,29 @@ def enforce_branch_for_start(repo_root: Path, change_name: str, allow_mismatch: 
         return
 
     current_branch = get_current_branch(repo_root)
-    expected_branch = f"feat/{change_name}"
+    expected_branch = f"feature/spec-{req_id}-{change_name}"
+    legacy_branch = f"feat/{change_name}"
 
-    if current_branch == expected_branch:
+    if current_branch == expected_branch or current_branch == legacy_branch:
         return
 
     print(json.dumps({
         "status": "branch_mismatch",
         "currentBranch": current_branch,
         "expectedBranch": expected_branch,
+        "legacyBranch": legacy_branch,
         "changeName": change_name,
+        "reqId": req_id,
         "error": (
             f"Refusing to pull artifacts: current branch is '{current_branch}' "
-            f"but expected '{expected_branch}'. PULL phase requires branch "
-            f"switching BEFORE artifact pull (see references/phases/pull.md Step 4)."
+            f"but expected '{expected_branch}' (or legacy '{legacy_branch}'). "
+            f"PULL phase requires branch switching BEFORE artifact pull "
+            f"(see references/phases/pull.md Step 4)."
         ),
         "hint": (
             f"Run one of:\n"
-            f"  git checkout {expected_branch}                # if branch exists\n"
+            f"  git checkout {expected_branch}                # if branch exists locally\n"
+            f"  git checkout -b {expected_branch} origin/{expected_branch}  # from remote\n"
             f"  git checkout -b {expected_branch}             # if creating new\n"
             f"Then re-run start. If user explicitly confirmed using a different "
             f"branch, pass --allow-branch-mismatch to override."
@@ -244,7 +250,7 @@ def cmd_info(repo_root: Path, req_id: int) -> None:
         "gitRemoteUrl": git_url
     })
     check_response_status(resp)
-    check_business_status(resp)
+    incomplete_warning = check_business_status(resp, allow_incomplete=True)
 
     manifest = resp.get("manifest", {})
     output = {
@@ -252,8 +258,11 @@ def cmd_info(repo_root: Path, req_id: int) -> None:
         "reqId": req_id,
         "title": manifest.get("requirementTitle", f"Requirement {req_id}"),
         "requirementStatus": manifest.get("requirementStatus", ""),
+        "artifactsIncomplete": incomplete_warning == "ARTIFACTS_INCOMPLETE",
         "gitRemoteUrl": git_url
     }
+    if output["artifactsIncomplete"]:
+        output["warning"] = "平台产物尚未完全就绪（ARTIFACTS_INCOMPLETE），但不影响继续执行"
     print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
@@ -272,14 +281,17 @@ def cmd_inbox(repo_root: Path) -> None:
 
     resp = post_json("/getHandoffInbox", {"gitRemoteUrl": git_url})
     check_response_status(resp)
-    check_business_status(resp)
+    incomplete_warning = check_business_status(resp, allow_incomplete=True)
 
     items = resp.get("items", [])
     output = {
         "status": "ok",
         "gitRemoteUrl": git_url,
-        "items": items
+        "items": items,
+        "artifactsIncomplete": incomplete_warning == "ARTIFACTS_INCOMPLETE"
     }
+    if output["artifactsIncomplete"]:
+        output["warning"] = "部分需求产物尚未完全就绪（ARTIFACTS_INCOMPLETE），但不影响选择和继续"
     print(json.dumps(output, ensure_ascii=False, indent=2))
 
 
@@ -333,10 +345,10 @@ def cmd_start(repo_root: Path, req_id: int, change_name: str = None, allow_branc
         }, ensure_ascii=False, indent=2))
         sys.exit(11)
 
-    # HARD GATE: branch must be feat/{changeName} before pulling artifacts.
+    # HARD GATE: branch must be feature/spec-{reqId}-{changeName} before pulling artifacts.
     # AI tends to skip the documented branch-switch step; enforce it in the
     # script so artifacts cannot be pulled onto the wrong branch.
-    enforce_branch_for_start(repo_root, effective_change_name, allow_branch_mismatch)
+    enforce_branch_for_start(repo_root, effective_change_name, req_id, allow_branch_mismatch)
 
     task_dir = repo_root / ".ace" / "tasks" / effective_change_name
     input_dir = task_dir / "input"
@@ -477,7 +489,7 @@ def _find_state_by_req_id(tasks_dir: Path, req_id: int):
 
     Searches both active tasks (.ace/tasks/{changeName}/) and archived tasks
     (.ace/tasks/archive/*-{changeName}/) so that this script can be called
-    AFTER `ace task archive` has already moved the directory.
+    AFTER ace-done.py has already moved the directory.
 
     Returns (state_path, task_dir) or (None, None) if not found.
     """
@@ -521,13 +533,13 @@ def _find_state_by_req_id(tasks_dir: Path, req_id: int):
 def cmd_archive(repo_root: Path, req_id: int, branch: str, commit: str) -> None:
     """Report to SpecHub API.
 
-    Can be called before OR after `ace task archive`:
+    Can be called before OR after ace-done.py:
     - Before archive: task_dir is the active path (.ace/tasks/{changeName}/)
     - After archive:  task_dir is the archived path (.ace/tasks/archive/<date>-{changeName}/)
 
     The recommended order is:
-      ace task done {changeName}   ← complete + archive in one step
-      python3 spechub-workflow.py archive ...   ← then report to SpecHub
+      python3 ace-done.py {changeName} --repo-root ...   ← complete + archive
+      python3 spechub-workflow.py archive ...             ← then report to SpecHub
     """
     git_url = get_git_remote_url(repo_root)
 
@@ -656,7 +668,7 @@ def main():
                          help="指定 changeName（AI 从标题翻译生成）；为空则 fallback 到 _title_to_slug")
     p_start.add_argument("--allow-branch-mismatch", dest="allow_branch_mismatch",
                          action="store_true",
-                         help="允许在非 feat/{changeName} 分支上执行（仅当用户已确认时）")
+                         help="允许在非 feature/spec-{reqId}-{changeName} 分支上执行（仅当用户已确认时）")
 
     # archive
     p_archive = subparsers.add_parser("archive", help="构建 decisions + 上报 + 清理")
