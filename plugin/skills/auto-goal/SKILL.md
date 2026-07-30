@@ -129,6 +129,20 @@ ace task done {changeName}
 
 ---
 
+## 决策落盘（项目级）
+
+捕获项目核心决策，实时汇聚到 `$ROOT/.ace/project/decisions.md`，跨任务累积，作为复刻真相源。
+
+**触发点（命中即当轮落盘，不等归档）**：
+- AskUserQuestion 用户回复后 → agent 探讨型决策
+- 用户对话中主动拍板/否决时 → 用户主动决策
+
+**准入铁律**：换一个选择，复刻出来的项目会不同 → 才落盘。澄清/过程/格式/岔题类不进。拿不准默认收。
+
+细则（准入判据、条目模板、supersede 演进、tag、告知格式）：Read `../../shared/decision-log-protocol.md`。
+
+---
+
 ## 经验进化
 
 交付后检查触发条件（意外/踩坑/反直觉/可复用模式）：
@@ -152,7 +166,8 @@ Read `../../shared/experience-protocol.md`，满足条件时执行。
 ## 运行时规则
 
 - TaskUpdate 每次变更后同步更新 state.json
-- 重要决策和中间结论写入 context.md
+- 重要决策和中间结论写入 context.md（任务级叙事记录）
+- 符合准入铁律的核心决策另落 `.ace/project/decisions.md`（项目级，见决策落盘节）
 - 分析报告等产物写入 artifacts/ 目录
 - 新目标 = 新目录，不复用上一个
 
@@ -179,6 +194,7 @@ Read `../../shared/experience-protocol.md`，满足条件时执行。
 | `../../shared/alignment-protocol.md`    | 规则 1 执行时  |
 | `../../shared/verification-protocol.md` | 标记完成前     |
 | `../../shared/experience-protocol.md`   | 交付后         |
+| `../../shared/decision-log-protocol.md` | 捕获项目决策时 |
 | `../../shared/parallel-protocol.md`     | 识别并行机会时 |
 | `../../shared/context-discipline.md`    | 上下文管理时   |
 | `../../shared/state-template.md`        | 创建状态文件时 |

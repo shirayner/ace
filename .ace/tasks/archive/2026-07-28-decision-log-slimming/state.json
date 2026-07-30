@@ -1,0 +1,67 @@
+{
+  "changeName": "decision-log-slimming",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-07-28T07:32:26Z",
+  "updated_at": "2026-07-28T07:36:45Z",
+  "completed_at": "2026-07-28T07:36:45Z",
+  "archived_at": "2026-07-28T07:36:45Z",
+  "completion_criteria": [
+    "decision-log-protocol.md 改为极简字段（标题/时间/状态/决策/否决），去掉 tag/来源/任务",
+    "协议含 TOC 索引规则 + active/archive 分层规则（supersede 时旧条移 decisions-archive.md）",
+    "同步 marketplace + 源码仓 plugin/ 两处协议一致",
+    "现有 .ace/project/decisions.md 样例迁移到新格式并加 TOC（自举一致）"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "改写 decision-log-protocol.md（极简字段+TOC+分层）",
+      "status": "pending"
+    },
+    {
+      "id": "T2",
+      "title": "迁移现有 decisions.md 样例到新格式",
+      "status": "pending",
+      "depends": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "同步源码仓 + diff 验证",
+      "status": "pending",
+      "depends": [
+        "T1"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      {
+        "decision": "字段激进极简：标题/时间/状态/决策/否决，去掉 tag+来源+任务",
+        "reason": "来源/任务对复刻零贡献；tag 早期是负担，用 TOC 替代检索",
+        "alternatives": [
+          "砍来源+任务保留tag",
+          "字段不动"
+        ]
+      },
+      {
+        "decision": "TOC 顶部索引取代 tag 检索",
+        "reason": "决策多时扫索引比 tag 筛更直观且零维护",
+        "alternatives": [
+          "tag 筛选"
+        ]
+      },
+      {
+        "decision": "active/archive 分层：主文件只留 accepted，superseded 移 decisions-archive.md",
+        "reason": "superseded 对复刻是纯噪声，移出让复刻只读主文件零噪声、context 最省",
+        "alternatives": [
+          "就地保留",
+          "日志压缩rollup(有损否决)"
+        ]
+      }
+    ]
+  }
+}

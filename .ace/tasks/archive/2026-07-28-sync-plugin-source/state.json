@@ -1,0 +1,51 @@
+{
+  "changeName": "sync-plugin-source",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-07-28T07:01:48Z",
+  "updated_at": "2026-07-28T07:04:40Z",
+  "completed_at": "2026-07-28T07:04:40Z",
+  "archived_at": "2026-07-28T07:04:40Z",
+  "completion_criteria": [
+    "plugin/shared/decision-log-protocol.md 与 marketplace 版逐字节一致",
+    "plugin/skills/auto-goal/SKILL.md 含 3 处编辑（落盘节/运行时规则/参考索引）",
+    "源码仓 plugin/ 与 marketplace 副本对应文件 diff 干净",
+    ".ace/project/decisions.md 不进源码仓"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "复制 decision-log-protocol.md 到 plugin/shared/",
+      "status": "pending",
+      "parallel": true
+    },
+    {
+      "id": "T2",
+      "title": "同步 SKILL.md 3 处编辑到 plugin/",
+      "status": "pending",
+      "parallel": true
+    },
+    {
+      "id": "T3",
+      "title": "diff 验证两仓一致",
+      "status": "pending",
+      "depends": [
+        "T1",
+        "T2"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      {
+        "decision": "仅同步插件源码，.ace/project/decisions.md 不进源码仓",
+        "reason": "它是本项目工作产物非插件发布物，混入会污染插件",
+        "alternatives": [
+          "连样例一起纳入版本库"
+        ]
+      }
+    ]
+  }
+}

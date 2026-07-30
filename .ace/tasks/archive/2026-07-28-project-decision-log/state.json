@@ -1,0 +1,25 @@
+{
+  "changeName": "project-decision-log",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-07-28T04:52:28Z",
+  "updated_at": "2026-07-28T05:04:07Z",
+  "completed_at": "2026-07-28T05:04:07Z",
+  "archived_at": "2026-07-28T05:04:07Z",
+  "completion_criteria": [
+    "产出方案文档，覆盖业界成熟方案调研（ADR/spec-driven/PRFAQ/living-doc 等）",
+    "明确回答'凭决策文档复刻项目'的可行性边界（语义/功能等价 vs 精确复刻）",
+    "给出推荐的项目级决策文档组织形态 + 理由 + 与 auto-goal 现有机制的集成设计",
+    "给出落地步骤，用户可据此改造 auto-goal"
+  ],
+  "tasks": [],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "复刻语义 = 语义/功能等价复刻（非精确字节复刻）",
+      "交付物 = 仅方案文档，不改 auto-goal skill 本身",
+      "组织形态 = 由 AI 调研后推荐"
+    ]
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "changeName": "decision-log-mechanism",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-07-28T06:43:34Z",
+  "updated_at": "2026-07-28T06:54:37Z",
+  "completed_at": "2026-07-28T06:54:37Z",
+  "archived_at": "2026-07-28T06:54:37Z",
+  "completion_criteria": [
+    "新建 shared/decision-log-protocol.md：定义准入判据、捕获时机、条目模板、supersede 演进、tag 组织",
+    "改 auto-goal/SKILL.md：新增决策落盘节 + 触发规则 + 参考索引",
+    "两文件自洽，agent 能确定性执行何时写/写什么/写哪",
+    "decisions.md 条目含：内容/来源(探讨vs主动)/否决项/tag/时间/来源任务/状态"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "写 shared/decision-log-protocol.md",
+      "status": "pending",
+      "parallel": false
+    },
+    {
+      "id": "T2",
+      "title": "改 auto-goal/SKILL.md 挂接协议",
+      "status": "pending",
+      "depends": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "自洽性验证 + 生成 decisions.md 样例",
+      "status": "pending",
+      "depends": [
+        "T1",
+        "T2"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      {
+        "decision": "捕获范围=AskUserQuestion+用户主动决策",
+        "reason": "这些才是项目核心决策，其余agent自主定",
+        "alternatives": [
+          "仅AskUserQuestion"
+        ]
+      },
+      {
+        "decision": "实时追加不等归档",
+        "reason": "用户主动指正发生在任意轮次，中断不丢",
+        "alternatives": [
+          "归档时汇聚"
+        ]
+      },
+      {
+        "decision": "线性时间序+tag，不预设分类",
+        "reason": "YAGNI，预分类产生'其他'和跨类负担",
+        "alternatives": [
+          "按主题分节"
+        ]
+      },
+      {
+        "decision": "不可变+supersede留痕",
+        "reason": "保留A→B演进史，防重蹈覆辙",
+        "alternatives": [
+          "就地覆盖只留最新"
+        ]
+      },
+      {
+        "decision": "准入判据=换个选择项目会不同；拿不准默认收",
+        "reason": "漏关键决策代价>多留代价，删比补省力",
+        "alternatives": [
+          "默认弃",
+          "停下问"
+        ]
+      },
+      {
+        "decision": "纯SKILL/LLM驱动不改CLI",
+        "reason": "对话语义决策CLI抓不到，只有LLM现场知道",
+        "alternatives": [
+          "改archive.js"
+        ]
+      }
+    ]
+  }
+}
