@@ -1,0 +1,35 @@
+.ace/tasks/archive/2026-07-28-sync-plugin-source/state.json
+  s_7813c7aa3bc7ca::t_c6c21e1c6883bd 1-51
+.ace/tasks/archive/2026-07-28-decision-log-mechanism/state.json
+  s_7813c7aa3bc7ca::t_144b397442919b 1-89
+plugin/shared/decision-log-protocol.md
+  s_7813c7aa3bc7ca::t_c83c6270d88934 1-11,14-16,18-19,22-56,58,60-61,71,73,75,89-90,92,95-97,99-101,105,108,111-112,114-115,122,129,131,136-150,156-157
+  s_7813c7aa3bc7ca::t_cb53c8aa2ab106 12-13,17,20-21,57,59,62-70,72,74,76-88,91,93-94,98,102-104,106-107,109-110,113,116-121,123-128,130,132-135,151-155
+.ace/tasks/archive/2026-07-28-project-decision-log/state.json
+  s_7813c7aa3bc7ca::t_cc396233080bb4 1-25
+plugin/skills/auto-goal/SKILL.md
+  s_7813c7aa3bc7ca::t_6545fc31770a7c 132-145,169-170,197
+.ace/project/decisions.md
+  s_7813c7aa3bc7ca::t_f45c1bbed1397e 1-2,17-18,20,25,30-32,35-37,41-42,50-51,55-56
+  s_7813c7aa3bc7ca::t_00b8d9e88a146a 3-16,19,21-24,26-29,33-34,38-40,43-49,52-54,57-71
+.ace/tasks/archive/2026-07-28-decision-log-slimming/state.json
+  s_7813c7aa3bc7ca::t_8652cd37102e0d 1-67
+.ace/tasks/archive/2026-07-28-project-decision-log/artifacts/design.md
+  s_7813c7aa3bc7ca::t_1179555011c988 1-155
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.38-trip",
+  "base_commit_sha": "6a75d0167649cdd86ac1b7c8d5772896a8a7aab6",
+  "prompts": {},
+  "sessions": {
+    "s_7813c7aa3bc7ca": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "3c3f5cae-22d2-4eb4-89f7-91f100252aa3",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    }
+  }
+}
