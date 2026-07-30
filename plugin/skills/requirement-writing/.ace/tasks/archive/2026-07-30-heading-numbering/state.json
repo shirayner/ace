@@ -1,0 +1,25 @@
+{
+  "changeName": "heading-numbering",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-07-30T04:58:38Z",
+  "updated_at": "2026-07-30T05:01:33Z",
+  "completed_at": "2026-07-30T05:01:33Z",
+  "archived_at": "2026-07-30T05:01:33Z",
+  "completion_criteria": [
+    "chapter-tree.md 加一条规则:章节标题按最终出现顺序编层级序号(1./1.1/1.1.1),默认带,只编 ## / ### 标题",
+    "REQ-001/BR-001/AC-001 语义编号明确不受影响",
+    "序号派生自动态选章后的最终顺序,不写死进模板;模板不动;无死引用无冲突"
+  ],
+  "tasks": [],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "用户定:加章节标题层级序号规则(1./1.1/1.1.1)",
+      "用户定:默认带序号(每份 PRD 都带)",
+      "用户定:只编章节标题(## / ###),REQ/BR/AC 语义编号不变",
+      "agent定:规则归 Structure 象限落 chapter-tree.md;模板不写死序号(动态选章后派生)"
+    ]
+  }
+}

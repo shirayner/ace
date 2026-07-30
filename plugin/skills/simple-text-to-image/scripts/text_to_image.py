@@ -1,12 +1,11 @@
 """
-文生图入口（dispatcher）— 按 config.yaml 的 mode 选择鉴权后端。
+基础文生图入口（dispatcher）— 按 config.yaml 的 mode 选择鉴权后端。
 
-用法（三种，与原脚本一致）：
-1. 单张（位置参数）：python text_to_image.py "prompt" -o out.png
-2. 单张（文件读取）：python text_to_image.py --prompt-file prompt.txt -o out.png
-3. 批量（JSON 配置）：python text_to_image.py --batch batch.json
+两种调用模式：
+1. 位置参数：python text_to_image.py "prompt" -o out.png
+2. 文件读取：python text_to_image.py --prompt-file prompt.txt -o out.png
 
-推荐使用 --prompt-file 或 --batch 模式，避免 shell 特殊字符导致参数截断。
+推荐 --prompt-file，避免 shell 特殊字符导致参数截断。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 鉴权后端由同目录 config.yaml 的 mode 字段切换，两种后端互相隔离：

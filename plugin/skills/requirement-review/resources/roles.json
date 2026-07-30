@@ -1,0 +1,12 @@
+[
+  {
+    "id": "backend_member",
+    "name": "后端研发(会员)",
+    "description": "会员系统后端的技术评审",
+    "responsibility": "负责会员系统后端的技术设计、架构决策、性能优化、数据安全。重点关注数据模型、业务流程完整性、性能指标、安全合规。",
+    "standardPath": "references/backend_member/standard.md",
+    "templatePath": "references/backend_member/template.md",
+    "enabled": true,
+    "type": "custom"
+  }
+]

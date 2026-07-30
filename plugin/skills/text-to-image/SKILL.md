@@ -32,13 +32,17 @@ description: "当用户想根据文字描述生成图片时使用此 skill。触
 
 ## 前置条件
 
+公司 peta AI 网关不再直接下发固定密钥，脚本必须先用 `peta_key_id`（配合 PaaS
+`appid`）向网关换取临时密钥与地址，再发起生图请求。换取由依赖包
+`peta_ai_client.AIClient` 完成，业务侧只需配置 `peta_key_id` + `appid`。
+
 以下环境变量必须在 Claude Code settings.json 的 `env` 中或系统环境变量中配置：
 
-| 变量                       | 必填 | 说明                                                        |
-| -------------------------- | ---- | ----------------------------------------------------------- |
-| `TEXT_TO_IMAGE_BASE_URL` | 是   | API 地址（如 `http://proxy.llm.azure.sys.ctripcorp.com`） |
-| `TEXT_TO_IMAGE_API_KEY`  | 是   | API 认证密钥                                                |
-| `TEXT_TO_IMAGE_MODEL`    | 否   | 模型名（默认 `gpt-image-2`）                              |
+| 变量                          | 必填 | 说明                                       |
+| ----------------------------- | ---- | ------------------------------------------ |
+| `TEXT_TO_IMAGE_PETA_KEY_ID` | 是   | peta 密钥 ID，用于换取网关凭证             |
+| `TEXT_TO_IMAGE_APPID`       | 是   | PaaS 应用 appid                            |
+| `TEXT_TO_IMAGE_MODEL`       | 否   | 模型名（默认 `gpt-image-2`）             |
 
 ---
 
@@ -307,7 +311,8 @@ python "<skill_path>/scripts/text_to_image.py" --batch /tmp/batch.json
 
 ## 错误处理
 
-- 环境变量缺失 → 提示用户配置 `TEXT_TO_IMAGE_BASE_URL` 和 `TEXT_TO_IMAGE_API_KEY`
+- 环境变量缺失 → 提示用户配置 `TEXT_TO_IMAGE_PETA_KEY_ID` 和 `TEXT_TO_IMAGE_APPID`
+- peta 网关换密钥失败 → 报告错误并建议检查 peta_key_id / appid 是否有效
 - 重试后仍失败 → 报告错误并建议检查网络/配置
 - 脚本内置重试逻辑（3 次，指数退避）
 
@@ -315,10 +320,10 @@ python "<skill_path>/scripts/text_to_image.py" --batch /tmp/batch.json
 
 ## 依赖
 
-脚本需要 `requests` 包，如未安装：
+脚本需要 `peta_ai_client` 包（内含 peta 网关换密钥逻辑），如未安装：
 
 ```bash
-pip install requests
+uv pip install peta-ai-client --native-tls
 ```
 
 ---

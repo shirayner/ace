@@ -1,0 +1,31 @@
+# 基础文生图鉴权配置
+#
+# mode 选择鉴权方式（两种后端互相隔离，direct 机器不会 import peta 依赖）：
+#   peta   — 公司 peta AI 网关，用 peta_key_id + appid 换取临时密钥再请求
+#            （backend_peta.py，需安装 peta_ai_client）
+#   direct — 固定密钥直连 OpenAI 兼容网关，用 base_url + api_key 直接请求
+#            （backend_direct.py，纯标准库 urllib，零第三方依赖）
+#
+# 无法安装 peta_ai_client 的机器：把 mode 改成 direct，填好 direct 段即可。
+#
+# 值支持 ${ENV_VAR} 占位：优先取该环境变量，取不到则用空串。
+# 建议密钥类字段用 ${ENV_VAR} 引用环境变量，不要把明文密钥写进本文件。
+# 环境变量（TEXT_TO_IMAGE_*）始终覆盖本文件同名配置。
+
+mode: direct
+
+# peta 模式：网关换密钥
+peta:
+  peta_key_id: ${TEXT_TO_IMAGE_PETA_KEY_ID}
+  appid: ${TEXT_TO_IMAGE_APPID}
+
+# direct 模式：固定密钥直连
+# base_url 填到网关根（不含 /v1/...），脚本自动拼 /v1/images/generations
+# 例：base_url: http://proxy.llm.azure.sys.ctripcorp.com
+#     api_key:  sk-xxxxxxxx
+direct:
+  base_url: ${TEXT_TO_IMAGE_BASE_URL}
+  api_key: ${TEXT_TO_IMAGE_API_KEY}
+
+# 模型名（也可用环境变量 TEXT_TO_IMAGE_MODEL 覆盖）
+model: ${TEXT_TO_IMAGE_MODEL}
