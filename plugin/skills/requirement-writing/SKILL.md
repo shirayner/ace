@@ -101,6 +101,7 @@ projection-state 至少记录：
 <HARD-GATE name="输入契约与范围">
 投影前，输入契约必须齐备且范围已界定。
 证据 = 手上同时有「原始需求文档」+「前序澄清 Q&A」，且能读出三态（in-scope / deprecated / deferred）。
+**同会话内上游需求理解已交付的上下文即满足契约**——「手上有」指信息在上下文中可用，不要求文件形态。上游交付的「已定决策 / 假设清单 / 术语表 / 范围三态」即为「前序澄清 Q&A」：`in-scope` / `<废弃>`=deprecated / `<分期>`=deferred 直接对应三态；标 `confirmed` 的决策可直接写成 AC，标 `assumed` 的按 R-S7 处理（不阻塞则记 Open Question）。
 无契约 = 禁止投影，先走需求理解 / 澄清 skill。
 冲突消解、需求澄清由上游负责。发现阻塞缺口时停止投影，列出最小缺口并退回上游澄清 skill；本 skill 不向 PM 追问、不代替上游决策。
 </HARD-GATE>
