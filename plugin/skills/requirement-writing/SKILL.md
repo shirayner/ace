@@ -1,146 +1,179 @@
 ---
 name: requirement-writing
-description: 将已完成理解和澄清的需求投影为结构清晰、信息保真的标准 PRD。用户要求"写 PRD""出产品需求文档""把对齐后的需求整理成 PRD"时触发。只做投影：范围裁剪、文档组织、正文生成、规则自检；不做需求澄清、需求评审、技术方案、UI 设计或任务拆分。输入应含原始需求 + 已确认的决策 Q&A；需求尚未澄清或用户要技术设计时不触发。
+description: 将满足中立 ConfirmedRequirementInput 契约的 RequirementModel 与 RequirementIssue[] 投影为结构清晰、信息保真的标准 PRD。用户要求“写 PRD”“出产品需求文档”“把已确认需求整理成 PRD”时触发。只做输入校验、scope 裁剪、文档组织、正文生成和规则自检；不做需求澄清、需求决策、技术方案、UI 设计或任务拆分。非法输入返回 InputContractFailure，写作中发现产品语义缺口返回 ProjectionGap。
 ---
 # PRD Projection Engine — PRD 投影引擎
 
-**核心信念：需求本身不变，变的只是「信息如何在文档里组织」。** 本 skill 不收录通用写作理论，但“LLM 知道”不等于它会在长 PRD 中稳定执行。只有被样例或回归证明会反复违反、且能转成 PRD 专属规则 / 骨架 / 检查的失败模式才进入。把已理解澄清、已界定范围的需求，**投影**成标准 PRD。
+**核心信念：RequirementModel 是需求语义的唯一 canonical 输入，PRD 只改变信息组织，不重新决策需求。**
 
-**先界定范围，再谈保真。** 输入文档 ≠ 本次需求：常含删除线的**废弃**、分期的**二/三期**。投影前先分三态（见 projection-rules R-S5），保真只对 in-scope。
+本 Skill 只接受：
 
----
+- 已确认的 `RequirementModel`；
+- 与之关联的 `RequirementIssue[]`；
+- 可访问的 SourceReferences 和确认证据。
 
-## 四象限判据（设计宪法）
+不接受“已定决策 / 假设清单 / 术语表 / 范围三态”等旧清单作为替代输入，也不负责将其转换为 canonical 模型。
 
-本 skill 只装四类知识。**每新增一条内容，先问它属于哪类；四类都不属于 → 不进本 skill。**
+本 Skill 有三种互斥输出：
 
-| 这是……                                        | 归宿                | 文件                                                                                      |
-| ----------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------- |
-| PRD 用什么语言表达？（REQ/BR/AC/编号/空值三态） | **Language**  | `prd-language.md`                                                                       |
-| LLM 默认会做错 / 绝不能违反？                   | **Rules**     | `projection-rules.md`                                                                   |
-| 信息如何组织成章节？                            | **Structure** | `chapter-tree.md`                                                                       |
-| 每种节点最终长什么样？                          | **Rendering** | `templates/*.md`（字段准入：去掉会漏 in-scope 信息或违反某条 Rule 才留，见 core.md 头） |
-| 通用写作理论 / 名人方法论？                     | **默认删除**  | 若已证实为稳定失败模式，只留名称锚点，并转写到 Rules / Rendering / Check；不收理论正文 |
+1. 完整 PRD；
+2. `InputContractFailure`；
+3. `ProjectionGap`。
 
-> Workflow 不是知识，是算法：`投影 = Apply(Language, Rules, Structure, Template)`。故只剩下面四步，不单列文件。
-
-**写作原则入场门槛**：知识测试让位于行为证据。每条候选原则必须同时写清 **PRD 中出现在哪里 / 什么现象算违规 / 命中后如何修复**；缺一项就是泛泛常识，删除。已证实的结构失败归 R-T12，简洁失败归 R-T13；原则名称只在对应 Rule 中作记忆锚点。
+它不调用或编排其他 Skill。
 
 ---
 
-## 四步（投影过程）
+## 四象限判据
 
-```
-① Scope    分三态（in-scope / deprecated / deferred），保真只对 in-scope
-② Plan     选章裁剪 + 识别共享规则（跨≥2 REQ 升 BR）+ 定信息归属与阅读顺序
-③ Project  按 chapter-tree 选章 → 照 templates 填骨架 → 严守 projection-rules
-④ Check    按 projection-rules 自检 P0→P1→P2，命中即回改；P0 未过不输出
+| 这是…… | 归宿 | 文件 |
+|---|---|---|
+| PRD 用什么语言表达？ | **Language** | `prd-language.md` |
+| 绝不能违反的保真和反默认规则？ | **Rules** | `projection-rules.md` |
+| 信息如何组织成章节？ | **Structure** | `chapter-tree.md` |
+| 每种节点最终长什么样？ | **Rendering** | `templates/*.md` |
+
+```text
+投影 = Apply(Language, Rules, Structure, Template)
 ```
 
-- 四步是思考顺序，不是四份产物。Micro 可合并；默认只交付最终 PRD，不展示中间态。
-- **Plan 是价值所在**：动笔前决定整份 PRD 如何组织，避免重复与结构漂移。规模不硬触发章节；但 Large 必须切换到下面的分阶段执行路径。
+---
+
+## 四步投影
+
+```text
+① Validate 校验输入契约
+② Scope    in_scope 完整投影；out_of_scope 只按明确 rationale 裁剪展示
+③ Project  按 chapter-tree 选章并按 templates 生成
+④ Check    按 projection-rules 执行 P0 → P1 → P2；P0 未过不输出
+```
+
+- 四步是思考顺序，不是四份产物；默认只交付最终 PRD。
+- 原始文档只用于 SourceReference 追溯，不得覆盖 RequirementModel。
+- 不重新解释 scope，不从删除线、分期措辞或旧 Q&A 推导范围。
 
 ### 复杂度分流
 
-- **Micro / Normal**：直接执行四步；Normal 可先列内部章清单，但不强制创建临时状态文件。
-- **Large**：禁止在一个生成回合里规划并写完整篇正文。先外化计划和骨架，再按依赖逐章落盘。
-- **Large 强信号**：输入明确标为 Large；主材料需要分块读取；多份来源文档共同决定需求；跨多个业务域且含多组 REQ / BR / Extension；预计正文无法在一次稳定生成中完成。命中任一强信号即可走 Large 路径。
+- **Micro / Normal**：直接执行四步；
+- **Large**：Freeze → Scaffold → Fill → Check；
+- **Large 强信号**：来源需分块读取、多份来源共同决定需求、跨多个业务域且含多组 REQ/BR/Extension，或正文无法在一次稳定生成中完成。
 
-### Large 路径（Freeze → Scaffold → Fill → Check）
+---
+
+## Large 路径
 
 <HARD-GATE name="Large 先骨架后正文">
-写任何正文前，必须先完成 Freeze 和 Scaffold，并留下可恢复证据。没有 projection-state 或目标 PRD 骨架，禁止进入 Fill。
+写任何正文前，必须完成 Freeze 和 Scaffold，并留下可恢复证据。没有 projection-state 或目标 PRD 骨架，禁止进入 Fill。
 </HARD-GATE>
 
 | 阶段 | 动作 | 完成证据 |
-|------|------|----------|
-| **Freeze** | 冻结三态范围、术语/角色、已确认决策、BR 候选、章节归属和 Coverage | 目标 PRD 同目录存在 `.<PRD basename>.projection-state.md`，如 `.PRD-会员页权益推荐.projection-state.md` |
-| **Scaffold** | 按 chapter-tree 选章，把完整标题骨架写入目标 PRD；每个待写章放 `<!-- PRD-WORKING: pending -->` | 目标 PRD 已落盘且只有骨架，无成段正文 |
-| **Fill** | 按 chapter-tree 的 Large 编写依赖顺序，每次只写一个章节；功能需求每次只写一个 REQ + 其 AC；写入时替换该章 working 标记 | 章节内容已写入目标 PRD，state 中该章标为 done |
-| **Chapter Check** | 每章写完立即核对来源覆盖、R-T1、术语/编号/引用和未决项；失败只回改本章 | 本章检查通过后才进入下章 |
-| **Global Check** | 全章完成后生成 TL;DR，再执行 Coverage 与 P0→P1→P2 全局检查 | 无 pending / 工作标记 / 临时状态文件 |
+|---|---|---|
+| **Freeze** | 冻结 model ID/revision、scope、术语、需求、支持型 Issue、章节归属和 Coverage | `.<PRD basename>.projection-state.md` |
+| **Scaffold** | 按 chapter-tree 落完整标题骨架 | 仅骨架与 pending 标记 |
+| **Fill** | 按依赖每次写一个章节；功能需求每次写一个 REQ + AC | 章节完成并标 done |
+| **Chapter Check** | 检查模型覆盖、来源、术语、编号和支持型 Issue | 通过后进入下章 |
+| **Global Check** | 生成 TL;DR，执行 Coverage 与 P0→P1→P2 | 无 pending 和临时 state |
 
-projection-state 至少记录：
-
-- 输出路径与整体状态。
-- 来源索引：文档 / 本地缓存路径 / 标题或行区间；不要复制整份原文。
-- 三态范围、冻结术语/角色/决策、BR 候选。
-- 章节清单：`id / depends / status / source_items`；status 只用 `pending / in-progress / done / blocked`。
-- Coverage：每条 in-scope 信息 → 主章节 / REQ / BR。
-
-```markdown
-# Projection State
-- output: <目标 PRD 绝对路径>
-- status: in-progress
-
-## Frozen
-- scope: <in-scope / deprecated / deferred 索引>
-- terms_roles_decisions: <冻结项>
-- br_candidates: <BR 候选及适用 REQ>
-- sources: <来源标识 + 本地路径/标题/行区间>
-
-## Chapters
-| id | depends | status | source_items |
-|----|---------|--------|--------------|
-| background-goals | - | pending | S01, S02 |
-
-## Coverage
-| source_item | scope | destination | status |
-|-------------|-------|-------------|--------|
-| S01 | in-scope | background-goals | mapped |
-```
-
-**上下文隔离**：若主材料需要分块读取、已加载多份大文档，或进入写作前上下文明显接近容量，完成 Freeze + Scaffold 后停止在当前上下文继续写。新写作上下文只读取 projection-state、目标 PRD、当前章节对应的来源片段、`projection-rules.md` 和该章模板；禁止每章重读全部原文。章节默认串行；并行只能把互不依赖的扩展章写到独立临时文件，再由单一协调者合入目标 PRD。
-
-**局部修复**：任何章节或终检失败，只修受影响章节及其摘要引用，不重新生成全文。
+Projection State 只保存稳定 ID、revision、来源索引和投影进度，不复制第三套需求模型。
 
 ---
 
-## 前置门禁（不可跳过）
+## 输入门禁
 
 <HARD-GATE name="输入契约与范围">
-投影前，输入契约必须齐备且范围已界定。
-证据 = 手上同时有「原始需求文档」+「前序澄清 Q&A」，且能读出三态（in-scope / deprecated / deferred）。
-**同会话内上游需求理解已交付的上下文即满足契约**——「手上有」指信息在上下文中可用，不要求文件形态。上游交付的「已定决策 / 假设清单 / 术语表 / 范围三态」即为「前序澄清 Q&A」：`in-scope` / `<废弃>`=deprecated / `<分期>`=deferred 直接对应三态；标 `confirmed` 的决策可直接写成 AC，标 `assumed` 的按 R-S7 处理（不阻塞则记 Open Question）。
-无契约 = 禁止投影，先走需求理解 / 澄清 skill。
-冲突消解、需求澄清由上游负责。发现阻塞缺口时停止投影，列出最小缺口并退回上游澄清 skill；本 skill 不向 PM 追问、不代替上游决策。
+投影前必须读取 `../../shared/confirmed-requirement-contract.md`，并完整执行其中的 `is_valid_confirmed_requirement_input` 唯一谓词，包括 revision/确认、Issue/认知状态、未闭合项支撑、RequirementItem scope 归属、身份/来源和 AI default 的 accepted_default 证据。
+任一条件失败：禁止投影，只返回 InputContractFailure。不得维护弱化版或局部门禁。
 </HARD-GATE>
 
-**惊讶测试贯穿全程**（projection-rules R-S7）：遇未被 Q&A 决策的点，禁止选默认值冒充「已对齐」。三选一：阻塞→列最小缺口并退回上游澄清 / 不阻塞→记 Open Question / 范围外→按三态裁剪。违反 = 臆造 = 违反保真底线。
+### InputContractFailure
 
-**违反形式 = 违反精神。**「需求看着挺清楚」≠ 已澄清；「选个默认值标可调整」= 伪造对齐；「二期也顺手写全」= 越范围臆造；「废弃内容留着」= 未做裁剪。
+```ts
+interface InputContractFailure {
+  output_type: "input_contract_failure";
+  violated_rules: string[];
+  affected_model_item_ids: string[];
+  evidence: string[];
+}
+```
 
----
-
-## 交付门禁（Blocker，缺一不可交付）
-
-自检细则见 `projection-rules.md`。速查：
-
-1. **保真 100%**（R-S1~S6）——in-scope 全映射，遗漏/篡改/静默删/臆造任一即失败。
-2. **不写实现**（R-T1）——正文出现接口/表结构/状态机/prompt/编排 = Blocker。源文档已含实现细节时按 R-T1 裁决：业务语义翻译保留、纯技术形式剥离，不直接删（保真 > 不写实现）。
-3. **验收**（R-T7）——每 REQ 有 Given/When/Then；探索型豁免须显式声明。
-4. **非目标非空**（R-T6）。
-5. **成功指标四要素**（R-T5）——无量化指标须显式声明豁免。
+只报告失败，不猜测修复方式、不修改输入、不向用户澄清，也不选择下一步流程。
 
 ---
 
-## Loader（按需加载，不一次读全）
+## 状态投影
 
-| 何时                           | 读                                                                                                                                                         |
-| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 需要节点定义 / 编号 / 空值三态 | `prd-language.md`                                                                                                                                        |
-| 任何规则、门禁、自检判据       | `projection-rules.md`（唯一规则源）                                                                                                                      |
-| 选章 / 归一 / 防重复           | `chapter-tree.md`                                                                                                                                        |
-| 写某章要骨架                   | `templates/core.md`（Core+页面+埋点+BR+Open Q）；AI 章→`templates/ai.md`；后台/非功能→`templates/backend.md`；数据→`templates/data.md`；i18n/发布/后续/风险→`templates/extension.md` |
+| 输入内容 | 行为 |
+|---|---|
+| `confirmed` | 投影为 PRD 需求、规则、范围或验收依据 |
+| `confirmed + origin=ai_default` | 正常投影，Coverage 保留 ai_default provenance |
+| `unresolved + parked` | 投影到“待决与验证事项”，状态为暂缓 |
+| `unverified + validation_plan` | 投影到“待决与验证事项”，状态为待验证 |
+| `unresolved + accepted_risk` | 投影到“风险与依赖”，明确已接受风险 |
+| `superseded` Issue | 仅保留历史，不进入当前 PRD |
+| `proposed / conflicted / open Issue` | 输入非法，返回 InputContractFailure |
 
-> Template 按加载单元分组：写哪类章才读哪个文件，不整包 Read。
+---
+
+## 写作中发现产品语义缺口
+
+本 Skill 不向 PM 追问、不做产品决策、不应用默认、不创建 RequirementIssue、不修改 revision，也不把缺口直接写成 Open Item。
+
+发现任何需要补充、决定、验证或纠正才能保持产品语义保真的信息时，立即暂停受影响部分，只返回：
+
+```ts
+interface ProjectionGap {
+  output_type: "projection_gap";
+  gap_type:
+    | "missing_information"
+    | "ambiguity"
+    | "conflict"
+    | "validation"
+    | "scope"
+    | "terminology";
+  summary: string;
+  affected_model_item_ids: string[];
+  source_refs: string[];
+  projection_impact: string;
+}
+```
+
+`ProjectionGap` 是只读诊断，不是 RequirementIssue，也不改变 canonical 输入。只有不改变需求事实的纯写作组织问题可在本 Skill 内修复。
+
+---
+
+## 交付门禁
+
+1. **输入仍有效**：写作期间 model revision 未变化；
+2. **保真 100%**：所有 in_scope 条目均有 Coverage 落点；
+3. **状态正确**：parked、validation_plan、accepted_risk 投影到指定章节；
+4. **不写实现**：接口、表结构、技术状态机、prompt 和编排按 R-T1 裁决；
+5. **验收完整**：每个 REQ 有 Given/When/Then；
+6. **非目标准确**：只从 out_of_scope 边界生成；
+7. **指标有依据**：量化指标满足四要素，或模型明确确认无量化指标。
+
+---
+
+## Loader
+
+| 何时 | 读 |
+|---|---|
+| 输入边界校验 | `../../shared/confirmed-requirement-contract.md` |
+| 节点定义、优先级和空值语义 | `prd-language.md` |
+| 规则、门禁和自检 | `projection-rules.md` |
+| 选章、归一和防重复 | `chapter-tree.md` |
+| Core / 页面 / 埋点 / BR / Open Item | `templates/core.md` |
+| AI 章 | `templates/ai.md` |
+| 后台 / 非功能 | `templates/backend.md` |
+| 数据 | `templates/data.md` |
+| i18n / 发布 / Future Scope / accepted risk | `templates/extension.md` |
 
 ---
 
 ## 输出与恢复
 
-- **默认只交付 PRD**：落盘到 PM 指定路径；未指定则当前目录 `PRD-<主题>.md`。
-- 范围清单 / Plan / 自检记录均为内部工作态，不默认展示、不要求确认。Coverage 映射**必须建**（P0 保真的强制证据，见 projection-rules 自检 P0）；Large 将其持久化在 projection-state，最终交付前删除。
-- 用户说「继续」且存在 projection-state：先读 state → 校验目标 PRD 已完成章节 → 找到第一个依赖已满足的 pending / in-progress 章节 → 只加载该章来源片段与模板继续。禁止重读全部原文或重写已完成章节。
-- state 丢失但目标 PRD 仍有 `PRD-WORKING` 标记：根据已填章节和 Coverage 重建最小 state 后继续，不从头生成。
-- 全局检查通过后：删除所有 `PRD-WORKING` 标记和 projection-state；默认仍只向用户交付最终 PRD。
+- 默认输出 PRD；路径由调用方提供，未提供时使用当前目录 `PRD-<主题>.md`。
+- Coverage 和质检记录是内部工作态，不默认展示。
+- 存在 projection-state 时，先校验 model ID/revision，再从首个可执行章节继续。
+- revision 不一致时停止 Fill，只返回 InputContractFailure；不得继续使用旧模型。
+- state 丢失但 PRD 有 `PRD-WORKING` 时，可根据合法输入和已完成章节重建最小投影状态。
+- 全局检查通过后删除工作标记和 projection-state，只交付最终 PRD。

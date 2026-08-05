@@ -1,20 +1,23 @@
 # Requirement Understanding V2 Skill 技术设计
 
-> 状态：已完成方案对齐，待实现  
-> 设计目标：`plugin/skills/requirement-understanding-v2/`  
-> 兼容策略：保留现有 `requirement-understanding` V1，不在原目录上增量改造  
-> 运行边界：需求理解与需求撰写在同一 Session 内串联，不依赖中间状态落盘
+> 状态：已实现 Skill 解耦与 Agent 编排
+> 理解 Skill：`plugin/skills/requirement-understanding-v2/`
+> 写作 Skill：`plugin/skills/requirement-writing/`
+> 编排 Agent：`plugin/agents/requirement-agent.md`
+> 运行边界：两个 Skill 独立，不互相命名、调用或选择回流；Agent 在同一 Session 内串联，不依赖中间状态落盘
 
 ## 1. 摘要
 
-Requirement Understanding V2 用于帮助需求 Agent 在同一 Session 内完成：
+Requirement Understanding V2 独立完成：
 
 1. 从用户输入、来源材料和可验证证据中建立结构化需求模型；
 2. 识别缺失、歧义、冲突、决策、验证、范围和术语问题；
 3. 仅向用户提出高价值问题，低价值且可逆的问题允许 AI 给出显式默认；
 4. 保留用户看过的选项、AI 推荐、用户选择、后续反转和最终解决结果；
-5. 通过简短的最终门禁确认精确的需求模型版本；
-6. 在同一 Session 内将已确认模型交给 requirement-writing 撰写 PRD。
+5. 通过简短门禁确认精确的需求模型版本；
+6. 输出 `ConfirmedRequirementOutput`，不选择任何后续流程。
+
+需求 Agent 根据用户原始意图决定是否把合法输入交给独立写作 Skill；任何失败回流和重试也只由 Agent 编排。
 
 V2 只保留两个核心领域模型：
 
@@ -40,7 +43,7 @@ V1 已具备以下可复用思想：
 - 区分可调查事实、用户决策和低成本默认；
 - 通过返工成本控制澄清深度；
 - 使用决策树、Example Mapping、GWT、状态图、表格和低保真制品降低抽象沟通成本；
-- 最终通过显式对齐门禁再衔接 requirement-writing；
+- 最终通过显式对齐门禁输出已确认需求；
 - references 按需加载，避免入口 Skill 过长。
 
 ### 2.2 V2 要解决的问题
@@ -52,7 +55,7 @@ V1 的问题不在于缺少澄清技巧，而在于缺少统一、精确的领�
 - “当前没人知道”的问题容易被错误压缩成 Ask 或 AI 假设；
 - 用户确认过哪些问题、看到过哪些选项、选择了什么、后来是否反转，缺少统一记录；
 - Issue 状态、Model 状态和 Workflow 状态可能重复表达同一事实；
-- 上下游交接容易依赖聊天摘要，而不是精确确认的需求模型版本。
+- Agent 若仅依赖聊天摘要编排多个独立 Skill，容易绕过精确版本和输入门禁。
 
 V2 以统一模型替代分散清单，并通过派生视图而不是新增模型控制复杂度。
 
@@ -68,7 +71,7 @@ V2 以统一模型替代分散清单，并通过派生视图而不是新增模�
 4. **低疲劳**：只向用户提出高价值问题；最终确认可扫一眼完成。
 5. **可追溯**：记录来源、问题、交互、推荐、用户选择、模型修改和决策反转。
 6. **版本化确认**：用户确认 `RequirementModel.revision`，不是脱离模型的聊天摘要。
-7. **同会话交接**：不要求生成中间文档或恢复跨 Session 状态。
+7. **独立输出**：输出 `ConfirmedRequirementOutput`，不要求生成中间文档，也不决定后续工作。
 8. **按需加载**：入口 Skill 保持精简，细节放入 references。
 
 ### 3.2 非目标
@@ -90,7 +93,8 @@ V2 不负责：
 
 ### 4.1 已确认约束
 
-- requirement-understanding 与 requirement-writing 挂载给同一个需求 Agent，并在同一 Session 内串联；
+- 两个 Skill 可由同一需求 Agent 预加载，但必须保持独立：不得互相命名、调用、回流或决定下一步；
+- `plugin/agents/requirement-agent.md` 是串联、失败回流、revision 失效和重试的唯一 orchestration owner；
 - 平台没有 `AskUserQuestion`，因此交互契约必须是通道无关的行为规范；
 - 平台支持 Markdown 表格和 Mermaid；
 - references 支持按需加载；
@@ -98,7 +102,8 @@ V2 不负责：
 - 澄清深度有成本，只处理高价值问题；
 - 低价值默认必须显式暴露，并在最终门禁中统一确认；
 - 高风险未知不得因用户要求停止追问而伪装成 AI 默认；
-- V1 与 V2 必须并存，分别挂载到不同 Agent 测试。
+- 写作 Skill 只接受已确认模型，并在失败时返回中立的 `InputContractFailure` 或 `ProjectionGap`；
+- V1 入口只返回中立的 `LegacyRequirementInput`，不选择迁移目标或后续流程。
 
 ### 4.2 核心原则
 
@@ -159,7 +164,7 @@ flowchart LR
     I --> R[处理阻塞问题]
     R --> G[确认当前 revision]
     G -->|用户修正| M
-    G -->|确认| H[同会话交接 requirement-writing]
+    G -->|确认| H[输出 ConfirmedRequirementOutput]
 
     I -->|低风险默认| G
     I -->|验证计划或停车| G
@@ -276,6 +281,7 @@ interface VocabularyTerm extends UnderstandingFields {
 ```ts
 interface RequirementItem extends UnderstandingFields {
   requirement_id: string;
+  scope_item_ids: string[];
 
   requirement_type:
     | "functional"
@@ -295,6 +301,13 @@ interface RequirementItem extends UnderstandingFields {
     | "unspecified";
 }
 ```
+
+`scope_item_ids` 规则：
+
+- 非空且全部指向当前 RequirementModel 中的 ScopeItem；
+- 同一 RequirementItem 关联的 ScopeItem 必须具有相同 `scope_disposition`；
+- 同时跨越 in_scope/out_of_scope 时必须拆分 RequirementItem；
+- RequirementItem 的派生 scope 等于关联 ScopeItem 的共同 disposition。
 
 `delivery_priority` 规则：
 
@@ -619,7 +632,8 @@ confirmed_revision === revision
 - 新增或删除 Intent、Scope、Vocabulary、Requirement 条目；
 - 修改范围、规则、目标用户、术语定义或优先级；
 - 将 Issue 处理结果应用到模型；
-- 用户在最终门禁提出语义修正。
+- 用户在最终门禁提出语义修正；
+- 已确认版本中新发现任何产品语义缺口，无论它是否阻塞或立即改变模型字段，都必须在创建 Issue 前或同一原子更新中先递增 revision。
 
 以下变化不增加 revision：
 
@@ -627,7 +641,8 @@ confirmed_revision === revision
 - 添加纯审计引用；
 - 将门禁覆盖的 `proposed` 改为 `confirmed`；
 - 写入 `confirmation_mode=batch_confirmation`；
-- 更新 `confirmed_revision`。
+- 更新 `confirmed_revision`；
+- 将本次门禁批准的 AI default Issue 从 `open` 更新为 `resolved + accepted_default`。
 
 Revision 表示需求语义版本，不是对象修改次数。
 
@@ -673,7 +688,7 @@ confirmed_revision: 2
 flowchart LR
     A[构建模型] --> B[处理阻塞问题]
     B --> C[确认当前 revision]
-    C --> D[交接 requirement-writing]
+    C --> D[输出 ConfirmedRequirementOutput]
 
     B -->|处理结果改变模型| A
     C -->|用户提出修正| A
@@ -703,9 +718,9 @@ flowchart LR
 - 用户确认精确 revision；
 - 任何语义修正都增加 revision 并重新确认。
 
-### 10.4 第四步：同会话交接
+### 10.4 第四步：独立输出
 
-当 `confirmed_revision === revision` 时，将当前内存中的模型和有效 Issue 交给 requirement-writing，不要求落盘中间文档。
+当 `confirmed_revision === revision` 且共享输入契约全部通过时，输出 `ConfirmedRequirementOutput` 并结束。Skill 不决定调用方如何消费，也不触发后续工作。
 
 ---
 
@@ -1067,9 +1082,9 @@ ModelChange 用于解释 Issue 如何改变 RequirementModel，也是决策历�
 AI 默认：仅列会影响交付且尚待批量批准的默认
 未闭合事项：unresolved / unverified / parked / accepted risk
 
-A. 确认并继续撰写 PRD
-B. 确认，但暂不撰写 PRD
-C. 需要修改
+A. 确认当前 Revision N
+B. 需要修改
+C. 暂停，暂不确认
 ```
 
 必要时可扩展，但默认应控制在一个屏幕、约 20 行左右。完整模型保留在当前上下文中，不必全部重复展示。
@@ -1081,7 +1096,7 @@ C. 需要修改
 1. `confirmed_revision = N`；
 2. 门禁覆盖的 `proposed` 条目改为 `confirmed`；
 3. 对应 `confirmation_mode` 改为 `batch_confirmation`；
-4. 等待批准的 AI 默认 Issue 以 `accepted_default` 解决；
+4. 等待批准的 AI 默认 Issue 以 `accepted_default` 解决，且 `resolved_by=user`；
 5. 对应 Resolution 写入 `confirmation_model_revision=N`；
 6. 上述纯确认元数据变化不增加 revision。
 
@@ -1099,60 +1114,54 @@ C. 需要修改
 
 ---
 
-## 16. 同会话 Handoff
+## 16. 独立输出与 Agent 编排
 
-### 16.1 Handoff 前提
+### 16.1 Confirmed Output 前提
 
-只有满足以下条件才可正常交接：
+理解 Skill 只有满足以下条件才可输出 `ConfirmedRequirementOutput`：
 
 ```text
 requirement_model.confirmed_revision
   == requirement_model.revision
 ```
 
-且不存在任何 `issue_status == open` 的 Issue。进入门禁时唯一允许暂时保持 open 的 AI 默认 Issue，必须在用户批准该 revision 时原子更新为 `resolved + accepted_default`，随后才能交接。
+且不存在任何 `issue_status == open` 的 Issue。门禁批准的 AI default 必须先原子更新为 `resolved + accepted_default`。
 
-### 16.2 Handoff 不是第三个模型
+### 16.2 输出不是第三个模型
 
-Handoff 是当前状态的派生视图，不建立独立 `RequirementHandoff` 持久化对象。requirement-writing 在同一 Session 中直接消费：
+`ConfirmedRequirementOutput` 是当前状态的传递视图，不建立独立事实源。它包含：
 
-- 当前 RequirementModel；
-- 非 superseded 的 RequirementIssues；
-- 当前聊天中的来源材料和用户确认上下文。
+- 当前已确认 RequirementModel；
+- RequirementIssues 及 supersede 历史；
+- SourceReferences；
+- 当前 revision 的确认证据。
 
-### 16.3 下游消费映射
+理解 Skill 输出后立即结束，不决定调用方如何消费，也不生成旧清单兼容层。
 
-| V2 状态 | requirement-writing 行为 |
+### 16.3 写作 Skill 的独立端口
+
+写作 Skill 只执行三种互斥结果：
+
+| 输入/发现 | 独立输出 |
 |---|---|
-| `confirmed` | 可直接转写为 PRD 内容和验收依据 |
-| `unresolved` + parked | 写入非阻塞 Open Questions 或后续事项 |
-| `unresolved` + accepted risk | 显式写入已接受风险，不伪装成已确认规则 |
-| `unverified` + validation plan | 写入验证要求、责任人和时机 |
-| `proposed` | 正常 handoff 中不得存在 |
-| `conflicted` | 正常 handoff 中不得存在 |
-| `superseded` Issue | 仅用于历史，不影响当前 PRD |
+| 合法 confirmed 模型 | PRD |
+| 输入门禁失败 | `InputContractFailure` |
+| 投影中发现产品语义缺口 | `ProjectionGap` |
 
-AI 默认即使已确认，也必须保留：
+写作 Skill 不向 PM 追问、不应用默认、不创建 RequirementIssue、不修改 revision，也不选择回流或重试目标。
 
-```yaml
-origin: ai_default
-understanding_status: confirmed
-confirmation_mode: batch_confirmation
-```
+### 16.4 Agent orchestration
 
-下游可以直接消费已批准默认，但不得把来源改写成用户原始陈述。
+`plugin/agents/requirement-agent.md` 独占串联职责：
 
-### 16.4 下游发现新问题
+1. 根据用户原始意图决定仅理解、仅写作或理解后写作；
+2. 取得 `ConfirmedRequirementOutput` 后重新验证写作输入门禁；
+3. 仅在用户原始意图包含写作时调用写作 Skill；
+4. 收到 `InputContractFailure` 或 `ProjectionGap` 时，将中立诊断和当前上下文交给理解 Skill；
+5. 理解 Skill 在创建产品语义 Issue 前或同一原子更新中 `revision += 1`，处理并重新确认；
+6. Agent 重验门禁后决定是否重试写作。
 
-requirement-writing 如果发现会改变需求语义的阻塞缺口：
-
-- 暂停当前撰写；
-- 回到本设计的建模/Issue 处理流程；
-- 修改 RequirementModel 并增加 revision；
-- 重新确认；
-- 再继续写作。
-
-这是一段同会话循环，不需要落盘或切换到持久化工作流。
+两个 Skill 均不知道另一个 Skill 的名称，不能自行完成上述调用链。整个编排可在同一 Session 内传递 canonical 状态，不要求落盘中间需求状态。
 
 ---
 
@@ -1188,13 +1197,13 @@ requirement-writing 如果发现会改变需求语义的阻塞缺口：
 
 | 指标 | 计算含义 |
 |---|---|
-| 即时接受率 | 用户首次响应选择 AI 推荐项的比例 |
-| 最终保留率 | 当前有效 Issue 链的最终 Resolution 仍采用推荐项的比例 |
-| 推荐反转率 | 最初选择推荐项，但后续 supersede 后采用其他方案的比例 |
+| 即时接受率 | 在同一 Interaction 内，用户首次响应是否选择 AI 推荐的 option key |
+| 最终保留率 | 推荐选项代表的语义结果（由 option description、Resolution.answer、ModelChange 共同识别）是否仍保留在当前 RequirementModel |
+| 推荐反转率 | 用户最初接受推荐语义，但最终有效 Resolution 或 RequirementModel 已改为不同语义 |
 | 自定义答案率 | `response_type=custom_answer` 的比例 |
 | AI 默认批准率 | `apply_ai_default` 最终形成 `accepted_default` 的比例 |
 
-这些指标描述推荐的接受和保留情况，不称为“准确率”。用户选择推荐项可能受到锚定、疲劳或信息不充分影响。
+`option_key` 只在单个 Interaction 内有效，不能跨 supersede 链直接比较 A/B/C。相同 key 不保证语义相同，不同 key 也不必然代表反转。这些指标描述推荐的接受和保留情况，不称为“准确率”。
 
 ---
 
@@ -1210,7 +1219,7 @@ plugin/skills/requirement-understanding-v2/
     ├── flow.md
     ├── interaction-contract.md
     ├── prototyping.md
-    └── alignment-handoff.md
+    └── alignment-output.md
 ```
 
 ### 18.1 SKILL.md
@@ -1270,7 +1279,7 @@ plugin/skills/requirement-understanding-v2/
 - artifact review 如何产生 Issue 和模型更新；
 - 不假设 HTML 渲染能力。
 
-### 18.6 alignment-handoff.md
+### 18.6 alignment-output.md
 
 包含：
 
@@ -1278,7 +1287,7 @@ plugin/skills/requirement-understanding-v2/
 - 最终确认模板；
 - revision 确认原子更新；
 - 用户修正循环；
-- requirement-writing 同会话 handoff 映射。
+- `ConfirmedRequirementOutput` 独立输出契约。
 
 ### 18.7 Reference 加载策略
 
@@ -1287,36 +1296,62 @@ plugin/skills/requirement-understanding-v2/
 | 首次建立或修改内部模型 | `state-model.md` |
 | 默认执行需求理解流程 | `flow.md` |
 | 准备向用户提问 | `interaction-contract.md` |
-| 抽象沟通失效或需可视化 | `prototyping.md` |
-| 准备最终确认和交接 | `alignment-handoff.md` |
+| 抽象沟通失效或需可视化 | `prototyping.md` + `interaction-contract.md` |
+| 准备最终确认和独立输出 | `alignment-output.md` + `plugin/shared/confirmed-requirement-contract.md` |
 
 入口 Skill 不要求每轮加载全部 references。
 
+### 18.8 中立共享输入契约
+
+`plugin/shared/confirmed-requirement-contract.md` 定义唯一 `is_valid_confirmed_requirement_input` 谓词：revision/确认、Issue/认知状态、未闭合项支撑、RequirementItem scope 归属、身份/来源和 AI default 的 accepted_default 证据。该文件只定义数据边界，不包含 Skill 名称、路由、回流或重试策略。
+
 ---
 
-## 19. V1/V2 兼容与测试隔离
+## 19. Agent 编排与 Skill 独立性
 
-### 19.1 目录隔离
+### 19.1 目录关系
 
-- V1：`plugin/skills/requirement-understanding/`
-- V2：`plugin/skills/requirement-understanding-v2/`
+- 历史入口：`plugin/skills/requirement-understanding/`
+- 独立理解 Skill：`plugin/skills/requirement-understanding-v2/`
+- 独立写作 Skill：`plugin/skills/requirement-writing/`
+- 唯一编排层：`plugin/agents/requirement-agent.md`
 
-实现 V2 时不得修改或重命名 V1 文件。
+### 19.2 独立性边界
 
-### 19.2 Agent 隔离
+两个 Skill 的运行时文件必须满足：
 
-V1 和 V2 description 都可能命中需求理解场景，不能同时挂载到同一个 Agent。
+- 不出现另一个 Skill 的名称；
+- 不调用、选择或推荐另一个 Skill；
+- 不声明跨 Skill 的“立即进入”“返回上游”或“回流”动作；
+- 理解侧只输出 `ConfirmedRequirementOutput`；
+- 写作侧只输出 PRD、`InputContractFailure` 或 `ProjectionGap`；
+- 写作侧不修改 RequirementModel、RequirementIssue 或 revision。
 
-推荐：
+### 19.3 Agent 路由
 
-- Agent A：V1 requirement-understanding + 对应 requirement-writing；
-- Agent B：V2 requirement-understanding + 能识别 V2 handoff 语义的 requirement-writing。
+Agent 预加载两个 Skill，并按用户原始意图路由：
 
-### 19.3 下游兼容
+```text
+仅理解：理解 → 确认 → 停止
+仅写作：校验合法输入 → 写作
+理解后写作：理解 → 确认 → Agent 重验门禁 → 写作
+写作失败：中立诊断 → Agent 调用理解处理 → 重新确认 → Agent 决定重试
+```
 
-当前 requirement-writing 使用同会话上下文，不要求上游落盘，这是可以复用的基础。
+Skill 完成不等于自动进入下一步；只有 Agent 可以作出调用决策。
 
-如果其文案仍强绑定 V1 的 `confirmed/assumed` 清单结构，应在实现测试阶段创建独立测试副本或增加 V2 契约，而不是为了 V2 A/B 测试直接破坏 V1 组合。V2 的标准语义映射以本设计第 16 节为准。
+### 19.4 写作输入契约
+
+Agent 和写作 Skill 都必须读取 `plugin/shared/confirmed-requirement-contract.md` 并完整执行同一个 `is_valid_confirmed_requirement_input` 谓词，不得各自维护弱化版。谓词同时覆盖：
+
+- revision 与当前精确确认证据；
+- 无 open Issue、无 proposed/conflicted；
+- unresolved/unverified 的当前非 superseded 双向支撑；
+- RequirementItem 非空、有效且 disposition 一致的 `scope_item_ids`；
+- 被投影条目的稳定 ID、origin 和 SourceReference/当前 Resolution；
+- 每个 ai_default 的 `confirmed + batch_confirmation` 与当前双向关联 `resolved + accepted_default + resolved_by=user` 证据。
+
+V1 清单不进入写作端口。历史入口只返回 `LegacyRequirementInput`，由 Agent 决定是否重新建模。
 
 ---
 
@@ -1346,10 +1381,11 @@ V2 实现完成后至少用以下场景进行行为验证。
 
 预期：
 
-- 创建 `apply_ai_default` Issue，或在足够明确时直接形成 proposed 条目；
+- 每个可独立批准或反转的默认创建 `open + apply_ai_default` Issue；
+- 默认语义写入模型，`origin=ai_default`、`understanding_status=proposed`；
 - 不立即打断用户；
 - 最终门禁显式展示；
-- 批准后 origin 仍为 ai_default。
+- 批准后 Issue 形成 `accepted_default` Resolution，origin 仍为 ai_default。
 
 ### 场景 4：用户主动拍板
 
@@ -1367,7 +1403,7 @@ V2 实现完成后至少用以下场景进行行为验证。
 - 不伪装为用户问题或 AI 默认；
 - 建立 validation Issue；
 - 选择 blocker、validation plan、parking 或 accepted risk；
-- handoff 中保留 unverified/unresolved 语义。
+- 输出中保留 unverified/unresolved 语义。
 
 ### 场景 6：用户说“别问了，直接做”
 
@@ -1410,14 +1446,25 @@ V2 实现完成后至少用以下场景进行行为验证。
 - authority 不明时不能擅自选边；
 - 解决后保留来源、rationale 和 ModelChange。
 
-### 场景 11：正常同会话交接
+### 场景 11：正常 Agent 编排
 
 预期：
 
-- `confirmed_revision === revision`；
-- 没有 open blocker；
-- requirement-writing 能区分 confirmed、unresolved、unverified 和已接受风险；
-- 不要求中间文件。
+- 理解 Skill 输出满足全部 Confirmed Output 不变量；
+- 理解 Skill 不知道写作 Skill 名称，也不决定下一步；
+- Agent 根据用户原始意图校验输入并决定是否调用写作；
+- 写作 Skill 只消费合法模型，不生成旧清单兼容层；
+- 同 Session 传递状态，不要求中间需求文件。
+
+### 场景 12：写作 Skill 发现产品语义缺口
+
+预期：
+
+- 写作 Skill 暂停受影响章节，只返回 `ProjectionGap`；
+- 写作 Skill 不修改 revision、不创建 RequirementIssue、不选择回流对象；
+- Agent 将诊断交给理解 Skill；
+- 理解 Skill 在创建 Issue 前或同一原子更新中 `revision += 1`，处理并重新确认；
+- Agent 重验门禁后决定是否重试写作。
 
 ---
 
@@ -1433,23 +1480,25 @@ V2 实现完成后至少用以下场景进行行为验证。
 | 三套状态再次出现 | 只有 Issue 保存状态；Model 状态派生；Workflow 不落字段 |
 | 门禁过长导致确认疲劳 | 一个屏幕、约 20 行；只列关键全貌、默认和未闭合项 |
 | 推荐造成锚定 | open-ended 不推荐；门禁审批不推荐；推荐理由单独展示 |
-| V1/V2 同时触发 | 使用不同 Agent，不同时挂载 |
-| requirement-writing 误读 V2 | 使用第 16 节映射，并在 A/B 测试时隔离下游 Skill 版本 |
+| Skill 间形成隐式调用依赖 | 两个 Skill 目录零互相名称引用；所有路由只写在 Agent 指令 |
+| 写作 Skill 越权修改需求状态 | 只允许返回只读 `InputContractFailure` / `ProjectionGap`；revision 和 Issue 变更由 Agent 调用理解 Skill 后完成 |
+| Agent 与写作端门禁漂移 | 双方完整执行 `plugin/shared/confirmed-requirement-contract.md` 的唯一谓词，不维护局部副本 |
+| RequirementItem scope 无法确定 | 每个 RequirementItem 使用非空、有效、同 disposition 的 `scope_item_ids`；混合语义必须拆分 |
 
 ---
 
 ## 22. 实施顺序
 
 1. 创建 `requirement-understanding-v2/references/state-model.md`，冻结字段和不变量；
-2. 创建 `references/flow.md`，实现 Issue 识别、路由和收敛规则；
-3. 创建 `references/interaction-contract.md`，实现提问和推荐规范；
-4. 创建 `references/prototyping.md`，实现认知制品切换；
-5. 创建 `references/alignment-handoff.md`，实现版本确认与下游交接；
-6. 最后编写精简 `SKILL.md`，只编排 references；
-7. 检查所有文件中的字段名和枚举完全一致；
-8. 检查不存在旧版 `frontier`、Ask 清零、AssumptionList 等 canonical 概念残留；
-9. 使用第 20 节场景进行 V2 行为测试；
-10. 在独立 Agent 上与 V1 做对照测试。
+2. 创建 `references/flow.md`、`interaction-contract.md` 和 `prototyping.md`；
+3. 创建 `references/alignment-output.md`，只定义确认和独立输出；
+4. 编写精简理解 `SKILL.md`，禁止跨 Skill 编排；
+5. 将写作 Skill 改为独立输入端口与三种互斥输出；
+6. 创建 `plugin/shared/confirmed-requirement-contract.md`，统一确认输出和写作输入谓词；
+7. 创建 `plugin/agents/requirement-agent.md`，集中声明 skills、路由、门禁、回流和重试；
+8. 检查两个 Skill 目录中不存在对方名称或跨 Skill 动作；
+9. 检查字段、枚举、scope 关联、revision 规则、AI default 和支撑 Issue 谓词一致；
+10. 使用第 20 节场景执行独立运行与 Agent 串联验证。
 
 ---
 
@@ -1463,15 +1512,24 @@ V2 实现完成后至少用以下场景进行行为验证。
 - [ ] RequirementModel 不保存 `model_status`；
 - [ ] 根状态不保存 `workflow_phase`；
 - [ ] 模型确认由 `revision/confirmed_revision` 表达；
+- [ ] 任意新产品语义缺口与 `revision += 1`、Issue 创建原子执行；
 - [ ] origin、understanding status、confirmation mode、confidence 相互独立；
+- [ ] 每个可独立批准或反转的 AI default 都有 `open + apply_ai_default` Issue；
 - [ ] 当前没人知道的问题可进入 validation、parking 或 accepted risk；
 - [ ] 高风险未知不能被用户喊停自动洗成 AI 默认；
 - [ ] 用户看过的选项、AI 推荐、用户响应和最终反转可追溯；
-- [ ] 最终门禁确认精确 revision；
-- [ ] 门禁不标推荐选项；
-- [ ] handoff 不要求落盘；
-- [ ] V1 文件保持不变；
-- [ ] V1/V2 不在同一 Agent 同时启用。
+- [ ] 推荐保留与反转按语义结果计算，不跨 Issue 比较 A/B/C key；
+- [ ] 最终门禁确认精确 revision，且不标推荐选项；
+- [ ] 同 Session 的 Agent 编排不要求落盘中间需求状态；
+- [ ] 两个 Skill 目录不出现对方名称，也不包含跨 Skill 调用、回流或重试动作；
+- [ ] 理解 Skill 只输出 `ConfirmedRequirementOutput`；
+- [ ] 写作 Skill 只输出 PRD、`InputContractFailure` 或 `ProjectionGap`；
+- [ ] 写作 Skill 不修改 revision、不创建 RequirementIssue；
+- [ ] Agent 是路由、门禁、回流和重试的唯一 owner；
+- [ ] 每个 RequirementItem 通过非空、有效、同 disposition 的 `scope_item_ids` 获得唯一派生 scope；
+- [ ] Agent、理解输出和写作输入完整执行同一 `is_valid_confirmed_requirement_input` 谓词；
+- [ ] AI default 必须有当前双向关联的 `resolved + accepted_default + resolved_by=user` 支撑；
+- [ ] parked、validation_plan、accepted_risk 分别投影到正确的 PRD 章节。
 
 ---
 
@@ -1490,5 +1548,10 @@ V2 实现完成后至少用以下场景进行行为验证。
 11. authority 只保留在 SourceReference；
 12. delivery priority 保留并允许 unspecified；
 13. 选项使用短 label 与独立 description，AI 推荐理由另行展示；
-14. 推荐效果使用接受率、保留率和反转率，不称准确率；
-15. V2 新目录实现，V1 保留用于独立对照测试。
+14. 推荐效果使用接受率、保留率和反转率，不称准确率；跨 Issue 的保留/反转按语义判断；
+15. 理解与写作 Skill 保持独立，运行时目录中不出现对方名称或跨 Skill 编排；
+16. `plugin/agents/requirement-agent.md` 是路由、门禁、回流和重试的唯一 owner；
+17. 写作失败只返回中立 `InputContractFailure` / `ProjectionGap`，不修改需求状态；
+18. V1 入口只返回 `LegacyRequirementInput`，迁移决策属于 Agent；
+19. RequirementItem 用 `scope_item_ids` 关联同 disposition ScopeItem，派生唯一 scope；
+20. 中立共享契约是确认输出、Agent 门禁和写作输入的唯一边界谓词。

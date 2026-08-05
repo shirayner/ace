@@ -50,7 +50,7 @@
 **北极星指标**：<最高层衡量指标；详细四要素见"成功指标">
 
 **非目标**（非空）
-- N1：<本次 / 长期明确不做的事项；deferred 不放这里>
+- N1：<当前明确 `out_of_scope` 且用于划定本次边界的事项；未来承诺只按 rationale 投影到“后续规划”>
 ```
 
 ## 成功指标 Success Metrics
@@ -157,13 +157,14 @@ flowchart TD
 - 去重口径：<去重键 / 时间窗口 / 重复事件处理>
 ```
 
-## 待决问题 Open Questions
+## 待决与验证事项 Open Items
 
 ```markdown
-## 待决问题
-| 问题 | 影响范围 | 决策人 | 截止 | 状态 |
-|------|----------|--------|------|------|
-| <未决事项> | <章节 / REQ / 发布范围> | <姓名 / 角色> | <YYYY-MM-DD> | 待决 / 已决 / 暂缓 |
+## 待决与验证事项
+| 类型 | 事项 | 影响范围 | 责任人 | 后续动作 / 触发条件 | 状态 | 来源 |
+|---|---|---|---|---|---|---|
+| 暂缓 | <unresolved + parked 事项> | <章节 / REQ / 发布范围> | <follow_up_owner> | <revisit_trigger> | 暂缓 | <Issue ID> |
+| 待验证 | <unverified 事项> | <章节 / REQ / 发布范围> | <decision_owner / 计划责任人> | <validation_plan 摘要> | 待验证 | <Issue ID> |
 ```
 
-> 只收「上游未决、但不阻塞投影」的点（R-S7 第②类）。范围冲突的裁决属上游需求澄清，本 skill 不复查、不替 PM 选边。
+> 只收输入模型中明确保留的 `parked` 和 `validation_plan`。`accepted_risk` 进入“风险与依赖”，不放本表；`superseded` 不进入正文。现场发现的未知不得直接新增为 Open Item；按 R-S7 返回 ProjectionGap 并停止受影响部分。

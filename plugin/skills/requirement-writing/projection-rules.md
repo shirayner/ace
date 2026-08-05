@@ -1,68 +1,81 @@
 # Projection Rules — 唯一规则源
 
-> **这里只放两类知识**：① LLM 默认会做错、必须纠正的（Counter-default）；② 绝不能违反的保真底线（Information Fidelity）。
-> 通用写作理论不直接进。若样例 / 回归证明 LLM 会稳定违反，且能绑定 **PRD 位置 + 违规信号 + 修复动作**，则转写为 Counter-default；理论名称只作记忆锚点，不展开。
->
-> **判据（每条新规则都过三问）**：不说时，LLM 是否会自然做反？违规能否观察？命中能否执行修复？三问任一为否 → 删。
->
-> 分两层：**Semantic Rules**（保真，语义层，Design Doc 等其他投影可复用）/ **Style Rules**（PRD 语言规范，换目标语言时替换）。
+> RequirementModel 是需求语义的唯一 canonical 输入。本 Skill 只投影或报告问题，不修改 canonical 输入。
 
 ---
 
-## Semantic Rules（保真底线 · 绝对原则）
+## Semantic Rules（保真底线）
 
-保真对象 = **in-scope 子集**（见下 R-S5 范围三态），不是原始文档全文。以下任一违反 = Blocker，阻断交付。
+保真对象是通过共享输入契约的当前 RequirementModel，不是原始文档全文，也不是旧清单。RequirementItem 的 scope 由 `scope_item_ids` 指向的同 disposition ScopeItem 派生。以下任一违反 = Blocker。
 
-- **R-S1 不遗漏**：in-scope 的每条需求 / 业务规则 / 约束 / 边界 / 数据口径，都要在 PRD 找到落点。
-- **R-S2 不改义**：PRD 表述与原意一致，不收窄（"白金以上可用"写成"会员可用"）、不放大、不改写结论。
-- **R-S3 不静默删**：不因"看着次要"就悄悄不写。范围外内容按 R-S5 显式裁剪，不算静默删。
-- **R-S4 不臆造**：PRD 每条需求 / 规则都能反向追溯到某条来源。找不到来源 = 臆造，删或转 Open Question。
-  - **豁免**：TL;DR、章节引导语、过渡句等组织性表述天然无单一来源，只要不引入新需求事实即可。
-- **R-S5 范围三态**：投影前把输入分三态，保真只对 in-scope。| 态                   | 识别信号                           | 处理                                                                 |
-  | -------------------- | ---------------------------------- | -------------------------------------------------------------------- |
-  | **in-scope**   | 无废弃标记、落在本期、Q&A 确认要做 | 100% 保真映射                                                        |
-  | **deprecated** | 删除线、"废弃/作废/砍掉"           | 直接排除，不进 PRD、不留裁剪说明                                     |
-  | **deferred**   | 二期/三期/"以后做"                 | 进"后续规划"章**点一句不展开**（展开 = 越范围臆造，违反 R-S4） |
-- **R-S6 真实链接不可占位**：原文的 UI/设计稿链接（Figma 等）、关联 PRD / 依赖文档链接，**带真实 URL 原样落入**。用"UI 稿（Figma）"之类占位词替代 = 静默删除，违反 R-S3。
-  - **doc-id 须还原为可点 URL**：飞书原文的关联资料常是 `<cite doc-id=... title=... file-type=...>` 结构（只有 id + 标题，非 URL）。禁止裸写 `(Feishu doc-id: xxx)`——研发点不动。按 file-type 拼回可点链接：`docx` → `https://<租户域>/docx/<id>`，`wiki` → `https://<租户域>/wiki/<id>`，其他类型同理。租户域从原文档 URL 取。拿不到域名时记 Open Question，不裸留 id。
-  - **交付检查以链接结构为准**：逐条检查 UI / 设计稿 / 关联 PRD / 依赖文档是否含可点击的绝对 URL（`http://` 或 `https://`），或已明确转为 Open Question。`doc-id:` / `Feishu wiki:` / `<cite` 等只作可疑信号，不是完整规则；缺 URL 且未转 Open Question = Blocker。
-- **R-S7 惊讶测试**：遇未被 Q&A 决策的点，禁止擅自选默认值冒充"已对齐"。三选一：① 会改范围/核心行为且阻塞 → 停止投影，列出最小缺口并退回上游澄清 skill；② 不阻塞 → 记入 Open Question；③ 属范围外 → 按 R-S5 裁剪。本 skill 不向 PM 追问、不替上游决策。
+- **R-S1 不遗漏**：Intent 与 Vocabulary 按认知状态保真；每个 in_scope ScopeItem 及派生为 in_scope 的 RequirementItem，以及相关规则、约束、边界和数据口径，都必须在 PRD 或 Coverage 中有明确落点。out_of_scope 按 R-S5 处理。
+- **R-S2 不改义**：PRD 与当前 revision 一致，不收窄、不放大、不把 unresolved/unverified 改写成 confirmed。
+- **R-S3 不静默删**：不因“看着次要”省略 in_scope 条目。out_of_scope 按 R-S5 裁剪。
+- **R-S4 不臆造与可追溯**：每条 PRD 需求事实必须能追溯到 RequirementModel item ID，以及 SourceReference 或关联 RequirementIssue Resolution。
+  - `origin=user_statement/source_document/verified_evidence`：保留 source ref；
+  - `origin=ai_default`：必须已 confirmed，并保留 accepted_default Resolution；
+  - TL;DR、章节引导和过渡句不得引入新需求事实；
+  - 找不到模型依据的产品语义不得写入 PRD或自行转 Open Item，按 R-S7 返回 ProjectionGap。
+- **R-S5 Scope 投影**：只消费 `ScopeItem.scope_disposition=in_scope|out_of_scope`，不建立 deprecated/deferred 三态。RequirementItem 的派生 scope 必须来自非空、有效且 disposition 一致的 `scope_item_ids`；混合 disposition 已在输入门禁失败。
 
----
+| scope | 投影规则 |
+|---|---|
+| `ScopeItem=in_scope` | 用于当前边界；关联 RequirementItem 可形成 REQ/BR/AC/正文 |
+| `ScopeItem=out_of_scope` | 关联 RequirementItem 不形成当前 REQ/BR/AC；只按 ScopeItem 的明确 statement/rationale 展示 |
 
-## Style Rules（PRD 语言规范 · 反默认约束）
+out_of_scope 展示规则：
 
-LLM 默认会做相反的事，故必须明写。违反多为 Warning，标 ⛔ 者为 Blocker。
+1. 明确用于划定本次边界 → 写入“非目标”；
+2. rationale 明确承诺未来期次/触发条件 → “后续规划”只写一句；
+3. rationale 明确表示废弃、移除或不再采用 → 不进入 PRD；
+4. rationale 不足且影响 PRD 语义 → 返回 ProjectionGap。
 
-- **R-T1 ⛔ 不写实现**：PRD 只承载需求 / 业务 / 产品逻辑与规则。正文出现接口契约 / 库表结构(DDL/ER) / 状态机 / prompt 工程 / 工具编排 = Blocker。（LLM 默认爱补技术细节。）
-  - **裁决（源文档已含实现细节时，保真 > 不写实现）**：PM 原文常把方案写进需求。禁止因 R-T1 直接删——删 = 违反 R-S1/R-S3。正确处理是**翻译不照抄**：
-    - **业务语义**（状态如何流转、什么条件走哪条分支、字段业务口径、规则逻辑）→ 属需求，**保留**，用需求语言重述（如技术状态机→业务流程章的状态流转表）。
-    - **纯技术形式**（DDL/ER、接口签名与参数、类名、编排/调用链、prompt 文本、框架选型）→ **剥离**，不进正文；确需追溯则记 Open Question 或依赖文档链接。
-    - 判据：删掉这段，PM/下游还能不能理解「要做成什么」？能 = 纯技术形式，剥；不能 = 含业务语义，翻译保留。
-  - **交付检查以技术契约结构为准**：重点检查接口路径或签名、请求/响应结构、字段名 + 类型 + 必填性的参数表、类名/方法名、DDL/ER/SQL、代码块、调用链。具体词面只作召回提示，不是违规结论，也不可能穷尽技术形式。命中后逐条按“业务语义 / 纯技术形式”裁决：用户输入等产品字段的必填规则可保留，纯技术契约剥离；未裁决不得交付。
-- **R-T2 背景从业务切入**：背景写"业务上一直存在 X 问题"，不写"现在工具做不到 X"。（LLM 默认从工具能力缺陷切入，尤其 AI 类需求。）
-- **R-T3 Feature Rule 不上提**：只服务单个 REQ 的规则，就近写在 REQ 内"规则"，**不抽离**。跨 **≥2 个 REQ** 复用的才升 Common 公共业务规则（BR），功能内写"遵循 BR-00X"引用、不复制。此判定在 Planning 阶段扫全部功能后一次性完成。（"≥2"是本语言的特定阈值，非通用常识。）
-- **R-T4 One Fact One Place**：权威细节只有一个主章节，其余位置引用，不复制规则全文。TL;DR、功能总览、章节引导可作**压缩摘要**，但不得引入新事实、改变口径或重复字段级细节。共享规则复制成多份 = 分叉隐患。
-- **R-T5 成功指标四要素**：每条量化指标齐 **基线 / 目标 / 测量口径 / 时间窗**。确无量化指标须**显式声明**："本需求无量化指标：<原因>"。缺声明 = Blocker。
-- **R-T6 非目标非空**：背景/目标章的"非目标"必须列至少一条本次不做的事。空 = Blocker。（区分：非目标 = 本期不做划边界；后续规划 = deferred 以后做，别混。）
-- **R-T7 每 REQ 有验收**：每个 REQ 至少一组 Given/When/Then。纯探索型可豁免但须显式声明"本需求为探索型，暂无验收标准：<原因>"。无声明 = Blocker。
-- **R-T8 ≥3 REQ 给总览表**：功能需求 ≥3 个 REQ 时，章首先给"功能列表总览"表（编号/标题/优先级/关联BR/一句话职责），再逐个展开。（渐进披露；LLM 默认直接堆细节。）
-- **R-T9 空值三态**：字段无内容用 `已确认无` / `原文未提供（待确认）` / `不适用（说明原因）`，禁裸写"无"（见 `prd-language.md`）。
-- **R-T10 交付前清占位**：删未替换的 `<...>`、HTML 注释、示例值；未确认信息按 R-T9 或转 Open Question。
-- **R-T11 同指标多口径须显式区分**：同一名词在文中承载不同口径时（如"近 60 天有单"是覆盖面测算口径、"30 天窗口"是露出过滤口径），首次出现即标明口径归属，勿让读者自行解码两者是否同一。相同口径全文用同一措辞，不同口径不共用同一名词。（LLM 默认复用相同词面而不点破口径差异。）
-- **R-T12 结论先行 + 渐进披露**（金字塔 / BLUF 的 PRD 落点）：TL;DR 首句先答“为谁做什么”；背景每点先写痛点 / 机会结论；REQ 功能描述先写能力结论；局部规则先写主行为与条件，再写字段、依据、例外。若读者必须读完整段才能知道“要做什么 / 何时生效”，即违规：上提结论，支撑信息分点下沉。
-- **R-T13 保真简洁**（Occam-style Simplicity / Omit Needless Words / Zinsser 去杂质）：删元话语、同义反复、空泛过渡、装饰性限定，以及除 R-T4 压缩摘要外已被主章节承载的重复细节；合并后不让单句承担多个决策。**保护集** = 范围、用户、条件、数值口径、业务规则、例外、风险、来源、验收。删除前问：删后是否可能让读者做出不同的产品 / 研发 / 验收判断？会 → 必须保留；不会 → 删除或合并。
+- **R-S6 真实链接不可占位**：输入中的 UI、设计稿、关联 PRD、依赖文档真实 URL 必须原样落入。
+  - 可确定租户域的 `<cite doc-id=...>` 应还原为可点 URL；
+  - 缺少影响交付的 URL 时返回 ProjectionGap，不新增 Open Item；
+  - 裸 doc-id 或虚构占位链接视为 Blocker。
+- **R-S7 状态投影与缺口报告**：
+  - `confirmed` → 正常投影；
+  - `unresolved + parked` → 暂缓 Open Item；
+  - `unverified + validation_plan` → 待验证 Open Item；
+  - `unresolved + accepted_risk` → 已接受风险；
+  - `superseded` → 不进入当前 PRD；
+  - `proposed/conflicted/open Issue` → 返回 InputContractFailure；
+  - 新产品语义缺口 → 返回 ProjectionGap 并停止受影响部分。
+  - 不向 PM 追问、不应用默认、不创建 RequirementIssue、不修改 revision、不选择回流或重试路径。
 
 ---
 
-## 自检（投影后按此过一遍，命中即回改重跑）
+## Style Rules
 
-顺序 P0 → P1 → P2。P0 未过不得输出；P1 / P2 命中须回改，若精简与保真冲突，保真优先：
+- **R-T1 ⛔ 不写实现**：PRD 只承载需求、业务、产品逻辑与规则。接口契约、DDL/ER、纯技术状态机、prompt 工程、工具编排 = Blocker。
+  - 源材料含实现细节时，业务语义翻译为需求语言，纯技术形式剥离；
+  - 删除技术形式后产品语义不明确时，按 R-S7 返回 ProjectionGap。
+- **R-T2 背景从业务切入**：写业务问题，不写“工具做不到”。
+- **R-T3 Feature Rule 不上提**：只服务单个 REQ 的规则留在 REQ；跨 ≥2 个 REQ 才升 BR。
+- **R-T4 One Fact One Place**：权威细节只在一个主章节，其余位置引用；摘要不得引入新事实。
+- **R-T5 成功指标四要素**：量化指标必须有基线、目标、测量口径、时间窗。
+  - 模型明确 confirmed “无量化指标”时，写明已确认原因；
+  - 缺失影响交付时返回 ProjectionGap，不编造原因。
+- **R-T6 非目标**：优先来自 out_of_scope。没有 out_of_scope 时写“RequirementModel 未定义额外非目标”。
+- **R-T7 每 REQ 有验收**：每个 REQ 至少一组 Given/When/Then。模型不足以形成可验证 Then 时返回 ProjectionGap。
+- **R-T8 ≥3 REQ 给总览表**：功能需求 ≥3 个 REQ 时，给编号、标题、优先级、关联 BR 和职责总览。
+- **R-T9 空值语义**：使用 `已确认无`、`模型未提供（非需求事实）`、`不适用（说明原因）`，禁止裸写“无”。影响产品判断的缺失返回 ProjectionGap。
+- **R-T10 交付前清占位**：删除 `<...>`、HTML 注释和示例值。Open Item 只能来自 parked 或 validation_plan。
+- **R-T11 同指标多口径显式区分**：相同口径全文同措辞，不同口径不得共用未限定名词。
+- **R-T12 结论先行 + 渐进披露**：TL;DR 首句答“为谁做什么”；背景、REQ 和规则先给结论。
+- **R-T13 保真简洁**：删除元话语、同义反复和重复细节；保护范围、条件、数值、规则、例外、风险、来源和验收。
 
-1. **P0 保真**：先建**内部 Coverage 映射**（in-scope 每条需求/规则/约束/边界/数据口径 → PRD 落点编号或章节），逐条核对 R-S1~R-S7；deferred 每条只允许“一句话摘要 + 来源”，出现 UI / 规则 / 字段 / 验收 / 实现细节即回改。**Coverage 是 P0 的强制证据，不可省**——没有映射就没法证明 100%，凭感觉扫 = 保真降级为主观判断。任一 ❌ = Blocker。（Coverage 是内部工作态，默认不给用户看，见文末。）
-2. **P0 门禁与结构检查**：R-T1(不写实现) / R-T5(指标四要素) / R-T6(非目标) / R-T7(验收) 四门禁过关；执行 R-S6 的链接结构检查与 R-T1 的技术契约结构检查，词面搜索仅辅助召回，命中项逐条完成裁决，豁免须显式声明。
-3. **P1 一致性**：术语 / 角色 / 流程 / 规则 / 数值口径全文不冲突；所有编号引用真实存在，无死引用。冲突致需求歧义 → 升 Blocker。
-4. **P1 信息顺序与可扫描性**：按 R-T12 回读 TL;DR / 背景 / 每个 REQ。Normal / Large 中，单个信息块 >8 行或同时承载 ≥2 类规则时，按主题拆为子标题、列表或表格；比较 / 重复字段用表，条件与步骤用列表，不把所有内容硬塞表格。
-5. **P2 保真简洁**：按 R-T13 做一次删减 pass；清除元话语与重复细节，保留 R-T4 允许的压缩摘要，再用保护集做语义回归。不得用“更短”为由删除条件、例外、数据口径、来源或验收。
+---
 
-> 自检记录是内部工作态：**Coverage 映射必须建**（P0 保真的证据），但与缺口清单 / 质检报告一样默认不输出、不要求确认。只在有无法修复且影响交付的风险时，一句话说明。
+## 自检（P0 → P1 → P2）
+
+1. **P0 输入有效**：完整执行 `../../shared/confirmed-requirement-contract.md` 的 `is_valid_confirmed_requirement_input`；写作期间 revision 未变化。
+2. **P0 Coverage**：每个 Intent/Vocabulary、in_scope ScopeItem 和派生为 in_scope 的 RequirementItem 有 PRD 落点及来源；out_of_scope 只按 R-S5 展示。
+3. **P0 状态渲染**：parked → 暂缓；validation_plan → 待验证；accepted_risk → 已接受风险；superseded → 不进入正文。
+4. **P0 门禁与结构**：R-T1、R-T5、R-T6、R-T7 通过；链接为真实绝对 URL。
+5. **P1 一致性**：术语、角色、流程、规则和数值口径不冲突；新产品语义冲突返回 ProjectionGap。
+6. **P1 可扫描性**：长块按主题拆分，比较用表，条件与步骤用列表。
+7. **P2 保真简洁**：删减后用保护集做语义回归。
+
+Coverage 和自检记录是内部工作态，不默认输出。失败时只输出 PRD、InputContractFailure 或 ProjectionGap 三者之一。

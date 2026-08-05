@@ -88,6 +88,7 @@ interface VocabularyTerm extends UnderstandingFields {
 ```ts
 interface RequirementItem extends UnderstandingFields {
   requirement_id: string;
+  scope_item_ids: string[];
 
   requirement_type:
     | "functional"
@@ -107,6 +108,8 @@ interface RequirementItem extends UnderstandingFields {
     | "unspecified";
 }
 ```
+
+`scope_item_ids` 必须非空且全部指向当前 RequirementModel 中的 ScopeItem。同一 RequirementItem 关联的 ScopeItem 必须具有相同 `scope_disposition`；若语义同时跨越 `in_scope` 与 `out_of_scope`，必须拆分为不同 RequirementItem。RequirementItem 的派生 scope 等于全部关联 ScopeItem 的共同 disposition。
 
 优先级未提供时使用 `unspecified`。不得因为优先级未知就自动向用户提问，也不得把所有条目标成 `must`。
 
@@ -161,10 +164,24 @@ interface UnderstandingFields {
 确认后的 RequirementModel：
 
 - 允许 `confirmed`；
-- 允许 `unresolved`，但必须关联 `parked` 或 `accepted_risk` Issue；
-- 允许 `unverified`，但必须关联 `validation_plan` Issue；
+- 允许 `unresolved`，但必须满足下述“当前有效支撑 Issue”谓词中的 parking 或 `accepted_risk` 分支；
+- 允许 `unverified`，但必须满足该谓词中的 `validation_plan` 分支；
 - 不允许 `proposed`；
 - 不允许 `conflicted`。
+
+#### 当前有效支撑 Issue 谓词
+
+模型条目的未闭合状态与 AI default 批准只有在以下双向关系成立时才获得支撑：
+
+1. 模型条目的 `related_issue_ids` 包含该 `issue_id`；
+2. 该 Issue 的 `target_refs` 包含该模型条目的精确 `target_type + target_id`；
+3. Issue 当前不是 `superseded`，历史 Issue 或其历史 Resolution 永远不能满足谓词；
+4. `unresolved + parking`：Issue 当前为 `issue_status=parked`，`parking != null`，`resolution == null`；
+5. `unresolved + accepted_risk`：Issue 当前为 `issue_status=resolved`，且 `resolution.resolution_type=accepted_risk`、`resolution.resolved_by=user`；
+6. `unverified + validation_plan`：Issue 当前为 `issue_status=resolved`，且 `resolution.resolution_type=validation_plan`；
+7. `confirmed + ai_default`：Issue 当前为 `issue_status=resolved`，且 `resolution.resolution_type=accepted_default`、`resolution.resolved_by=user`，并保留确认 revision 与确认证据。
+
+其他文件提到 unresolved/unverified/ai_default 的“依据”或“支撑”时，均指本谓词，不得只按历史 `resolution_type` 搜索。
 
 AI 默认经批量确认后的正确组合：
 
@@ -512,7 +529,7 @@ type DerivedModelState = "draft" | "ready" | "confirmed";
 confirmed_revision === revision
 ```
 
-该公式依赖第 9 节的确认失效不变量：新发现 blocker、conflicted 理解或其他改变模型完整性/风险暴露的 Issue 时，必须先或原子地增加 revision，不能让旧版本继续派生为 confirmed。
+该公式依赖第 9 节的确认失效不变量：已确认版本中新发现任何产品语义缺口时，必须在创建 Issue 前或同一原子更新中增加 revision，不能让旧版本继续派生为 confirmed。
 
 ### ready
 
@@ -542,8 +559,7 @@ confirmed_revision === revision
 - 修改目标、范围、用户、规则、术语或优先级；
 - 将 Issue 结果应用到模型；
 - 用户在门禁提出语义修正；
-- 已确认版本中新发现 blocker 或 conflicted 理解，即使具体模型修正尚未确定，也必须在创建 Issue 前或同一原子更新中使 revision 递增，先让旧确认失效；
-- 已确认版本中新发现会改变模型完整性、风险暴露或置信判断的其他 Issue。
+- 已确认版本中新发现任何产品语义缺口，无论它是否阻塞、是否立即改变模型字段，都必须在创建 Issue 前或同一原子更新中使 revision 递增，先让旧确认失效。
 
 不增加 revision：
 
@@ -557,9 +573,9 @@ Revision 表示需求语义版本，不是对象修改次数。
 
 ---
 
-## 10. Handoff 不变量
+## 10. Confirmed Output 不变量
 
-交接 requirement-writing 前必须同时满足：
+输出 `ConfirmedRequirementOutput` 前必须同时满足：
 
 ```text
 confirmed_revision === revision
@@ -572,6 +588,12 @@ confirmed_revision === revision
 并且：
 
 - 模型中不存在 proposed 或 conflicted；
-- unresolved 必须关联 parked 或 `accepted_risk` Issue；
-- unverified 必须关联 `validation_plan` Issue；
-- superseded Issue 只保留历史，不影响当前模型。
+- 每个 unresolved 条目必须满足第 2.5 节“当前有效支撑 Issue”谓词中的 parking 或 `accepted_risk` 分支；
+- 每个 unverified 条目必须满足该谓词中的 `validation_plan` 分支；
+- 每个 `origin=ai_default` 条目必须满足该谓词中的 `accepted_default + resolved_by=user` 分支；
+- 每个 RequirementItem 的 `scope_item_ids` 非空、引用有效且 disposition 一致；
+- 每个需输出的模型条目有稳定 ID、合法 origin，以及有效 SourceReference 或当前双向关联 Resolution；
+- confirmation evidence 精确指向当前 revision；
+- superseded Issue 只保留历史，永远不能提供当前支撑。
+
+完整边界谓词以 `plugin/shared/confirmed-requirement-contract.md` 为准。

@@ -14,7 +14,7 @@ flowchart LR
     D --> E[归一化非阻塞未知]
     E --> F[确认当前 revision]
     F -->|用户修正| A
-    F -->|用户确认| G[交接 requirement-writing]
+    F -->|用户确认| G[输出已确认需求]
 ```
 
 流程不保存阶段状态。通过当前 RequirementModel 和 RequirementIssue 集合判断下一步。
@@ -35,7 +35,7 @@ flowchart LR
 4. **Success signals**：如何判断结果达成；
 5. **Scope**：明确 in-scope 和关键 out-of-scope；
 6. **Vocabulary**：只澄清影响语义的术语；
-7. **Requirements**：功能、业务规则、数据、集成、质量属性和约束。
+7. **Requirements**：功能、业务规则、数据、集成、质量属性和约束；每个条目通过 `scope_item_ids` 关联 disposition 一致的 ScopeItem。
 
 不要先下沉到技术实现。用户给出的方案应先判断它是硬约束、偏好，还是解决问题的一种候选方式。
 
@@ -68,14 +68,14 @@ Authority 针对具体信息判断。来源是文档不代表它对所有字段�
 
 每发现一个候选问题，依次判断：
 
-1. 是否影响理解、范围、规则、验收或交接；
+1. 是否影响理解、范围、规则、验收或最终输出；
 2. 是否可通过现有来源直接消除；
 3. 是否与已有 Issue 重复或依赖已有 Issue；
 4. 如果不处理，是否阻塞模型确认。
 
 只有确实影响需求且无法直接建模时才创建 Issue。
 
-**确认失效不变量**：如果当前 `confirmed_revision === revision`，新发现的 blocker 或 conflicted 理解必须在创建 Issue 前或同一原子更新中执行 `revision += 1`，即使具体模型修正尚未确定。其他会改变模型完整性、风险暴露或置信判断的新 Issue 也必须使旧确认失效。
+**确认失效不变量**：如果当前 `confirmed_revision === revision`，任何确实需要创建 RequirementIssue 的产品语义缺口，都必须在创建 Issue 前或同一原子更新中执行 `revision += 1`，先使旧确认失效；不因“非阻塞”“暂不影响风险”或尚未确定模型修改而例外。只有不创建 Issue、也不改变需求事实的纯表达或组织问题可以保留当前 revision。
 
 ### 3.1 类型选择
 
@@ -263,7 +263,7 @@ Parking 表示延期处理；Accepted Risk 表示治理决策。两者互斥。
 - AI 默认、unresolved、unverified 和 parked 项已准备展示；
 - 所有拟确认语义都已写入当前 revision。
 
-满足后加载 `alignment-handoff.md`，不要自行发明另一套确认规则。
+满足后加载 `alignment-output.md`，不要自行发明另一套确认或输出规则。
 
 ---
 
@@ -275,7 +275,7 @@ build_or_update_requirement_model()
 for each candidate understanding problem:
     assessment = assess_impact_reversibility_evidence_and_blocking(candidate)
 
-    if current_revision_is_confirmed and assessment_invalidates_confirmation:
+    if current_revision_is_confirmed:
         atomically:
             increment_revision()
             issue = create_issue(candidate, assessment)
@@ -295,8 +295,8 @@ run_revision_alignment_gate()
 
 if user_confirms_current_revision:
     resolve_gate_defaults_atomically()
-    assert no_open_issues()
-    handoff_in_same_session()
+    assert_no_open_issues()
+    return_confirmed_requirement_output()
 else:
     update_model()
     increment_revision()
@@ -316,4 +316,5 @@ else:
 - 不给 `open_ended` 问题伪造推荐；
 - 不以“用户累了”为由关闭高风险 blocker；
 - 不确认聊天摘要而绕过 RequirementModel revision；
-- 不在 handoff 时保留 open Issue。
+- 不在输出已确认需求时保留 open Issue；
+- 不选择、调用或编排其他 Skill。

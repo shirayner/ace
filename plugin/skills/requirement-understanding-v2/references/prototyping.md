@@ -154,13 +154,14 @@ interaction_type: artifact_review
 
 ### Step 4：更新模型
 
-- 先评估制品反馈暴露的候选问题是否属于 blocker、conflicted 理解，或会改变模型完整性/风险暴露；
-- 如果当前 revision 已确认且候选问题会使确认失效，必须将 `revision += 1` 与 RequirementIssue 创建放在同一原子更新中，不能先创建 Issue 后继续保留旧 confirmed 状态；
+- 先区分反馈只是制品表达/组织问题，还是需要创建 RequirementIssue 的产品语义缺口；
+- 纯表达/组织问题不得创建 Issue，也不得改变需求事实，可直接修正制品；
+- 如果当前 revision 已确认，任何产品语义缺口都必须将 `revision += 1` 与 RequirementIssue 创建放在同一原子更新中，先使旧确认失效；不因缺口非阻塞、暂不影响风险或具体修改尚未确定而例外；
 - 确认内容 → 更新 RequirementModel；
-- 新歧义/冲突 → 按上述失效规则创建 RequirementIssue；
+- 新歧义/冲突/缺失/决策/验证/范围/术语问题 → 按上述失效规则创建 RequirementIssue；
 - 用户拍板 → `user_decision` Resolution；
 - 仍需真实验证 → validation Issue；
-- 其他模型语义变化 → revision += 1。
+- 将 Issue 处理结果应用到模型时，按 state-model revision 规则递增 revision。
 
 ### Step 5：废弃过时制品
 
