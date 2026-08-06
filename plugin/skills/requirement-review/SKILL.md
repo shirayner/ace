@@ -159,6 +159,7 @@ version: 1.0.0
 | `references/WORKFLOW.md` | 完整8步工作流详细说明 | 用户未指定子命令或指定"prd-review"时 |
 | `references/BREAKDOWN_WORKFLOW.md` | 5步敏捷拆分流程 | 用户指定"prd-breakdown"时 |
 | `references/CHECKLIST.md` | 预期行为检查清单 | Step 6报告生成前加载，自检使用 |
+| `references/VALIDATION_RULES.md` | 输入验证规则和 Plan-Validate-Execute 模式 | Step 1-2和Step 3执行验证时参考 |
 | `references/GUIDE.md` | 加载指南和工作流路由 | 执行过程中存在困惑时参考 |
 | `references/{role_id}/standard.md` | 选定角色的评审标准 | Step 3用户明确选择角色后加载 |
 | `references/{role_id}/template.md` | 选定角色的报告模板 | Step 6报告生成前加载 |
