@@ -8,5 +8,15 @@
     "templatePath": "references/backend_member/template.md",
     "enabled": true,
     "type": "custom"
+  },
+  {
+    "id": "UI/UX",
+    "name": "UI/UX",
+    "description": "UI/UX的评审",
+    "responsibility": "从 UI/UX 视角评审 PRD，重点关注信息架构是否清晰、页面或模块层级是否合理、关键任务路径是否顺畅、交互逻辑是否闭环、状态反馈是否完整、异常与边界场景下的用户体验是否明确，以及不同角色、不同状态、不同入口下的体验是否保持一致。仅评审用户可感知的界面呈现、交互流程、提示反馈、可理解性与一致性问题，不评审技术实现、接口设计、数据库设计或纯业务策略合理性。",
+    "standardPath": "references/ui/standard.md",
+    "templatePath": "references/ui/template.md",
+    "enabled": true,
+    "type": "custom"
   }
 ]
