@@ -42,14 +42,12 @@
 
 ## 风险与依赖 Risks & Dependencies
 
+> 只收会改变需求范围、节奏、体验或指标，且已有明确 confirmed RequirementItem、ScopeItem 或 rationale 的产品风险、取舍与依赖。按模型内容保真投影；不新增“已接受”、责任人、应对或状态等模型未提供的语义。纯技术实现风险不进 PRD。
+
 ```markdown
 ## 风险与依赖
-> 只收会改变需求范围、节奏、体验或指标的产品风险与依赖。`resolution_type=accepted_risk` 必须显式进入本章；纯技术实现风险不进 PRD。
-
-| 类型 | 风险 / 依赖 | 影响 | 应对 / 接受理由 | 负责人 | 里程碑 / 触发条件 | 状态 | 来源 |
-|---|---|---|---|---|---|---|---|
-| 已接受风险 | <unresolved 风险> | <范围 / 节奏 / 指标影响> | <Resolution.rationale> | <decision_owner> | <revisit trigger；没有则写不适用及原因> | 已接受 | <Issue ID> |
-| 外部依赖 / 跨团队依赖 | <具体事项> | <影响> | <规避 / 缓解 / 备选> | <姓名 / 团队> | <日期 / 事件> | <状态> | <模型条目 / SourceReference> |
+| 类型 | 风险 / 依赖 / 取舍 | 影响 | 已确认的应对或理由 | 负责人 | 里程碑 / 触发条件 | 来源 |
+|---|---|---|---|---|---|---|
+| 产品风险 / 取舍 | <confirmed 模型内容> | <范围 / 节奏 / 体验 / 指标影响> | <模型明确提供时填写；否则删除该列> | <模型明确提供时填写> | <模型明确提供时填写> | <RequirementItem / ScopeItem + SourceReference> |
+| 外部依赖 / 跨团队依赖 | <confirmed 模型内容> | <影响> | <模型明确提供的规避 / 缓解 / 备选> | <姓名 / 团队> | <日期 / 事件> | <模型条目 + SourceReference> |
 ```
-
-> 不得把 parked 或 validation_plan 误写成已接受风险，也不得由 Writer 自行宣布风险已接受。

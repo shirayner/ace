@@ -6,14 +6,17 @@
 
 ## 1. 先决定是否应该问
 
-只有 resolution route 为 `ask_user`，且用户拥有信息或决策权、无法从证据可靠解决、错误会造成值得避免的返工、依赖已满足时，才向用户提问。
+只有 resolution route 为 `ask_user`，且用户拥有信息或决策权、无法从证据可靠解决、答案会改变 PRD、错误会造成明显返工、依赖已满足时，才向用户提问。
 
 以下情况不问：
 
 - 可调查事实 → `investigate_evidence`；
-- 低风险易逆转 → `apply_ai_default`；
-- 当前没人知道 → `define_validation_plan`；
-- 用户已主动决定 → `record_user_decision`。
+- 低风险易逆转的非核心语义 → `apply_ai_default`；
+- 用户已主动决定 → `record_user_decision`；
+- 定性或部分量化 success signal 缺少完整四要素 → 按 confirmed 内容原样保留；除验收或发布门槛因此无法判定外，不制造 Issue；
+- 维度明显不适用且理由清楚 → 记录扫描结论，不机械提问。
+
+产品本人不知道业务事实时，不要求其猜测。该事实按 `issue_type=validation + investigate_evidence` 处理；告知需要咨询的有权人员或证据来源，等待其带回可追溯结论。证据返回前 Issue 保持 open blocker，不得确认。
 
 ---
 
@@ -21,7 +24,7 @@
 
 ### 2.1 `open_ended`
 
-适用：用户需提供事实、目标、约束或经验；AI 无法完整枚举答案；给选项会过早锚定。
+适用：用户需提供目标、约束、经验或有权决定的业务信息；AI 无法完整枚举答案；给选项会过早锚定。
 
 ```yaml
 interaction_type: open_question
@@ -48,7 +51,7 @@ question_mode: option_selection
 ```md
 ### 问题标题
 
-**为什么现在需要确认**：一句话说明它会影响什么。
+**为什么现在需要确认**：一句话说明它会改变 PRD 的什么内容，以及答错的主要返工。
 
 请补充：一个聚焦、可直接回答的问题。
 ```
@@ -68,7 +71,8 @@ question_mode: option_selection
 - 一次只问一个认知目标；
 - 不把多个独立问题塞进一句；
 - 不提供虚假推荐；
-- 回答过宽时，基于回答新建或细化 Issue，不机械重复原问题。
+- 回答过宽时，基于回答新建或细化 Issue，不机械重复原问题；
+- 如果用户明确不知道事实，停止追问猜测，转为等待权威证据。
 
 ---
 
@@ -134,9 +138,10 @@ B. 允许一次透支
 - 价值取舍完全属于用户且没有明显风险差异；
 - 信息不足以形成负责任建议；
 - `open_ended` 信息收集；
-- 用户只需确认事实。
+- 用户只需确认事实；
+- 最终 revision 审批。
 
-最终 revision 审批选项不得标推荐。用户选择推荐项不等于推荐“准确”。
+用户选择推荐项不等于推荐“准确”。
 
 ---
 
@@ -146,10 +151,11 @@ B. 允许一次透支
 - 同主题、无依赖冲突的问题可小批次展示；
 - 默认一轮 1–3 个问题；
 - 高复杂问题单独一轮；
-- 回答可能使后续问题失效时，不提前展示后续问题。
+- 回答可能使后续问题失效时，不提前展示后续问题；
+- 适用维度扫描只把高价值缺口转为问题，不逐维度采访。
 
 ```md
-我需要确认 N 个会显著影响需求的问题：
+我需要确认 N 个会显著改变 PRD 的问题：
 
 1. 问题一
 2. 问题二
@@ -179,7 +185,7 @@ selected_option_key: A
 free_text: "仅普通用户适用，内部测试账号允许透支"
 ```
 
-补充改变选项语义时，Resolution.answer 必须记录完整最终结论，不能只记录 A。
+补充改变选项语义时，Resolution.answer 必须记录完整最终结论，不能只记录 A。采用结论、适用边界和理由必须写回 confirmed ScopeItem、RequirementItem 或 rationale。
 
 ### 7.3 自定义答案
 
@@ -197,7 +203,16 @@ selected_option_key: null
 free_text: "等待财务负责人确认"
 ```
 
-`deferred` 不是 Resolution。必须进一步决定保持 open blocker、转 Parking、建立 Validation Plan，或由用户明确 `accepted_risk`。
+`deferred` 只记录延后，不是 Resolution：
+
+- Issue 状态保持 `open`；
+- 原 resolution route 保持不变；
+- 如果答案影响 PRD，`blocks_confirmation=true`；
+- 不得把延后转换为 AI 默认、已解决结论或确认依据；
+- 用户之后回来时，在同一 Issue 上追加新的 Interaction；
+- 若等待的是业务事实，必须取得有权人员或权威来源证据后，以 `verified_fact` 解决；在此之前不得确认。
+
+如果延后内容经分析完全不影响当前 PRD，应通过明确的 scope 决策或 `no_model_change` Resolution 处理其不适用性；不能仅凭延后本身关闭 Issue。
 
 ---
 
@@ -225,19 +240,23 @@ resolution_type: user_decision
 confirmation_mode: direct_statement
 ```
 
-更新 RequirementModel revision，不重复问用户是否确定；整体模型仍需最终门禁。
+更新 RequirementModel revision，把取舍及明确边界写回 ScopeItem、RequirementItem 或 rationale，不重复问用户是否确定；整体模型仍需最终门禁。
+
+用户主动决定不能回答需要证据的外部事实。若陈述的是事实，必须判断其 authority；不够时仍按 validation Issue 处理。
 
 ---
 
 ## 9. Artifact Review
 
-使用原型、状态图、决策表或 GWT 帮助用户判断时：
+使用原型、状态图、决策表或少量 GWT 帮助用户判断时：
 
 ```yaml
 interaction_type: artifact_review
 ```
 
 记录用户反馈、`created_issue_ids`、确认/否定的理解和模型修改。制品通过 SourceReference 的 prototype 类型引用，不建立独立 Examples 模型。
+
+只把用户确认后的规则、边界和例外写回 RequirementItem；候选内容保持 draft 或转为 Issue，不能因出现在制品中就成为确认事实。
 
 ---
 
@@ -253,7 +272,20 @@ interaction_type: artifact_review
 
 ---
 
-## 11. 指标派生
+## 11. 最终 revision 交互
+
+最终审批的内容和复杂度规则由 `alignment-output.md` 定义。交互层只保证：
+
+- 明确展示 revision；
+- AI defaults 全部可见；
+- 不展示仍未闭合的业务事项作为可批准内容；
+- A/B/C 审批选项不标推荐；
+- 用户提出任何语义修正时，不视为确认；
+- 用户选择暂停时，不改变 Issue 或模型认知状态。
+
+---
+
+## 12. 指标派生
 
 `option_key` 只在单个 Interaction 内有效，不能跨 Issue 或 supersede 链直接比较 A/B/C。
 
@@ -267,7 +299,7 @@ interaction_type: artifact_review
 
 ---
 
-## 12. 禁止行为
+## 13. 禁止行为
 
 - 不将问题、选项、理由和推荐标记塞进一行；
 - 不超过 3 个主要选项；
@@ -275,6 +307,8 @@ interaction_type: artifact_review
 - 不为 `open_ended` 问题给推荐；
 - 不用推荐替代证据；
 - 不把用户沉默视为批准；
-- 不因为用户选推荐项就省略完整 Resolution；
+- 不把 `deferred` 视为关闭 Issue 的授权；
+- 不让不知道事实的产品给出猜测答案；
+- 不因为用户选推荐项就省略完整 Resolution 和模型边界；
 - 不用连续长问卷消耗注意力；
 - 不在最终审批选项上标“推荐”。

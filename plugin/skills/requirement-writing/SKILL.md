@@ -1,6 +1,6 @@
 ---
 name: requirement-writing
-description: 将满足中立 ConfirmedRequirementInput 契约的 RequirementModel 与 RequirementIssue[] 投影为结构清晰、信息保真的标准 PRD。用户要求“写 PRD”“出产品需求文档”“把已确认需求整理成 PRD”时触发。只做输入校验、scope 裁剪、文档组织、正文生成和规则自检；不做需求澄清、需求决策、技术方案、UI 设计或任务拆分。非法输入返回 InputContractFailure，写作中发现产品语义缺口返回 ProjectionGap。
+description: 将符合本 Skill 输入门禁的 RequirementModel 与 RequirementIssue[] 投影为结构清晰、信息保真的标准 PRD。用户要求“写 PRD”“出产品需求文档”“把已确认需求整理成 PRD”时触发。只做输入校验、scope 裁剪、文档组织、正文生成和规则自检；不做需求澄清、需求决策、技术方案、UI 设计或任务拆分。非法输入返回 InputContractFailure，写作中发现产品语义缺口返回 ProjectionGap。
 ---
 # PRD Projection Engine — PRD 投影引擎
 
@@ -52,37 +52,29 @@ description: 将满足中立 ConfirmedRequirementInput 契约的 RequirementMode
 - 原始文档只用于 SourceReference 追溯，不得覆盖 RequirementModel。
 - 不重新解释 scope，不从删除线、分期措辞或旧 Q&A 推导范围。
 
-### 复杂度分流
+### 需求规模
 
-- **Micro / Normal**：直接执行四步；
-- **Large**：Freeze → Scaffold → Fill → Check；
-- **Large 强信号**：来源需分块读取、多份来源共同决定需求、跨多个业务域且含多组 REQ/BR/Extension，或正文无法在一次稳定生成中完成。
-
----
-
-## Large 路径
-
-<HARD-GATE name="Large 先骨架后正文">
-写任何正文前，必须完成 Freeze 和 Scaffold，并留下可恢复证据。没有 projection-state 或目标 PRD 骨架，禁止进入 Fill。
-</HARD-GATE>
-
-| 阶段 | 动作 | 完成证据 |
-|---|---|---|
-| **Freeze** | 冻结 model ID/revision、scope、术语、需求、支持型 Issue、章节归属和 Coverage | `.<PRD basename>.projection-state.md` |
-| **Scaffold** | 按 chapter-tree 落完整标题骨架 | 仅骨架与 pending 标记 |
-| **Fill** | 按依赖每次写一个章节；功能需求每次写一个 REQ + AC | 章节完成并标 done |
-| **Chapter Check** | 检查模型覆盖、来源、术语、编号和支持型 Issue | 通过后进入下章 |
-| **Global Check** | 生成 TL;DR，执行 Coverage 与 P0→P1→P2 | 无 pending 和临时 state |
-
-Projection State 只保存稳定 ID、revision、来源索引和投影进度，不复制第三套需求模型。
+本 Skill 仅支持同一 Session 内的 **Micro / Normal** 投影，二者都直接执行上述四步。投影进度不落盘，不维护恢复状态；如果一次生成无法稳定完成，应缩小本次输入或由调用方重新发起，而不是创建持久化工作态。
 
 ---
 
 ## 输入门禁
 
 <HARD-GATE name="输入契约与范围">
-投影前必须读取 `../../shared/confirmed-requirement-contract.md`，并完整执行其中的 `is_valid_confirmed_requirement_input` 唯一谓词，包括 revision/确认、Issue/认知状态、未闭合项支撑、RequirementItem scope 归属、身份/来源和 AI default 的 accepted_default 证据。
-任一条件失败：禁止投影，只返回 InputContractFailure。不得维护弱化版或局部门禁。
+投影前必须直接检查当前模型语义并同时满足：
+1. `confirmed_revision == revision`；顶层 `confirmation_evidence` 存在并精确指向当前 revision，且 `interaction_id != null` 或 `source_ref_ids` 非空；对应 Interaction/SourceReference 可追溯到用户对该 revision 的显式确认，空 interaction/source 组合非法；
+2. confirmed problem、confirmed desired outcome 和至少一个 confirmed target user 均存在；RequirementModel 中**所有模型条目**均为 `understanding_status=confirmed`，不以是否会在 PRD 中展示为限；任何 `proposed|unresolved|unverified|conflicted` 条目均使输入非法；
+3. 不存在 `issue_status=open`；`superseded` Issue 只保留历史，不进入当前 PRD，也不能为当前模型条目提供支撑；
+4. 每个模型条目都有稳定且唯一的 ID，`origin` 只能是 `user_statement|source_document|verified_evidence|ai_default`，并至少具备一个有效 SourceReference 或一个当前有效 Resolution。当前有效 Resolution 必须属于 `resolved` 且非 superseded 的 Issue，与模型条目双向精确关联，Resolution 语义与当前条目一致，且 `resolved_model_revision <= current revision`；其 `confirmation_model_revision` 及原始确认证据必须非空、可追溯且 `confirmation_model_revision <= current revision`。历史 Resolution 不因无关 revision 增加而失效；条目语义改变时必须由新 Issue supersede 旧 Issue；
+5. 每个模型条目的 `source_refs` 中所有 SourceReference 对象都必须有效且来源类型与 origin 相容；顶层 `confirmation_evidence.source_ref_ids` 和 Resolution 的 `confirmation_source_ref_ids` 必须解析到可访问的 SourceReference。使用 Resolution 支撑时，模型条目必须引用 Issue ID，Issue `target_refs` 必须精确回指该模型条目；
+6. 每个 RequirementItem 的 `scope_item_ids` 非空、引用有效且指向同一 `scope_disposition`；混合 disposition 的语义必须已拆分；至少存在一个 confirmed `scope_disposition=in_scope` ScopeItem 和一个由有效引用派生为 in_scope 的 confirmed RequirementItem；
+7. 每个 in-scope RequirementItem 必须仅凭当前 confirmed 模型语义，足以形成至少一个可判定真假的完成条件；不强制 Given/When/Then，也不要求 Example 模型；
+8. 每个 `origin=ai_default` 条目必须为 `understanding_status=confirmed + confirmation_mode=batch_confirmation`，并由当前有效、双向精确关联的 `issue_status=resolved` Issue 支撑；该 Issue 必须为 `resolution_route=apply_ai_default`、`error_impact=low`、`reversibility=easy`、`blocks_confirmation=false`，目标不是 problem、desired outcome、核心范围、关键业务规则或关键数据语义；Resolution 必须为 `resolution_type=accepted_default + resolved_by=user`，原始确认 revision/evidence 非空、可追溯且不晚于当前 revision；
+9. success signal 的缺失四要素不单独使输入非法：定性和部分量化信号可按 confirmed 内容原样投影。仅当模型把某指标定义为验收或发布门槛，且缺失口径导致业务上无法判定是否通过时，输入才不满足 PRD-ready。
+
+上述检查直接依据当前 confirmed 模型语义执行，不读取或假设存在独立的“扫描结果字段”。门禁应尽力完成逐 RequirementItem 的语义检查；若只有进入具体投影后才暴露此前不可见的产品语义缺口，则返回 ProjectionGap。
+
+任一条件失败：禁止投影，只返回 InputContractFailure。不得猜测、修复或弱化门禁。
 </HARD-GATE>
 
 ### InputContractFailure
@@ -104,19 +96,17 @@ interface InputContractFailure {
 
 | 输入内容 | 行为 |
 |---|---|
-| `confirmed` | 投影为 PRD 需求、规则、范围或验收依据 |
-| `confirmed + origin=ai_default` | 正常投影，Coverage 保留 ai_default provenance |
-| `unresolved + parked` | 投影到“待决与验证事项”，状态为暂缓 |
-| `unverified + validation_plan` | 投影到“待决与验证事项”，状态为待验证 |
-| `unresolved + accepted_risk` | 投影到“风险与依赖”，明确已接受风险 |
+| `confirmed` | 投影为 PRD 需求、规则、范围、验收依据或其他对应内容 |
+| `confirmed + origin=ai_default` | 正常投影，Coverage 保留 ai_default provenance 与 accepted_default 用户支撑 |
+| 已知且已确认的风险或取舍 | 仅当模型存在明确 confirmed RequirementItem、ScopeItem 或 rationale 时，作为普通风险内容保真投影；不得新增“已接受”等模型未提供的语义 |
 | `superseded` Issue | 仅保留历史，不进入当前 PRD |
-| `proposed / conflicted / open Issue` | 输入非法，返回 InputContractFailure |
+| `proposed / unresolved / unverified / conflicted / open Issue` | 输入非法，返回 InputContractFailure |
 
 ---
 
 ## 写作中发现产品语义缺口
 
-本 Skill 不向 PM 追问、不做产品决策、不应用默认、不创建 RequirementIssue、不修改 revision，也不把缺口直接写成 Open Item。
+本 Skill 不向 PM 追问、不做产品决策、不应用默认、不创建 RequirementIssue、不修改 revision，也不把缺口写入 PRD。
 
 发现任何需要补充、决定、验证或纠正才能保持产品语义保真的信息时，立即暂停受影响部分，只返回：
 
@@ -143,13 +133,13 @@ interface ProjectionGap {
 
 ## 交付门禁
 
-1. **输入仍有效**：写作期间 model revision 未变化；
+1. **输入仍有效**：写作结束前重新执行本 Skill 的输入门禁，且 model revision 未变化；
 2. **保真 100%**：所有 in_scope 条目均有 Coverage 落点；
-3. **状态正确**：parked、validation_plan、accepted_risk 投影到指定章节；
+3. **状态正确**：正文只投影 confirmed 模型语义；superseded 只作历史；已确认风险/取舍仅按明确模型依据普通投影；
 4. **不写实现**：接口、表结构、技术状态机、prompt 和编排按 R-T1 裁决；
-5. **验收完整**：每个 REQ 有 Given/When/Then；
+5. **验收可验证**：每个 REQ 必须有可验证完成条件，但不强制统一使用 Given/When/Then。简单功能可用清晰验收结果或检查表；条件分支、异常和边界适合 Given/When/Then；条件组合可用决策表；状态需求可用状态转换表；数据或质量属性使用口径或指标阈值。模型不足以形成可验证结果时返回 ProjectionGap；
 6. **非目标准确**：只从 out_of_scope 边界生成；
-7. **指标有依据**：量化指标满足四要素，或模型明确确认无量化指标。
+7. **成功信号保真**：定性和部分量化 success signal 都按当前 confirmed 内容原样投影为叙述或列表；只有模型同时明确提供完整基线、目标、测量口径和时间窗时，才渲染结构化量化指标表。缺少四要素本身不产生 ProjectionGap；仅当该指标被模型定义为验收或发布门槛，且缺失口径使业务语义无法判定时才返回 ProjectionGap。
 
 ---
 
@@ -157,23 +147,21 @@ interface ProjectionGap {
 
 | 何时 | 读 |
 |---|---|
-| 输入边界校验 | `../../shared/confirmed-requirement-contract.md` |
 | 节点定义、优先级和空值语义 | `prd-language.md` |
 | 规则、门禁和自检 | `projection-rules.md` |
 | 选章、归一和防重复 | `chapter-tree.md` |
-| Core / 页面 / 埋点 / BR / Open Item | `templates/core.md` |
+| Core / 页面 / 埋点 / BR | `templates/core.md` |
 | AI 章 | `templates/ai.md` |
 | 后台 / 非功能 | `templates/backend.md` |
 | 数据 | `templates/data.md` |
-| i18n / 发布 / Future Scope / accepted risk | `templates/extension.md` |
+| i18n / 发布 / Future Scope / 风险依赖 | `templates/extension.md` |
 
 ---
 
-## 输出与恢复
+## 输出
 
-- 默认输出 PRD；路径由调用方提供，未提供时使用当前目录 `PRD-<主题>.md`。
-- Coverage 和质检记录是内部工作态，不默认展示。
-- 存在 projection-state 时，先校验 model ID/revision，再从首个可执行章节继续。
-- revision 不一致时停止 Fill，只返回 InputContractFailure；不得继续使用旧模型。
-- state 丢失但 PRD 有 `PRD-WORKING` 时，可根据合法输入和已完成章节重建最小投影状态。
-- 全局检查通过后删除工作标记和 projection-state，只交付最终 PRD。
+- 仅支持同一 Session 内的 Micro / Normal 投影；默认输出最终 PRD。
+- 路径由调用方提供，未提供时使用当前目录 `PRD-<主题>.md`。
+- Coverage 和质检记录是当前投影过程中的内部工作信息，不落盘、不默认展示。
+- 写作结束前重新校验 model ID/revision 与完整输入门禁；不一致时只返回 InputContractFailure。
+- 不创建持久投影状态、工作标记或恢复协议，只交付最终 PRD、InputContractFailure 或 ProjectionGap。
