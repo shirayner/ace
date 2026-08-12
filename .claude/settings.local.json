@@ -95,7 +95,8 @@
       "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/SKILL.md\" \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/text-to-image/SKILL.md\")",
       "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/SKILL.md\" \"D:/Users/r.shi/.claude/plugins/cache/ace-local/ace/1.0.0/skills/text-to-image/SKILL.md\")",
       "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/scripts/text_to_image.py\" \"D:/Users/r.shi/.claude/plugins/marketplaces/ace-local/skills/text-to-image/scripts/text_to_image.py\")",
-      "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/scripts/text_to_image.py\" \"D:/Users/r.shi/.claude/plugins/cache/ace-local/ace/1.0.0/skills/text-to-image/scripts/text_to_image.py\")"
+      "Bash(cp \"D:/Users/r.shi/work-space/incubator/ace/plugin/skills/text-to-image/scripts/text_to_image.py\" \"D:/Users/r.shi/.claude/plugins/cache/ace-local/ace/1.0.0/skills/text-to-image/scripts/text_to_image.py\")",
+      "mcp__feishu2md__feishu2md"
     ]
   }
 }

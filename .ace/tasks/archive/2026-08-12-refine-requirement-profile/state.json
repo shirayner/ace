@@ -1,0 +1,44 @@
+{
+  "changeName": "refine-requirement-profile",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-12T00:00:00+08:00",
+  "updated_at": "2026-08-12T10:06:58Z",
+  "completed_at": "2026-08-12T10:05:33Z",
+  "archived_at": "2026-08-12T10:06:58Z",
+  "completion_criteria": [
+    "业务域定义包含主域判断依据和关联域准入条件",
+    "产品类型统一更名为研发交付类型并明确分类边界",
+    "需求理解流程与 PRD 核心模板语义一致",
+    "结构验证、针对性断言和 git diff --check 通过"
+  ],
+  "tasks": [
+    {
+      "id": "5",
+      "subject": "定位画像分类引用",
+      "status": "completed",
+      "relation": "blocks: 6"
+    },
+    {
+      "id": "6",
+      "subject": "统一画像分类定义",
+      "status": "completed",
+      "relation": "depends: 5; blocks: 7"
+    },
+    {
+      "id": "7",
+      "subject": "验证分类语义一致性",
+      "status": "completed",
+      "relation": "depends: 6"
+    }
+  ],
+  "simple": {
+    "phase": "verified",
+    "decisions": [
+      "将产品类型统一改为研发交付类型",
+      "业务域按核心目标、主要业务规则和成功指标判断",
+      "完整同步需求理解流程、Readiness 与 PRD 核心模板"
+    ]
+  }
+}
