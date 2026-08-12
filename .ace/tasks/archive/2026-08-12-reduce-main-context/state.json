@@ -1,0 +1,61 @@
+{
+  "changeName": "reduce-main-context",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-12T13:36:38Z",
+  "updated_at": "2026-08-12T13:49:56Z",
+  "completed_at": "2026-08-12T13:49:56Z",
+  "archived_at": "2026-08-12T13:49:56Z",
+  "completion_criteria": [
+    "给出按阶段和来源拆分、且有文件证据支撑的主上下文膨胀模型",
+    "区分结构性占用、偶发输出污染与压缩恢复脆弱性，并排序根因",
+    "定义低上下文控制面架构与 sub-agent 回传契约",
+    "提供落实到具体文件的分阶段重构清单、风险及迁移顺序",
+    "提供主上下文占用与压缩恢复能力的量化验收方法"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "建立上下文成本模型",
+      "status": "done",
+      "parallel": true
+    },
+    {
+      "id": "T2",
+      "title": "审计委派与状态机制",
+      "status": "done",
+      "parallel": true
+    },
+    {
+      "id": "T3",
+      "title": "研究控制面重构架构",
+      "status": "done",
+      "parallel": true
+    },
+    {
+      "id": "T4",
+      "title": "综合重构路线与验收",
+      "status": "done",
+      "depends": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "verifying",
+    "decisions": [
+      {
+        "decision": "本轮仅做静态审计与重构方案，允许重新设计，并以最低主 Agent 上下文占用为首要指标",
+        "reason": "用户确认的分析边界和优先级",
+        "alternatives": [
+          "直接实现",
+          "严格向后兼容",
+          "优先压缩恢复或综合成本"
+        ]
+      }
+    ]
+  }
+}

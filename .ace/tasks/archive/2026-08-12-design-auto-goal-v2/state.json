@@ -1,0 +1,59 @@
+{
+  "changeName": "design-auto-goal-v2",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-12T22:05:53+08:00",
+  "updated_at": "2026-08-12T15:42:52Z",
+  "completed_at": "2026-08-12T15:42:52Z",
+  "archived_at": "2026-08-12T15:42:52Z",
+  "completion_criteria": [
+    "输出完整且可评审的 auto-goal-v2 设计方案，不创建 V2 实现",
+    "V2 的全部私有运行时依赖内聚在 auto-goal-v2 目录树内",
+    "定义目标理解与方法路由、控制面、状态机、事件、checkpoint、worker envelope 与模型摄入前代理",
+    "覆盖任意目标的 capability、risk、approval、verification 与降级机制",
+    "对照输入材料和业界一手实践记录采纳、调整及否决理由",
+    "给出实施路线与可验收测试矩阵"
+  ],
+  "tasks": [
+    {
+      "id": "5",
+      "name": "审计输入与现状",
+      "status": "completed",
+      "depends_on": []
+    },
+    {
+      "id": "6",
+      "name": "调研业界最佳实践",
+      "status": "completed",
+      "depends_on": []
+    },
+    {
+      "id": "7",
+      "name": "设计 V2 架构",
+      "status": "completed",
+      "depends_on": [
+        "5",
+        "6"
+      ]
+    },
+    {
+      "id": "8",
+      "name": "验证设计完整性",
+      "status": "completed",
+      "depends_on": [
+        "7"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "completed",
+    "decisions": [
+      "本轮只设计方案，确认后另开任务实现",
+      "新写 auto-goal-v2，不修改 V1",
+      "支持任意通用目标",
+      "全部私有依赖内聚于 Skill 目录，不依赖 shared 或其他 Skill 私有文件",
+      "模型摄入前代理脚本位于 Skill scripts 目录"
+    ]
+  }
+}
