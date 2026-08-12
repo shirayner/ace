@@ -12,6 +12,7 @@
 - D0009 决策条字段激进极简（标题/日期/状态/决策/否决）
 - D0010 TOC 顶部索引取代 tag 检索
 - D0011 体积伸缩：active/archive 分层
+- D0012 2026-08-12 requirement-understanding 中间产物：不建立 Requirement Canvas，仅由用户确认五段式需求对齐卡 ｜否决 Canvas 正式语义载体(重复确认成本高)
 
 ---
 

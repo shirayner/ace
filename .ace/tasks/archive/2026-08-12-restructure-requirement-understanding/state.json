@@ -1,0 +1,66 @@
+{
+  "changeName": "restructure-requirement-understanding",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-12T16:45:37+08:00",
+  "updated_at": "2026-08-12T09:16:15Z",
+  "completed_at": "2026-08-12T09:16:15Z",
+  "archived_at": "2026-08-12T09:16:15Z",
+  "completion_criteria": [
+    "支持一句话、PRD 内容和文档链接输入，并按因果依赖完成澄清",
+    "Frontier、低价值过滤、Readiness 和按信号方法包形成一致且无重复的执行规则",
+    "用户侧唯一中间确认产物是五段式需求对齐卡",
+    "统一代理不再引用已删除的 requirement-understanding-v2",
+    "场景验证覆盖 Micro、Normal、材料冲突、关键未知、低风险默认和需求拆分"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "重构需求理解主流程",
+      "status": "completed",
+      "parallel": true
+    },
+    {
+      "id": "T2",
+      "title": "重构交互契约与方法包",
+      "status": "completed",
+      "parallel": true
+    },
+    {
+      "id": "T3",
+      "title": "修复统一代理契约",
+      "status": "completed",
+      "parallel": true
+    },
+    {
+      "id": "T4",
+      "title": "验证重构后的 Skill",
+      "status": "completed",
+      "depends": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "verified",
+    "decisions": [
+      {
+        "decision": "不引入 Requirement Canvas，用户仅确认五段式需求对齐卡",
+        "reason": "避免对齐长文与正式 PRD 两次高成本确认",
+        "alternatives": [
+          "以 Canvas 作为正式语义载体"
+        ]
+      },
+      {
+        "decision": "允许破坏性重构并同步修复 requirement-agent 直接契约",
+        "reason": "清除 V1/V2 并存和悬空引用",
+        "alternatives": [
+          "保持现有行为兼容"
+        ]
+      }
+    ]
+  }
+}

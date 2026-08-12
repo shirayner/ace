@@ -1,134 +1,137 @@
 # Chapter Tree — 文档结构
 
-> Structure 层定义已确认 RequirementModel 的信息如何组织成章节。节点定义见 `prd-language.md`，规则见 `projection-rules.md`，骨架见 `templates/`。
+> **Structure 层**：定义信息如何组织成章节。哪些内容 → 哪个章节。
+> 每章长什么样见 `templates/`；哪些规则不能违反见 `projection-rules.md`。
+>
+> **稳定性**：Structure 会变（AI/Agent/MCP 等新章会加）。加新章在此扩展，同步在 `templates/` 补骨架。
 
 ---
 
 ## 章节体系
 
-Core = 常用骨架；Extension = 按模型内容出现；Common = 跨功能共享收纳。章节是否出现取决于当前 confirmed 模型是否有对应信息。
+Core = 常用骨架（无信息增量可省）；Extension = 按内容出现；Common = 跨功能共享收纳。分组不是硬映射——章节是否出现由"需求里有没有这块内容"决定，不由需求类型/规模硬触发。
 
-```text
-├── Core                                      → templates/core.md
-│   ├── 文档信息      Doc Meta
-│   ├── TL;DR         一句话总结
-│   ├── 背景与目标    Background & Goals
-│   ├── 成功信号与指标 Success Signals & Metrics
-│   ├── 用户与场景    Users & Scenarios
-│   ├── 业务流程      Business Flow
-│   └── 功能需求      Features
+```
+├── Core（骨架，通常都在）              → templates/core.md
+│   ├── 文档信息      Doc Meta        标题/版本/作者/域标签/状态/关联链接
+│   ├── TL;DR         一句话总结        中大型必备
+│   ├── 背景与目标    Background&Goals  为什么做 + 目标 + 非目标(R-T6)
+│   ├── 成功指标      Success Metrics   四要素(R-T5)
+│   ├── 用户与场景    Users&Scenarios   谁、在什么情境下用
+│   ├── 业务流程      Business Flow     端到端时序 / 状态流转（需求侧）
+│   └── 功能需求      Features          能力 + AC 验收
 │
-├── Extension
-│   ├── 页面交互      Page Interaction        → templates/core.md
-│   ├── 埋点          Tracking                → templates/core.md
-│   ├── 国际化与多端  i18n & Multi-platform   → templates/extension.md
-│   ├── 数据规则/指标 Data Rules/Metrics      → templates/data.md
-│   ├── 数据产品规格  Data Product Spec        → templates/data.md
-│   ├── 非功能需求    Non-Functional          → templates/backend.md
-│   ├── 后台配置      Backend Config          → templates/backend.md
-│   ├── Guardrail / Eval (AI)                 → templates/ai.md
-│   ├── 发布计划      Rollout                 → templates/extension.md
-│   ├── 后续规划      Future Scope            → templates/extension.md
-│   └── 风险与依赖    Risks & Dependencies     → templates/extension.md
+├── Extension（按需求内容出现）
+│   ├── 页面交互      Page Interaction  → templates/core.md
+│   ├── 埋点          Tracking          → templates/core.md
+│   ├── 国际化与多端  i18n&Multi-platform
+│   ├── 数据规则/指标 Data Rules/Metrics → templates/data.md
+│   ├── 数据产品规格  Data Product Spec  → templates/data.md
+│   ├── 非功能需求    Non-Functional
+│   ├── 后台配置      Backend Config    → templates/backend.md
+│   ├── Guardrail(AI)                   → templates/ai.md
+│   ├── Eval(AI)                        → templates/ai.md
+│   ├── 发布计划      Rollout
+│   ├── 后续规划      Future Scope      deferred 点一句(R-S5)
+│   └── 风险与依赖    Risks&Dependencies
 │
-└── Common
-    └── 公共业务规则  Shared Business Rules   → templates/core.md
+├── Common
+│   └── 公共业务规则  Shared Business Rules  跨≥2 REQ 的 BR(R-T3)  → templates/core.md
+│
+└── 收尾
+    └── 待决问题      Open Questions    未决、不阻塞的点(R-S7)
 ```
 
-### 模型内容到章节
-
-| confirmed 模型内容 | 章节 |
-|---|---|
-| Intent.problem / desired_outcome | 背景与目标 |
-| Intent.target_users | 用户与场景 |
-| Intent.success_signals 中的定性或部分量化信号 | 成功信号与指标：按已确认内容原样写成叙述或列表 |
-| Intent.success_signals 或 RequirementItem 中同时明确基线、目标、测量口径和时间窗的量化指标 | 成功信号与指标：渲染结构化量化指标表 |
-| RequirementItem 的全部 scope_item_ids 指向 in_scope | 功能需求 / 业务流程 / 对应 Extension |
-| RequirementItem 的全部 scope_item_ids 指向 out_of_scope | 不生成当前需求；仅由关联 ScopeItem 决定非目标/后续规划/不展示 |
-| out_of_scope 且明确当前边界 | 非目标 |
-| out_of_scope 且 rationale 明确未来承诺 | 后续规划，一句话 |
-| 明确的 confirmed RequirementItem、ScopeItem 或 rationale 描述风险/取舍 | 风险与依赖：作为普通风险内容保真投影 |
-| superseded Issue | 不进入当前 PRD |
-
-量化信号缺少基线、目标、测量口径或时间窗时，按已确认内容原样写成叙述或列表，不生成结构化量化表，也不因此产生 ProjectionGap。仅当模型将其定义为验收或发布门槛，且缺失口径导致业务上无法判定时才返回 ProjectionGap。
+> 未在上表标注 template 文件的 Extension 章（i18n / 非功能 / 发布 / 风险等），骨架在 `templates/extension.md`。
 
 ---
 
-## 章节标题序号
+## 章节标题序号（默认带）
 
-- 最终出现的 `##` / `###` / 必要 `####` 按实际顺序连续编号；模板保持裸标题。
-- 章节序号只用于阅读导航，REQ/BR/AC 才是跨引用语义编号。
-- 示例：`### 3.1 REQ-001 <标题>`；引用时写 `REQ-001`，不写 `3.1`。
+选章、组装完成后，给**最终出现的章节标题**按顺序加层级序号，让读者一眼看出结构与层级。
+
+- **层级映射**：一级章（`##`）→ `1.` `2.` `3.`…；二级章（`###`）→ `1.1` `1.2`…；三级（`####`，如 REQ 内子块）→ `1.1.1`。序号写在标题文字前，如 `## 3. 功能需求`、`### 3.1 REQ-001 <功能标题>`。
+- **派生自最终顺序，不写死进模板**：章节是动态选出的（选章三问决定哪些出现、哪些跳过），序号必须在全篇组装后按**实际保留的章节顺序**连续赋号；跳过的章不占号。因此 `templates/*.md` 的骨架保持裸标题（`## 功能需求`），序号在投影产出阶段统一补，不预写进单章模板。
+- **只编章节标题**：序号只加到 `##` / `###`（及少量 `####` 子块）标题层。表格内的行、列表项不编。
+- **与语义编号并存，不替代**：`REQ-001` / `BR-001` / `AC-001`（见 `prd-language.md` 编号规范）是**跨引用锚点**，全文引用靠它，不随章节位置变；章节层级序号只是**阅读导航**。二者同时存在，如 `### 3.1 REQ-001 <功能标题>`——`3.1` 是它在文中的位置，`REQ-001` 是它被引用的名字。禁止用 `3.1` 替换 `REQ-001` 做交叉引用。
 
 ---
 
-## 推荐投影顺序
+## Large PRD：展示顺序与编写顺序分离
+
+上面的章节树是**最终展示顺序**，不是生成顺序。Large 必须按内容依赖生成：先冻结上游结论，再写依赖它的章节；TL;DR 虽展示在顶部，但最后编写。
 
 ```text
-已确认 RequirementModel revision
-+ scope_items + vocabulary + requirements
-+ confirmed success signals / risks / dependencies
-        ├──→ Why：背景 → 目标/非目标 → 成功信号与指标
+Scope（三态）+ 术语/角色 + 已确认决策
+        ├──→ Why：背景 → 目标/非目标 → 成功指标
         ├──→ Who：用户与场景
         └──→ Rules：公共 BR 候选与规则归属
 
 Why + Who + Rules
-        └──→ Flow：业务流程 / 分支 / 异常
+        └──→ Flow：业务流程 / 分支 / 异常（有端到端时序时）
 
 Why + Who + Rules + [Flow]
-        └──→ Features：逐个 REQ + 可验证验收表达
-                  └──→ Extensions
+        └──→ Features：逐个 REQ + 对应 AC
+                  └──→ Extensions：页面 / 数据 / 后台 / AI / i18n / 埋点
 
 Why + Features + Extensions
-        └──→ Delivery：发布 → 风险与依赖
+        └──→ Delivery：发布计划 → 风险与依赖 → 待决问题
 
-全部主体完成
-        └──→ TL;DR（最后生成）
+全部主体章节完成
+        └──→ TL;DR（最后压缩生成，回填到文档顶部）
 ```
 
-推荐顺序是同一 Session 内的章节依赖指引，不是持久状态或恢复协议：先确定文档信息与 Why/Who，再处理共享规则、流程、逐项 REQ、Extension 和交付信息，最后压缩 TL;DR。若前置语义不足，按输入门禁或 ProjectionGap 处理，不写占位正文。
+### Large 编写顺序
+
+1. **骨架与文档信息**：先选章并落完整标题，不写成段正文。
+2. **Why / Who**：背景、目标、非目标、用户场景、成功指标；这些内容决定后续取舍。
+3. **Rules**：扫描全部功能后冻结跨 ≥2 个 REQ 的 BR；局部规则只登记归属，不提前复制正文。
+4. **Flow**：存在跨步骤、分支、回流或状态变化时编写；简单独立功能可跳过。
+5. **Features**：按依赖逐个写 REQ，每个 REQ 与主路径 / 异常 / 边界 AC 同批完成。
+6. **Extensions**：仅写通过选章三问的页面、数据、后台、AI、i18n、埋点等章节。
+7. **Delivery**：发布、风险依赖、待决问题。
+8. **TL;DR**：基于已完成正文生成，不在前期猜写。
+
+### 分支裁决
+
+- 无跨 REQ 公共规则 → 跳过 Shared Business Rules。
+- 无端到端时序 / 分支 / 回流 → 跳过 Business Flow，REQ 直接依赖 Why / Who / 局部规则。
+- Extension 无来源信息增量 → 不生成对应章。
+- 章节依赖未完成 → 该章保持 pending，不用占位正文猜写。
+- 某章回改 → 只重检其下游章节与 TL;DR，不全篇重写。
 
 ---
 
 ## 选章：三问 + 归一
 
-1. 当前 confirmed RequirementModel 有这块内容吗？没有 → 不出。
-2. 删除该章会影响理解、交付或 confirmed 语义显式表达吗？不会 → 删除或合并。
-3. 是否有更合适的既有章？有 → 并入，不新开。
+### 对每个候选章逐一问
 
-章数越少越好，但不得删除 in_scope 内容或已有明确 confirmed 模型依据的风险与依赖。
+1. **需求里有这块内容吗？** 没有 → 不出。
+2. **删掉这章会影响别人理解/实现这个需求吗？** 不会 → 删或并入别章。
+3. **有没有更合适的既有章承载？** 有 → 并入，不新开章。
 
-### 常见内容归一
+> 章数越少越好，但不为精简删 in-scope 内容。只服务 in-scope 与 deferred 摘要。
 
-| 输入内容 | 归到 | 说明 |
-|---|---|---|
-| 目标与整体概述 | TL;DR + 背景与目标 | 不保留 megachapter |
-| 端到端步骤/分支 | 业务流程 | 简单独立能力可不出流程章 |
-| AB 实验 | 成功信号与指标或发布计划 | 指标与灰度节奏分开 |
-| 文案 key / 多语言 | 国际化与多端 | 不放功能正文重复 |
-| 数据口径 | 数据规则/指标 | 不写接口契约 |
-| 已确认的产品风险、取舍或跨团队事项 | 风险与依赖 | 仅按明确 confirmed requirement/scope/rationale 投影，不新增语义 |
-| 未来承诺 | 后续规划 | 仅来自 out_of_scope 明确 rationale |
+### 原文常见段 → Tree 章节（投影时归一，不照抄原文标题）
 
-### 章节职责边界
+| 原文里的段                           | 归到                                                        | 说明                                                                         |
+| ------------------------------------ | ----------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| 主要思路 / 整体方案 / 方案概述       | 拆开：概述句→TL;DR；端到端流程→业务流程；范围→背景与目标 | **不保留"整体方案"这章**——它是把 TL;DR+流程+范围一锅烩的 megachapter |
+| AB 实验 / 实验方案                   | 成功指标（实验指标）或 发布计划（灰度节奏）                 | 实验组是发布节奏；主测指标是成功指标                                         |
+| Shark key / 文案清单                 | 国际化与多端适配                                            | 多语言文案 key 属 i18n                                                       |
+| 对公共处 / 对 XX 团队的数据/接口诉求 | 数据规则/指标，或 风险与依赖                                | 字段诉求归数据规则；跨团队依赖归风险，非接口契约                             |
+| 权益中台 / 中台能力改造              | 并入功能需求（作为一组 REQ）                                | 中台能力也是"系统要有的能力"                                                 |
+| 埋点方案                             | 埋点 Tracking                                               | —                                                                           |
 
-| 章节 | 回答的唯一问题 | 不该出现的内容 |
-|---|---|---|
-| 用户与场景 | 谁在什么情境下使用 | 时序、规则细节 |
-| 业务流程 | 事情按什么顺序发生 | 单功能完整验收 |
-| 功能需求 | 系统有什么能力、怎样算做对 | 跨功能规则全文、视觉实现 |
-| 公共业务规则 | 跨 ≥2 REQ 的规则逻辑 | 单功能局部规则 |
-| 页面交互 | 用户与界面如何交互 | 视觉像素与组件实现 |
-| 数据规则/指标 | 数据业务口径 | DDL/ER/接口结构 |
-| 风险与依赖 | 已确认的风险、取舍、责任和应对 | 模型未确认的风险结论或 Writer 新增的接受语义 |
+### 章节职责边界（防重复，互斥）
 
----
+| 章节          | 回答的唯一问题                | 不该出现的                               |
+| ------------- | ----------------------------- | ---------------------------------------- |
+| 用户与场景    | 谁、在什么情境下用            | 时序、能力清单、规则逻辑                 |
+| 业务流程      | 事情按什么顺序发生            | 单功能能力细节、验收标准                 |
+| 功能需求      | 系统要有什么能力 + 怎么算做对 | 跨功能共享规则的完整定义、页面视觉       |
+| 公共业务规则  | 跨功能复用的规则逻辑          | 只服务单功能的规则（留 REQ 内，见 R-T3） |
+| 页面交互      | 用户与界面如何交互            | 视觉稿、组件实现、像素                   |
+| 数据规则/指标 | 数据口径/维度                 | 库表结构、ER 图、DDL                     |
 
-## 分支裁决
-
-- 无跨 REQ 公共规则 → 跳过 Shared Business Rules；
-- 无端到端时序/分支/回流 → 跳过 Business Flow；
-- Extension 无模型信息增量 → 不生成；
-- 无 confirmed 产品风险或依赖 → 可跳过 Risks；
-- out_of_scope 无明确未来承诺 → 不生成 Future Scope；
-- 章节依赖未完成 → 停止，不猜写。
+> 判断内容属于**意图 / 时序 / 能力 / 逻辑 / 口径 / 交互**中的哪一类，再定章节。
