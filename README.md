@@ -42,6 +42,7 @@ ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 14 个专业 skill +
 | Skill          | 命令                    | 说明                                                 |
 | -------------- | ----------------------- | ---------------------------------------------------- |
 | auto-goal      | `/ace:auto-goal`      | 自主目标编排——万能通用，设定定一个目标，AI努力完成 |
+| auto-goal-v2   | `/ace:auto-goal-v2`   | 证据驱动的目标控制器——判据台账推导终态，与 V1 并存 |
 | spec-coding    | `/ace:spec-coding`    | 全生命周期规范驱动编码（6 Phase + 门禁系统）         |
 | spechub-coding | `/ace:spechub-coding` | 基于 SpecHub 平台产物的本地编码                      |
 

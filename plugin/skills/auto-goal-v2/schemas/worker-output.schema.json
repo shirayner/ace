@@ -1,0 +1,68 @@
+{
+  "$id": "worker-output.schema.json",
+  "title": "Worker output envelope",
+  "description": "The normalized projection that may reach the main model. Hard limit 1 KiB, summary 400 UTF-8 bytes, at most 3 claims and 4 artifact refs. Raw output of any size goes to the artifact store only. suggested_next_action is advisory and cannot change state.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "dispatch_id", "status", "summary", "claims", "artifact_refs"],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "dispatch_id": { "$ref": "common.schema.json#/$defs/id" },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCEEDED", "BLOCKED", "NEEDS_INPUT", "FAILED"]
+    },
+    "summary": {
+      "description": "Bounded factual summary. 'no_finding' is a legitimate result; fabrication is not.",
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 400
+    },
+    "claims": {
+      "type": "array",
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "subject_ref", "result"],
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": ["artifact_created", "fact_found", "criterion_checked", "no_finding"]
+          },
+          "subject_ref": { "type": "string", "minLength": 1, "maxBytes": 120 },
+          "result": { "type": "string", "minLength": 1, "maxBytes": 200 },
+          "evidence_ref": { "nullable": true, "$ref": "common.schema.json#/$defs/id" },
+          "achieved_rung": { "nullable": true, "$ref": "common.schema.json#/$defs/evidenceRung" }
+        }
+      }
+    },
+    "artifact_refs": {
+      "type": "array",
+      "maxItems": 4,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/id" }
+    },
+    "suggested_next_action": {
+      "nullable": true,
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "reason"],
+      "properties": {
+        "kind": { "type": "string", "minLength": 1, "maxBytes": 40 },
+        "reason": { "type": "string", "minLength": 1, "maxBytes": 200 }
+      }
+    },
+    "error": {
+      "nullable": true,
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message"],
+      "properties": {
+        "code": { "type": "string", "minLength": 1, "maxBytes": 64 },
+        "message": { "type": "string", "minLength": 1, "maxBytes": 300 }
+      }
+    },
+    "scope_version": { "$ref": "common.schema.json#/$defs/scopeVersion" }
+  }
+}

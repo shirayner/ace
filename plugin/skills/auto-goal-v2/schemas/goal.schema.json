@@ -1,0 +1,133 @@
+{
+  "$id": "goal.schema.json",
+  "title": "Goal",
+  "description": "The asserted world delta, independent of what the Agent can do. intent must describe a result delta, not an action. scope.in and scope.out are equally required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "goal_id",
+    "task_id",
+    "intent",
+    "subject",
+    "principals",
+    "criteria",
+    "constraints",
+    "scope",
+    "scope_version"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "goal_id": { "$ref": "common.schema.json#/$defs/id" },
+    "task_id": { "$ref": "common.schema.json#/$defs/taskId" },
+    "intent": {
+      "description": "What the world becomes, never what action is performed.",
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 600
+    },
+    "subject": {
+      "description": "The acted-upon object, resolvable to a unique referent.",
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 240
+    },
+    "principals": {
+      "description": "Functional positions. They may be the same person, but none may be omitted.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["owner", "decider", "acceptor"],
+      "properties": {
+        "owner": { "type": "string", "minLength": 1, "maxBytes": 120 },
+        "decider": { "type": "string", "minLength": 1, "maxBytes": 120 },
+        "acceptor": { "type": "string", "minLength": 1, "maxBytes": 120 }
+      }
+    },
+    "criteria": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/id" }
+    },
+    "constraints": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["constraint_id", "statement"],
+        "properties": {
+          "constraint_id": { "$ref": "common.schema.json#/$defs/id" },
+          "statement": { "type": "string", "minLength": 1, "maxBytes": 300 }
+        }
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["in", "out"],
+      "properties": {
+        "in": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": { "type": "string", "minLength": 1, "maxBytes": 200 }
+        },
+        "out": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "items": { "type": "string", "minLength": 1, "maxBytes": 200 }
+        },
+        "deferred": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "type": "string", "minLength": 1, "maxBytes": 200 }
+        },
+        "external_dependencies": {
+          "type": "array",
+          "maxItems": 32,
+          "items": { "type": "string", "minLength": 1, "maxBytes": 200 }
+        }
+      }
+    },
+    "horizon": {
+      "nullable": true,
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 200
+    },
+    "scope_version": { "$ref": "common.schema.json#/$defs/scopeVersion" },
+    "mandate": {
+      "description": "What the Agent can legally do right now. attainable = goal ∩ mandate; residual = goal \\ mandate.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "effectors": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxBytes": 200 } },
+        "access": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxBytes": 200 } },
+        "authority": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxBytes": 200 } },
+        "competence": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxBytes": 200 } },
+        "observations": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxBytes": 200 } },
+        "safety_boundaries": { "type": "array", "maxItems": 32, "items": { "type": "string", "maxBytes": 200 } },
+        "expires_at": { "nullable": true, "$ref": "common.schema.json#/$defs/timestamp" }
+      }
+    },
+    "residual": {
+      "description": "goal \\ mandate. Every terminal outcome must report it, even when empty.",
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["item", "owner", "next_action"],
+        "properties": {
+          "item": { "type": "string", "minLength": 1, "maxBytes": 200 },
+          "owner": { "type": "string", "minLength": 1, "maxBytes": 120 },
+          "next_action": { "type": "string", "minLength": 1, "maxBytes": 200 },
+          "acceptance": { "type": "string", "maxBytes": 200 }
+        }
+      }
+    }
+  }
+}

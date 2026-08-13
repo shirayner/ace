@@ -1,0 +1,13 @@
+✔ a clean-context backend is installed and is a native binary (6.5158ms)
+✔ the worker has no access to the caller conversation (9983.3377ms)
+✔ worker ingestion stays near the floor, proving no history was injected (7527.4076ms)
+✔ C04: a huge worker output reaches disk but not the return value (81941.6328ms)
+✔ C05: a non-JSON worker reply is rejected rather than summarised (7132.5639ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 106745.4356

@@ -1,0 +1,64 @@
+{
+  "$id": "artifact-manifest.schema.json",
+  "title": "Artifact manifest",
+  "description": "One artifact's provenance record, 2 KiB max. path must be a normalized relative path under the task root: no '..', no absolute paths, no symlink escape. Soft warning at 1 MiB, hard limit 8 MiB; beyond that the artifact is stream-truncated and truncated=true, which invalidates it as completeness evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "artifact_id",
+    "task_id",
+    "kind",
+    "path",
+    "media_type",
+    "bytes",
+    "sha256",
+    "created_at",
+    "producer",
+    "truncated",
+    "original_bytes",
+    "retention"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "artifact_id": { "$ref": "common.schema.json#/$defs/id" },
+    "task_id": { "$ref": "common.schema.json#/$defs/taskId" },
+    "dispatch_id": { "nullable": true, "$ref": "common.schema.json#/$defs/id" },
+    "kind": {
+      "type": "string",
+      "enum": ["raw_output", "report", "evidence", "diff", "log", "handoff"]
+    },
+    "path": { "$ref": "common.schema.json#/$defs/relativePath" },
+    "media_type": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 128,
+      "pattern": "^[a-z]+/[A-Za-z0-9.+-]+$"
+    },
+    "bytes": { "type": "integer", "minimum": 0 },
+    "sha256": { "$ref": "common.schema.json#/$defs/hexDigest" },
+    "created_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "producer": {
+      "type": "string",
+      "pattern": "^(controller|proxy|worker:[A-Za-z0-9][A-Za-z0-9_.-]*)$"
+    },
+    "truncated": { "type": "boolean" },
+    "original_bytes": { "type": "integer", "minimum": 0 },
+    "retention": { "type": "string", "enum": ["task", "session", "ephemeral"] },
+    "evidence_for": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/id" }
+    },
+    "redaction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["applied", "policy"],
+      "properties": {
+        "applied": { "type": "boolean" },
+        "policy": { "nullable": true, "type": "string", "minLength": 1, "maxBytes": 120 }
+      }
+    }
+  }
+}

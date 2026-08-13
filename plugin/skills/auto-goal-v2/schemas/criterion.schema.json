@@ -1,0 +1,55 @@
+{
+  "$id": "criterion.schema.json",
+  "title": "Criterion ledger entry",
+  "description": "One criterion and its evidence status. required_rung comes from the type baseline raised by risk; max_rung is the type ceiling. required_rung > max_rung must surface as UNTESTABLE during planning, never as a lowered bar.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "criterion_id",
+    "scope_version",
+    "type",
+    "statement",
+    "required_rung",
+    "max_rung",
+    "achieved_rung",
+    "state",
+    "evidence_refs"
+  ],
+  "properties": {
+    "criterion_id": { "$ref": "common.schema.json#/$defs/id" },
+    "scope_version": { "$ref": "common.schema.json#/$defs/scopeVersion" },
+    "type": { "$ref": "common.schema.json#/$defs/criterionType" },
+    "statement": {
+      "description": "The world proposition being asserted. NEGATIVE criteria must name a bounded check surface rather than claim a universal absence.",
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 400
+    },
+    "required_rung": { "$ref": "common.schema.json#/$defs/evidenceRung" },
+    "max_rung": { "$ref": "common.schema.json#/$defs/evidenceRung" },
+    "achieved_rung": { "$ref": "common.schema.json#/$defs/evidenceRung" },
+    "state": { "$ref": "common.schema.json#/$defs/criterionState" },
+    "evidence_refs": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/id" }
+    },
+    "check_surface": {
+      "description": "Required for NEGATIVE criteria: the bounded places actually inspected.",
+      "type": "array",
+      "maxItems": 16,
+      "items": { "type": "string", "minLength": 1, "maxBytes": 120 }
+    },
+    "checked_at": { "nullable": true, "$ref": "common.schema.json#/$defs/timestamp" },
+    "acceptor_ref": {
+      "description": "Who holds decision authority. JUDGMENT and KNOWLEDGE criteria can never name the Agent.",
+      "nullable": true,
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 120
+    },
+    "risk": { "$ref": "common.schema.json#/$defs/risk" },
+    "in_scope": { "type": "boolean" }
+  }
+}

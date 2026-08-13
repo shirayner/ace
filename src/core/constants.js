@@ -101,7 +101,7 @@ export const COMPONENTS = {
     rulesDir: 'ace/rules',
   },
   plugin: {
-    description: 'Ace plugin (skills: auto-goal, ut, code-review, skill-creator, skill-optimize, requirement-analysis; commands: report)',
+    description: 'Ace plugin (skills: auto-goal, auto-goal-v2, ut, code-review, skill-creator, skill-optimize, requirement-analysis; commands: report)',
     required: true,
     isPlugin: true,
   },

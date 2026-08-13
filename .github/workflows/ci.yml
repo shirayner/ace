@@ -13,4 +13,13 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
       - run: npm install
+        # The auto-goal-v2 C05 suite needs a C compiler to build its stub backend
+        # (the dispatcher spawns a fixed Claude-CLI argv with shell:false, so only a
+        # native executable can stand in). Enforcement belongs where the toolchain is
+        # guaranteed: ubuntu images ship gcc, macOS ships clang. Without this the
+        # suite would skip quietly and C05 would not actually regress anywhere.
+        # Windows is left unset deliberately — its compiler is not guaranteed, and a
+        # visible skip is honest where a red build would only be noise.
       - run: npm test
+        env:
+          ACE_REQUIRE_STUB_BACKEND: ${{ matrix.os == 'windows-latest' && '0' || '1' }}

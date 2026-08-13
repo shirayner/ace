@@ -1,0 +1,102 @@
+{
+  "$id": "journal-event.schema.json",
+  "title": "Journal event",
+  "description": "One append-only factual event, one JSONL line. Hard limit 4 KiB per event; oversized payloads must become artifact pointers. Never carries reasoning, prompts, stdout/stderr, diffs or long summaries.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "task_id",
+    "segment",
+    "seq",
+    "occurred_at",
+    "type",
+    "actor",
+    "causation_id",
+    "correlation_id",
+    "idempotency_key",
+    "scope_version",
+    "payload",
+    "artifact_refs",
+    "prev_event_hash",
+    "event_hash"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "event_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "task_id": { "$ref": "common.schema.json#/$defs/taskId" },
+    "segment": { "$ref": "common.schema.json#/$defs/segment" },
+    "seq": { "$ref": "common.schema.json#/$defs/seq" },
+    "occurred_at": { "$ref": "common.schema.json#/$defs/timestamp" },
+    "type": {
+      "type": "string",
+      "enum": [
+        "GOAL_CREATED",
+        "GOAL_ALIGNED",
+        "SCOPE_CHANGE_PROPOSED",
+        "SCOPE_CHANGED",
+        "ASSUMPTION_RECORDED",
+        "ASSUMPTION_DEFEATED",
+        "CRITERION_DEFINED",
+        "MANDATE_ASSESSED",
+        "APPROVAL_REQUESTED",
+        "APPROVAL_GRANTED",
+        "APPROVAL_REJECTED",
+        "STEP_PLANNED",
+        "DISPATCH_REJECTED",
+        "WORKER_DISPATCHED",
+        "WORKER_RESULT_ACCEPTED",
+        "WORKER_RESULT_REJECTED",
+        "ARTIFACT_REGISTERED",
+        "EFFECT_INTENDED",
+        "EFFECT_OBSERVED",
+        "EVIDENCE_RECORDED",
+        "CRITERION_UPDATED",
+        "INPUT_REQUESTED",
+        "INPUT_RECEIVED",
+        "CHECKPOINT_REDUCED",
+        "SEGMENT_ROLLED",
+        "GOAL_TERMINATED"
+      ]
+    },
+    "actor": {
+      "description": "controller | user | proxy | worker:<id>",
+      "type": "string",
+      "pattern": "^(controller|user|proxy|worker:[A-Za-z0-9][A-Za-z0-9_.-]*)$"
+    },
+    "causation_id": {
+      "nullable": true,
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "correlation_id": {
+      "nullable": true,
+      "$ref": "common.schema.json#/$defs/id"
+    },
+    "idempotency_key": {
+      "nullable": true,
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]*$"
+    },
+    "scope_version": { "$ref": "common.schema.json#/$defs/scopeVersion" },
+    "payload": { "type": "object" },
+    "artifact_refs": {
+      "type": "array",
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "$ref": "common.schema.json#/$defs/id" }
+    },
+    "prev_event_hash": { "$ref": "common.schema.json#/$defs/hashRef" },
+    "event_hash": { "$ref": "common.schema.json#/$defs/hashRef" }
+  }
+}

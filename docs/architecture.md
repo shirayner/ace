@@ -37,11 +37,11 @@ understanding → alignment → spec-engine → verification → experience
 
 路径：`plugin/skills/`
 
-14 个 skill，按职责分 4 类：
+15 个 skill，按职责分 4 类：
 
 | 类别 | Skills |
 |------|--------|
-| 核心编码流水线 | auto-goal, spec-coding, spechub-coding, subagent-execute |
+| 核心编码流水线 | auto-goal, auto-goal-v2, spec-coding, spechub-coding, subagent-execute |
 | 质量保障 | code-review, ut, verify |
 | 知识与分析 | init, requirement-analysis, llm-wiki-generator, llm-wiki-reader |
 | 元工具 | skill-creator, skill-optimize, parallel-dispatch |

@@ -1,0 +1,65 @@
+{
+  "$id": "interruption.schema.json",
+  "title": "Interruption",
+  "description": "A single-decision request for a principal-held key. Exactly one decision per interruption. default_if_no_response must be NO_ACTION or a safe rollback, and no irreversible side effect may be in flight while this is open.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "code",
+    "question",
+    "why_blocking",
+    "options",
+    "recommended_option",
+    "required_from",
+    "resume_token",
+    "default_if_no_response"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "kind": { "type": "string", "enum": ["NEEDS_INPUT"] },
+    "code": {
+      "type": "string",
+      "enum": [
+        "APPROVAL_REQUIRED",
+        "ACCESS_REQUIRED",
+        "ACCEPTOR_REQUIRED",
+        "DECISION_REQUIRED",
+        "FACT_REQUIRED"
+      ]
+    },
+    "question": {
+      "description": "One decision only.",
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 400
+    },
+    "why_blocking": { "type": "string", "minLength": 1, "maxBytes": 300 },
+    "options": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "label", "tradeoff"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1, "maxLength": 32, "pattern": "^[a-z][a-z0-9_]*$" },
+          "label": { "type": "string", "minLength": 1, "maxBytes": 160 },
+          "tradeoff": { "type": "string", "minLength": 1, "maxBytes": 200 }
+        }
+      }
+    },
+    "recommended_option": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32,
+      "pattern": "^[a-z][a-z0-9_]*$"
+    },
+    "required_from": { "type": "string", "enum": ["owner", "decider", "acceptor", "user"] },
+    "resume_token": { "type": "string", "minLength": 4, "maxLength": 64, "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]*$" },
+    "default_if_no_response": { "type": "string", "enum": ["NO_ACTION", "SAFE_ROLLBACK"] },
+    "expires_at": { "nullable": true, "$ref": "common.schema.json#/$defs/timestamp" }
+  }
+}

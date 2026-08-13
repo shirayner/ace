@@ -1,0 +1,94 @@
+{
+  "$id": "worker-input.schema.json",
+  "title": "Worker input envelope",
+  "description": "The complete, explicit payload a stateless worker receives. Hard limit 2 KiB for this JSON; 16 KiB for the whole launch payload including prompt template and artifact slices. Chat history, main-agent transcript, whole task directories and undeclared files must never appear here.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "dispatch_id",
+    "task_id",
+    "role",
+    "objective",
+    "scope",
+    "constraints",
+    "inputs",
+    "expected_output",
+    "write_root"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "dispatch_id": { "$ref": "common.schema.json#/$defs/id" },
+    "task_id": {
+      "description": "Owning goal task. Explicitly null when the dispatch declares no task, which is what makes the provenance manifest step skip rather than write an unattributable row. Required but nullable: the dispatcher must state 'none', never omit the field.",
+      "nullable": true,
+      "$ref": "common.schema.json#/$defs/taskId"
+    },
+    "role": {
+      "description": "Explicitly null means an undeclared role, which ROLE_CLAIM_PERMISSIONS entitles to zero claim kinds. Required but nullable so an omitted role can never read as a granted one.",
+      "nullable": true,
+      "type": "string",
+      "enum": ["DISCOVER", "PLAN_STEP", "ACT", "VERIFY", "SUMMARIZE"]
+    },
+    "objective": {
+      "description": "A single decidable task. One worker, one role, one objective.",
+      "type": "string",
+      "minLength": 1,
+      "maxBytes": 400
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["include", "exclude"],
+      "properties": {
+        "include": { "type": "array", "maxItems": 16, "items": { "type": "string", "maxBytes": 160 } },
+        "exclude": { "type": "array", "maxItems": 16, "items": { "type": "string", "maxBytes": 160 } }
+      }
+    },
+    "scope_version": { "$ref": "common.schema.json#/$defs/scopeVersion" },
+    "constraints": {
+      "type": "array",
+      "maxItems": 16,
+      "items": { "type": "string", "minLength": 1, "maxBytes": 200 }
+    },
+    "inputs": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["artifact_id", "path", "sha256"],
+        "properties": {
+          "artifact_id": { "$ref": "common.schema.json#/$defs/id" },
+          "path": { "$ref": "common.schema.json#/$defs/relativePath" },
+          "slice": {
+            "nullable": true,
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["kind", "start", "end"],
+            "properties": {
+              "kind": { "type": "string", "enum": ["lines", "bytes"] },
+              "start": { "type": "integer", "minimum": 1 },
+              "end": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "sha256": { "$ref": "common.schema.json#/$defs/hexDigest" }
+        }
+      }
+    },
+    "expected_output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schema", "max_envelope_bytes"],
+      "properties": {
+        "schema": { "$ref": "common.schema.json#/$defs/relativePath" },
+        "max_envelope_bytes": { "type": "integer", "minimum": 1, "maximum": 1024 }
+      }
+    },
+    "write_root": {
+      "description": "The only directory this worker may write to.",
+      "$ref": "common.schema.json#/$defs/relativePath"
+    },
+    "deadline": { "nullable": true, "$ref": "common.schema.json#/$defs/timestamp" }
+  }
+}

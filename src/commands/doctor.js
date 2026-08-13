@@ -41,7 +41,7 @@ export async function doctorCommand() {
     checks.push(await check('plugin: ace directory', Promise.resolve(true)));
     checks.push(await check('plugin: plugin.json', fs.pathExists(pluginJsonPath)));
 
-    const skillNames = ['auto-goal', 'ut', 'code-review', 'skill-creator', 'skill-optimize', 'spec-coding', 'spechub-coding', 'requirement-analysis'];
+    const skillNames = ['auto-goal', 'auto-goal-v2', 'ut', 'code-review', 'skill-creator', 'skill-optimize', 'spec-coding', 'spechub-coding', 'requirement-analysis'];
     for (const skill of skillNames) {
       const skillMd = path.join(pluginInstallDir, 'skills', skill, 'SKILL.md');
       checks.push(await check(`plugin: skill ace:${skill}`, fs.pathExists(skillMd)));

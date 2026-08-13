@@ -1,0 +1,133 @@
+{
+  "changeName": "implement-auto-goal-v2",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "in_progress",
+  "created_at": "2026-08-12T16:15:33Z",
+  "updated_at": "2026-08-12T22:24:43.526755Z",
+  "completed_at": null,
+  "archived_at": null,
+  "completion_criteria": [
+    "实现设计中的 P1-P6，且不修改 auto-goal V1",
+    "auto-goal-v2 的全部私有运行时依赖内聚于其目录树，且不新增第三方依赖",
+    "clean-context worker 与模型摄入前 Tool Proxy 通过真实 capability 和摄入审计验证；能力不成立时硬阻塞而不软降级",
+    "capability、risk、approval、delta re-approval、criterion ledger、确定性终态、恢复及幂等副作用均有自动化测试",
+    "设计定义的 37 项验收场景均有可追踪结论，所有适用检查通过",
+    "完成最小仓库接线、独立审查、经验检查，并成功执行 ace task done implement-auto-goal-v2"
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "title": "验证 clean-context 能力 ⟂",
+      "status": "completed",
+      "parallel": true
+    },
+    {
+      "id": "2",
+      "title": "实现纯数据内核 ⟂",
+      "status": "completed",
+      "parallel": true
+    },
+    {
+      "id": "3",
+      "title": "实现代理与调度 (depends: 1, 2)",
+      "status": "completed",
+      "depends": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "id": "4",
+      "title": "实现控制面协议 ⟂",
+      "status": "completed",
+      "parallel": true
+    },
+    {
+      "id": "5",
+      "title": "集成 Skill 编排 (depends: 3, 4)",
+      "status": "completed",
+      "depends": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "title": "执行验收与归档 (depends: 2, 3, 4, 5)",
+      "status": "in-progress",
+      "depends": [
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "verifying",
+    "decisions": [
+      {
+        "decision": "完整实现设计中的 P1-P6",
+        "reason": "用户选择完整 V2 交付",
+        "alternatives": [
+          "仅 P1",
+          "仅 P1-P2"
+        ]
+      },
+      {
+        "decision": "零新增第三方依赖并仅做最小仓库接线",
+        "reason": "保证 Skill 可移植且私有运行时依赖内聚",
+        "alternatives": [
+          "引入 Ajv",
+          "绝对目录内聚"
+        ]
+      },
+      {
+        "decision": "clean-context 不成立时硬阻塞，不允许返回后裁剪软降级",
+        "reason": "主 Agent 上下文隔离是正确性约束",
+        "alternatives": [
+          "普通 Agent 返回后裁剪"
+        ]
+      },
+      {
+        "decision": "预算超标时压缩被约束内容，而非调大预算",
+        "reason": "调大预算是让声明迁就现实；SKILL.md 每次调用都进主模型上下文，其预算即上下文保证本身",
+        "alternatives": [
+          "把 SKILL_MD 调到 6.5 KiB"
+        ]
+      },
+      {
+        "decision": "每个预算声明必须有量真实字节的门禁，且门禁须经变异验证",
+        "reason": "SKILL_MD 与 RECOVERY_TOTAL 两次出现「声明了却无人校验」，空声明会静默漂移；未经变异验证的断言可能永远为真",
+        "alternatives": [
+          "仅修超标值不加门禁"
+        ]
+      },
+      {
+        "decision": "不为可测性在产品代码加测试后门，改用既有 ACE_CLAUDE_BIN 注入点造 stub backend",
+        "reason": "后门本身会成为绕过 clean-context 硬阻塞的路径",
+        "alternatives": [
+          "在 dispatch-worker 加测试分支"
+        ]
+      },
+      {
+        "decision": "审查判不可交付后不归档，先修全部 5 项阻塞并验证",
+        "reason": "B2/B3 让假 DONE 能落盘，与 V2 核心主张「DONE 由台账推导而非叙述宣布」直接冲突；带此缺陷交付即自我否证",
+        "alternatives": [
+          "先归档再补修",
+          "降级为 PARTIAL 交付"
+        ]
+      },
+      {
+        "decision": "审查者不参与修复自己审出的问题，转做只读的空转测试审计",
+        "reason": "修复者即审查者会失去独立复审面；且 384 项全绿挡不住 5 项阻塞，测试有效性本身才是更上游的问题",
+        "alternatives": [
+          "让 v2-review 直接修 B1/B2/B3"
+        ]
+      },
+      "D0023 时序容差必须由实测分布导出，不得手挑；测试前提断言必须含被测常量之外的独立量",
+      "读取面窗口是检测器而非协调机制：tree-snapshot --run 补第三判决 WINDOW TOUCHED（字节未动仅 mtime 移动 → 内容面可引、时序面须重取），修正 --run 与 --verify 对同一事件给两个判决的缺陷"
+    ]
+  }
+}

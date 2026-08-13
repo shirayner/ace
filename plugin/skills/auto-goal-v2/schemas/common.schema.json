@@ -1,0 +1,102 @@
+{
+  "$id": "common.schema.json",
+  "title": "Shared schema fragments",
+  "description": "Referenced via $ref from the other V2 schemas. The loader inlines these at load time, so the validator itself never resolves references.",
+  "$defs": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "hashRef": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "hexDigest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{3})?Z$"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 64,
+      "pattern": "^[a-z][a-z0-9]*-[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 64,
+      "pattern": "^goal-[A-Za-z0-9][A-Za-z0-9_.-]*$"
+    },
+    "relativePath": {
+      "description": "Structural path defence: rejects absolute paths, drive letters, backslashes and '..' segments. Symlink escape is not visible in the string and must be checked against the resolved root.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*\\\\)(?!.*(^|/)\\.\\.(/|$))[^\\x00]+$"
+    },
+    "scopeVersion": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "seq": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "segment": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "cursor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["segment", "seq", "event_hash"],
+      "properties": {
+        "segment": { "$ref": "common.schema.json#/$defs/segment" },
+        "seq": { "$ref": "common.schema.json#/$defs/seq" },
+        "event_hash": { "$ref": "common.schema.json#/$defs/hashRef" }
+      }
+    },
+    "evidenceRung": {
+      "type": "string",
+      "enum": ["E0", "E1", "E2", "E3", "E4", "E5"]
+    },
+    "criterionType": {
+      "type": "string",
+      "enum": [
+        "STATE",
+        "BEHAVIOR",
+        "ARTIFACT_PROPERTY",
+        "JUDGMENT",
+        "EFFECT",
+        "KNOWLEDGE",
+        "NEGATIVE"
+      ]
+    },
+    "criterionState": {
+      "type": "string",
+      "enum": ["SATISFIED", "VIOLATED", "UNTESTED", "UNTESTABLE", "MOOT"]
+    },
+    "risk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reversibility",
+        "externality",
+        "blast_radius",
+        "undo_window",
+        "detectability"
+      ],
+      "properties": {
+        "reversibility": { "type": "string", "enum": ["easy", "costly", "impossible"] },
+        "externality": { "type": "string", "enum": ["private", "shared", "public"] },
+        "blast_radius": { "type": "string", "enum": ["one", "bounded_many", "unbounded"] },
+        "undo_window": { "type": "string", "enum": ["available", "short", "none"] },
+        "detectability": { "type": "string", "enum": ["loud", "observable", "silent"] }
+      }
+    }
+  }
+}

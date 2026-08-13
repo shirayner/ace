@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- **auto-goal-v2** skill（`/ace:auto-goal-v2`）：证据驱动的目标控制器——对齐目标差量 → 规划可验证短步 → clean-context worker 执行 → 独立验证 → 由判据台账推导确定性终态（DONE/PARTIAL/BLOCKED/UNVERIFIABLE）。与 auto-goal V1 并存，不迁移 V1 任务；零新增第三方依赖，运行时依赖内聚在 `plugin/skills/auto-goal-v2/`
+
 ## [1.1.0] - 2026-06-25
 
 ### Added

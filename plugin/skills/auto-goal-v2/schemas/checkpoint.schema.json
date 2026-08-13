@@ -1,0 +1,138 @@
+{
+  "$id": "checkpoint.schema.json",
+  "title": "Checkpoint",
+  "description": "Bounded projection derived only by the reducer from the journal. Hard limit 2 KiB. Holds no history lists, no Frontier, no full goal, no full ledger and no narrative. Exactly one next_action while non-terminal.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "source_cursor",
+    "phase",
+    "outcome",
+    "scope_version",
+    "goal_summary",
+    "ledger_counts",
+    "active_step",
+    "next_action",
+    "pending_interruption",
+    "residual_count",
+    "latest_manifest",
+    "updated_at"
+  ],
+  "properties": {
+    "schema_version": { "$ref": "common.schema.json#/$defs/schemaVersion" },
+    "task_id": { "$ref": "common.schema.json#/$defs/taskId" },
+    "source_cursor": { "$ref": "common.schema.json#/$defs/cursor" },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "NEW",
+        "ALIGNING",
+        "PLANNING",
+        "EXECUTING",
+        "NEEDS_INPUT",
+        "VERIFYING",
+        "RECOVERING",
+        "TERMINAL"
+      ]
+    },
+    "outcome": {
+      "description": "Null until TERMINAL. NEEDS_INPUT is a phase, never a sealed outcome.",
+      "nullable": true,
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["DONE", "PARTIAL", "BLOCKED", "UNVERIFIABLE"]
+        },
+        "reason": {
+          "nullable": true,
+          "type": "string",
+          "enum": [
+            "FALSIFIED",
+            "EXHAUSTED",
+            "PLAN_CHANGE_REQUIRED",
+            "CONSTRAINT_VIOLATED",
+            "INCOHERENT_STATE",
+            "INVARIANT_VIOLATED"
+          ]
+        }
+      }
+    },
+    "scope_version": { "$ref": "common.schema.json#/$defs/scopeVersion" },
+    "goal_summary": { "type": "string", "minLength": 1, "maxBytes": 240 },
+    "ledger_counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["satisfied", "violated", "untested", "untestable"],
+      "properties": {
+        "satisfied": { "type": "integer", "minimum": 0 },
+        "violated": { "type": "integer", "minimum": 0 },
+        "untested": { "type": "integer", "minimum": 0 },
+        "untestable": { "type": "integer", "minimum": 0 },
+        "moot": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "active_step": {
+      "nullable": true,
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step_id", "kind", "status"],
+      "properties": {
+        "step_id": { "$ref": "common.schema.json#/$defs/id" },
+        "kind": {
+          "type": "string",
+          "enum": ["DISCOVER", "PLAN_STEP", "ACT", "VERIFY", "SUMMARIZE"]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["planned", "ready", "dispatched", "awaiting_verification"]
+        }
+      }
+    },
+    "next_action": {
+      "nullable": true,
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "target"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": ["ALIGN", "PLAN", "DISPATCH", "REDUCE", "ASK_USER", "DERIVE_OUTCOME", "SEAL"]
+        },
+        "target": { "type": "string", "minLength": 1, "maxBytes": 64 },
+        "ref": { "nullable": true, "type": "string", "minLength": 1, "maxBytes": 64 }
+      }
+    },
+    "pending_interruption": {
+      "description": "Resume token of the open interruption, not its full payload.",
+      "nullable": true,
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "resume_token", "required_from"],
+      "properties": {
+        "code": {
+          "type": "string",
+          "enum": [
+            "APPROVAL_REQUIRED",
+            "ACCESS_REQUIRED",
+            "ACCEPTOR_REQUIRED",
+            "DECISION_REQUIRED",
+            "FACT_REQUIRED"
+          ]
+        },
+        "resume_token": { "type": "string", "minLength": 4, "maxLength": 64 },
+        "required_from": { "type": "string", "enum": ["owner", "decider", "acceptor", "user"] }
+      }
+    },
+    "residual_count": { "type": "integer", "minimum": 0 },
+    "latest_manifest": {
+      "nullable": true,
+      "$ref": "common.schema.json#/$defs/relativePath"
+    },
+    "updated_at": { "$ref": "common.schema.json#/$defs/timestamp" }
+  }
+}

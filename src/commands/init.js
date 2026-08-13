@@ -137,6 +137,7 @@ export async function initCommand(options) {
       '  2. Open Claude Code and type:',
       '       /spec-coding   spec-driven development',
       '       /auto-goal     general purpose tasks',
+      '       /auto-goal-v2  evidence-driven goal controller',
       '',
       'Customize',
       '  Change role    edit ~/.claude/memory/user_profile.md',

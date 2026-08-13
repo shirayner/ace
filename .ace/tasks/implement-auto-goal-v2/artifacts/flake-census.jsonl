@@ -1,0 +1,24 @@
+{"round":1,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":2,"red":true,"pass":"493","fail":"1","failed":["the capture cap still fires on a detached writer, and truncation is declared"]}
+{"round":3,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":4,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":5,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":6,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":7,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":8,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":9,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":10,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":11,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":12,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":13,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":14,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":15,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":16,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":17,"red":true,"pass":"493","fail":"1","failed":["B5: the pipeline order holds -- the artifact exists even when nothing validates"]}
+{"round":18,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":19,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":20,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":21,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":22,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":23,"red":false,"pass":"494","fail":"0","failed":[]}
+{"round":24,"red":false,"pass":"494","fail":"0","failed":[]}

@@ -7,7 +7,7 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "test": "node --test tests/",
+    "test": "node scripts/run-tests.mjs",
     "lint": "eslint src/"
   },
   "keywords": [

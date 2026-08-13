@@ -5,6 +5,7 @@
 | 分类           | 名称                 | 触发命令                      | 一句话用途                                                        |
 | -------------- | -------------------- | ----------------------------- | ----------------------------------------------------------------- |
 | 万能通用       | auto-goal            | `/ace:auto-goal`            | 自主完成开放式目标或学习需求                                      |
+| 万能通用       | auto-goal-v2         | `/ace:auto-goal-v2`         | 证据驱动的目标控制器，确定性终态判定                              |
 | 需求分析       | requirement-analysis | `/ace:requirement-analysis` | 需求分析流水线                                                    |
 | 核心编码流水线 | spec-coding          | `/ace:spec-coding`          | Spec 驱动开发，交互友好、Spec生命周期管理、并行化、隔离化、配置化 |
 | 核心编码流水线 | spechub-coding       | `/ace:spechub-coding`       | 对接 SpecHub 平台，本地接力开发产物的本地编码                     |
@@ -32,6 +33,19 @@
   - 强制并行：≥3 独立任务必须并行
   - 惊讶测试：决策会让用户惊讶时暂停
 - **典型场景**："重构这个模块的错误处理"、"调研 X 方案的可行性"、"帮我理解这个系统"
+
+---
+
+### auto-goal-v2
+
+- **定位**：证据驱动的目标控制器——与 auto-goal V1 并存，V1 任务不迁移
+- **触发命令**：`/ace:auto-goal-v2`
+- **核心流程**：对齐目标差量 → 规划可验证短步 → clean-context worker 执行 → 独立验证 → 由判据台账推导确定性终态（DONE/PARTIAL/BLOCKED/UNVERIFIABLE）
+- **关键特性**：
+  - 终态由判据台账推导，不由 Agent 自述
+  - 主 Agent 只读 ≤2 KiB checkpoint 与 ≤1 KiB envelope，worker 原文只落盘
+  - 零新增第三方依赖，运行时依赖内聚在 `plugin/skills/auto-goal-v2/`
+- **典型场景**：需要可核验完成度的多步目标
 
 ---
 
@@ -188,6 +202,7 @@
 ```
 用户请求
  ├─ 描述目标/学习 → auto-goal
+ ├─ 目标需可核验完成度 → auto-goal-v2
  ├─ 从零做功能（有 openspec/）→ spec-coding
  ├─ 有 requirementId → spechub-coding
  ├─ 有 tasks.md → subagent-execute
