@@ -5,11 +5,27 @@ import {
   CLAUDE_DIR, COMPONENTS, TEMPLATES_DIR,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
 } from '../core/constants.js';
+import { TARGETS } from '../core/targets.js';
+import { readReceipt } from '../core/install-receipt.js';
 
 export async function listCommand() {
   console.log(chalk.bold('\n  ace list — installed components\n'));
 
+  const receipt = await readReceipt();
+  const claudeInstalled = receipt
+    ? (receipt.targets ?? []).some(t => t.id === 'claude-code')
+    : true;
+
   for (const [name, component] of Object.entries(COMPONENTS)) {
+    // `plugin` means specifically Claude Code's plugin/marketplace install. Reporting it as
+    // "missing" on a Codex-only machine states something false: the skills are installed, via
+    // a mechanism this row does not describe. Naming it as not-applicable keeps the row honest
+    // without implying a broken install.
+    if (component.isPlugin && !claudeInstalled) {
+      console.log(`  ${chalk.dim('     n/a')}  ${name} — ${chalk.dim('Claude Code plugin not selected; see Targets below')}`);
+      continue;
+    }
+
     const status = component.isPlugin
       ? await getPluginStatus()
       : await getComponentStatus(component);
@@ -31,6 +47,24 @@ export async function listCommand() {
         console.log(chalk.dim(`           version: ${version}  key: ${PLUGIN_KEY}`));
       }
     }
+  }
+
+  // The component list above describes Claude Code's layout only. Without this, a user who
+  // installed for Codex or Kiro sees a report that says "missing" for everything while their
+  // install is in fact complete — the tools it landed in simply are not represented.
+  if (receipt?.targets?.length) {
+    console.log(chalk.bold('\n  Targets\n'));
+    for (const target of receipt.targets) {
+      const label = TARGETS[target.id]?.label ?? target.id;
+      const where = target.projection === 'none'
+        ? receipt.canonicalDir
+        : target.skillsDir;
+      const detail = target.projection === 'none'
+        ? `reads ${where}`
+        : `${target.projection} → ${where}`;
+      console.log(`  ${chalk.green('installed')}  ${label} — ${chalk.dim(detail)}`);
+    }
+    console.log(chalk.dim(`\n  ${receipt.skills?.length ?? 0} skill(s) installed. Verify with \`ace doctor\`.`));
   }
 
   console.log();

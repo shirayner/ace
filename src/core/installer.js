@@ -6,8 +6,12 @@ import {
   CLAUDE_DIR, TEMPLATES_DIR, COMPONENTS, isAceOwnedFile,
   PLUGIN_SRC_DIR, PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE,
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
-  PLUGIN_KEY, PLUGIN_NAME,
+  PLUGIN_KEY, PLUGIN_NAME, CANONICAL_SKILLS_DIR,
 } from './constants.js';
+import { resolveTargets, PROJECTION } from './targets.js';
+import { writeCanonicalStore, projectToTarget } from './projector.js';
+import { installInstructions } from './instructions.js';
+import { writeReceipt } from './install-receipt.js';
 import { discoverCatalog, indexSkills, resolveSelection } from './skills-catalog.js';
 import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, mergeKnownMarketplaces, conflictCheck, backupFile, backupPreInstall } from './merger.js';
 
@@ -28,7 +32,15 @@ export class Installer {
     this.skillSelection = options.skillSelection || null;
     // Plugin source root; overridable so tests can deploy from a fixture tree
     this.pluginSrcDir = options.pluginSrcDir || PLUGIN_SRC_DIR;
+    // Install targets. Defaults to Claude Code alone so an existing call site — and the
+    // upgrade path of a user who installed before multi-target existed — behaves exactly
+    // as before; opting into more tools is an explicit choice.
+    this.targets = options.targets || ['claude-code'];
+    this.canonicalDir = options.canonicalDir || CANONICAL_SKILLS_DIR;
+    // Records what was written where, for uninstall.
+    this.receipt = { targets: [], skills: [], canonicalDir: this.canonicalDir };
   }
+
 
   /** Categorized skills directory inside the plugin source. */
   get skillsSrcDir() {
@@ -42,6 +54,11 @@ export class Installer {
    */
   async detectConflicts() {
     const conflicts = {};
+
+    // Every non-plugin component writes into ~/.claude/, which is not touched at all when
+    // Claude Code is unselected. Reporting those files as conflicts would ask the user to
+    // resolve overwrites that are never going to happen.
+    if (!this.includesClaudeCode) return conflicts;
 
     for (const componentName of this.components) {
       const component = COMPONENTS[componentName];
@@ -105,9 +122,21 @@ export class Installer {
     return conflicts;
   }
 
+  /**
+   * Is Claude Code among the selected targets?
+   *
+   * The `core`, `rules`, `hooks` and `memory` components all write into `~/.claude/` — its
+   * `CLAUDE.md`, its `settings.json`, its hook scripts. None of that is read by any other
+   * tool, so installing it for a Codex-only user creates a Claude Code configuration they
+   * never asked for and would reasonably read as ACE having installed the wrong thing.
+   * Per-target instructions and rules are delivered by `installInstructions` instead.
+   */
+  get includesClaudeCode() {
+    return this.targets.includes('claude-code');
+  }
+
   async run() {
     if (!this.dryRun) {
-      await fs.ensureDir(this.targetDir);
       await this.prepare();
     }
 
@@ -134,6 +163,11 @@ export class Installer {
    * Call this before installComponent() if not using run().
    */
   async prepare() {
+    // No-op when Claude Code is unselected: this creates ~/.claude/ and its ace/ layout,
+    // and nothing else reads them. Guarding here rather than at the call sites means a
+    // caller that drives the installer directly — `ace init` does — cannot bypass it.
+    if (!this.includesClaudeCode) return;
+
     await fs.ensureDir(this.targetDir);
     await this.migrateFromLegacy();
     await this.ensureAceStructure();
@@ -182,6 +216,16 @@ export class Installer {
   async installComponent(name, component) {
     if (component.isPlugin) {
       await this.installPlugin();
+      return;
+    }
+
+    // Every non-plugin component writes into ~/.claude/ — CLAUDE.md, settings.json, hook
+    // scripts, memory templates — none of which any other tool reads. Installing them for a
+    // Codex-only user would leave behind a Claude Code configuration they never asked for.
+    // Guarded here, at the single method that performs the writes, so the direct-drive path
+    // used by `ace init` is covered too.
+    if (!this.includesClaudeCode) {
+      this.results.skipped.push(`${name} (Claude Code not selected)`);
       return;
     }
 
@@ -239,34 +283,116 @@ export class Installer {
     const destDir = path.join(PLUGIN_CACHE_DIR, version);
 
     const skills = await this.resolveSkillsToInstall();
+    const targets = resolveTargets(this.targets);
+    const wantsClaude = targets.some(t => t.projection === PROJECTION.REGISTRY);
+    const sharedTargets = targets.filter(t => t.projection !== PROJECTION.REGISTRY);
 
     if (this.dryRun) {
-      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would create marketplace ${MARKETPLACE_NAME}`));
-      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
+      if (wantsClaude) {
+        !this.quiet && console.log(chalk.cyan(`  [dry-run] Would create marketplace ${MARKETPLACE_NAME}`));
+        !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
+      }
       !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install ${skills.length} skill(s): ${skills.join(', ')}`));
-      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
+      if (sharedTargets.length > 0) {
+        !this.quiet && console.log(chalk.cyan(`  [dry-run] Would write canonical store ${this.canonicalDir}`));
+        for (const target of sharedTargets) {
+          !this.quiet && console.log(chalk.cyan(`  [dry-run] ${target.label}: projection ${target.projection}`));
+        }
+      }
+      if (wantsClaude) {
+        !this.quiet && console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
+      }
       this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
       return;
     }
 
-    // 1. Setup local marketplace (directory + marketplace.json + known_marketplaces.json)
-    await this.setupMarketplace(pluginJson, skills);
+    if (wantsClaude) {
+      // 1. Setup local marketplace (directory + marketplace.json + known_marketplaces.json)
+      await this.setupMarketplace(pluginJson, skills);
 
-    // 2. Deploy plugin to cache (clean first to remove stale files)
-    await this.deployPlugin(destDir, skills);
+      // 2. Deploy plugin to cache (clean first to remove stale files)
+      await this.deployPlugin(destDir, skills);
 
-    // 3. Register in installed_plugins.json
-    const pluginEntry = {
-      scope: 'user',
-      installPath: destDir,
-      version,
-      installedAt: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    };
-    await mergeInstalledPlugins(INSTALLED_PLUGINS_FILE, PLUGIN_KEY, pluginEntry);
+      // 3. Register in installed_plugins.json
+      const pluginEntry = {
+        scope: 'user',
+        installPath: destDir,
+        version,
+        installedAt: new Date().toISOString(),
+        lastUpdated: new Date().toISOString(),
+      };
+      await mergeInstalledPlugins(INSTALLED_PLUGINS_FILE, PLUGIN_KEY, pluginEntry);
 
-    this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
-    this.results.merged.push({ file: 'plugins/installed_plugins.json' });
+      this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
+      this.results.merged.push({ file: 'plugins/installed_plugins.json' });
+      this.receipt.targets.push({
+        id: 'claude-code',
+        projection: PROJECTION.REGISTRY,
+        skillsDir: destDir,
+        paths: [destDir, MARKETPLACE_DIR],
+      });
+    }
+
+    if (sharedTargets.length > 0) {
+      await this.installSharedSkills(sharedTargets, skills);
+    }
+
+    this.receipt.skills = skills;
+    await writeReceipt(this.receipt);
+  }
+
+  /**
+   * Write the canonical store once, then project it into the non-Claude targets.
+   *
+   * Targets whose projection is `none` are satisfied by the store alone — that is why
+   * `~/.agents/skills` is the canonical root rather than a private ACE directory.
+   */
+  async installSharedSkills(targets, skills) {
+    const index = indexSkills(await this.getCatalog());
+    const { dir } = await writeCanonicalStore({
+      destDir: this.canonicalDir,
+      skillsSrcDir: this.skillsSrcDir,
+      skills,
+      index,
+      onError: error => this.results.errors.push({ component: 'plugin', error }),
+    });
+
+    this.results.installed.push(`skills:${skills.length} → ${dir}`);
+
+    for (const target of targets) {
+      try {
+        const { mode, paths } = await projectToTarget({
+          target,
+          canonicalDir: dir,
+          skills,
+        });
+
+        // Rules and the index that references them are only useful together, so the
+        // instruction layer is installed alongside the skills for the same target.
+        const instructions = await installInstructions({
+          target,
+          templatesDir: this.templatesDir,
+          rulesDir: COMPONENTS.rules.rulesDir,
+        });
+
+        this.receipt.targets.push({
+          id: target.id,
+          projection: mode,
+          skillsDir: target.skillsDir,
+          paths: [...paths, ...instructions.paths],
+        });
+        this.results.installed.push(
+          mode === PROJECTION.NONE
+            ? `target:${target.id} (reads ${dir} natively)`
+            : `target:${target.id} (${mode}, ${paths.length} skill(s))`
+        );
+        if (instructions.merged) {
+          this.results.merged.push({ file: `${target.id}:${path.basename(target.instructions)}` });
+        }
+      } catch (err) {
+        this.results.errors.push({ component: `target:${target.id}`, error: err.message });
+      }
+    }
   }
 
   async setupMarketplace(pluginJson, skills) {

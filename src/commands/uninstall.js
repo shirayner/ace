@@ -4,10 +4,12 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import {
-  CLAUDE_DIR, COMPONENTS, ACE_HOME,
+  CLAUDE_DIR, COMPONENTS, ACE_HOME, CANONICAL_SKILLS_DIR,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
 } from '../core/constants.js';
+import { readReceipt } from '../core/install-receipt.js';
+import { removeProjectedPath } from '../core/projector.js';
 import { removeKnownMarketplace } from '../core/merger.js';
 
 export async function uninstallCommand(options) {
@@ -117,7 +119,11 @@ export async function uninstallCommand(options) {
   const spinner4 = ora('Removing legacy hookify rules...').start();
   try {
     const hookifyPattern = /^hookify\.ace\..+\.local\.md$/;
-    const claudeFiles = await fs.readdir(CLAUDE_DIR);
+    // A missing ~/.claude/ is normal now, not a fault: an install that never selected Claude
+    // Code never created it. Letting readdir throw here reported two ENOENT "errors" and
+    // "Uninstall completed with errors" for a uninstall that in fact removed everything
+    // correctly — which would send a user hunting for damage that does not exist.
+    const claudeFiles = await fs.pathExists(CLAUDE_DIR) ? await fs.readdir(CLAUDE_DIR) : [];
     let hookifyRemoved = 0;
     for (const file of claudeFiles) {
       if (hookifyPattern.test(file)) {
@@ -194,9 +200,9 @@ export async function uninstallCommand(options) {
       }
     }
 
-    // Clean up timestamped ace-backup files
+    // Clean up timestamped ace-backup files (skipped when ~/.claude/ was never created).
     const claudeDir = CLAUDE_DIR;
-    const backupFiles = await fs.readdir(claudeDir);
+    const backupFiles = await fs.pathExists(claudeDir) ? await fs.readdir(claudeDir) : [];
     for (const file of backupFiles) {
       if (file.match(/\.(ace-backup\.|pre-ace)/)) {
         await fs.remove(path.join(claudeDir, file));
@@ -209,7 +215,47 @@ export async function uninstallCommand(options) {
     errors.push({ component: 'restore', error: err.message });
   }
 
-  // 6. Remove ace's own config (~/.ace/), which lives outside ~/.claude/
+  // 6. Remove everything recorded for non-Claude targets, using the install receipt.
+  //
+  // This cannot be re-derived from the selection: projected copies live under paths only
+  // the target knows, and a link whose source is gone reads as "missing" to pathExists
+  // while still occupying the name. Only a record of writes can clean both up — and
+  // anything absent from the receipt is left alone rather than guessed at.
+  const spinnerTargets = ora('Removing target projections...').start();
+  try {
+    const receipt = await readReceipt();
+    if (!receipt) {
+      spinnerTargets.succeed('no install receipt — nothing else recorded');
+    } else {
+      let count = 0;
+      for (const target of receipt.targets ?? []) {
+        // Claude Code's own paths are handled by the dedicated steps above.
+        if (target.id === 'claude-code') continue;
+        for (const recorded of target.paths ?? []) {
+          await removeProjectedPath(recorded);
+          count++;
+        }
+        removed.push(`target ${target.id} (${target.projection}, ${(target.paths ?? []).length} path(s))`);
+      }
+
+      // The canonical store is shared with other installers, so only ACE's own skill
+      // entries are removed — never the directory itself.
+      for (const skill of receipt.skills ?? []) {
+        const dir = path.join(receipt.canonicalDir ?? CANONICAL_SKILLS_DIR, skill);
+        await removeProjectedPath(dir);
+        count++;
+      }
+      if ((receipt.skills ?? []).length > 0) {
+        removed.push(`canonical skills: ${receipt.skills.length} removed from ${receipt.canonicalDir}`);
+      }
+      spinnerTargets.succeed(`target projections removed (${count} path(s))`);
+    }
+  } catch (err) {
+    spinnerTargets.fail('target projection removal failed');
+    errors.push({ component: 'targets', error: err.message });
+  }
+
+  // 7. Remove ace's own config (~/.ace/), which lives outside ~/.claude/
   const spinner6 = ora('Removing ace config...').start();
   try {
     // A surviving skills-selection.json would silently drive the next install, so an

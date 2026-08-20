@@ -4,8 +4,10 @@ import fs from 'fs-extra';
 import { createRequire } from 'module';
 import { PRESETS, COMPONENTS, CLAUDE_DIR, TEMPLATES_DIR, isAceOwnedFile } from '../core/constants.js';
 import { Installer } from '../core/installer.js';
+import { TARGETS, TARGET_ORDER, detectTargets } from '../core/targets.js';
 import { discoverCatalog, resolveSelection } from '../core/skills-catalog.js';
 import { readSelection, writeSelection, selectionFileLabel } from '../core/skills-selection.js';
+import { readTargetSelection, writeTargetSelection } from '../core/target-selection.js';
 import { mergeClaudeMd } from '../core/merger.js';
 
 const require = createRequire(import.meta.url);
@@ -25,6 +27,7 @@ export async function initCommand(options) {
 
   p.intro(`ace v${version}`);
 
+  const targets = await chooseTargets(options);
   const skillSelection = await chooseSkills(options);
 
   const installer = new Installer({
@@ -34,6 +37,7 @@ export async function initCommand(options) {
     components,
     quiet: true,
     skillSelection,
+    targets,
   });
 
   let resolutions = {};
@@ -117,7 +121,8 @@ export async function initCommand(options) {
     }
   }
 
-  s.stop('Installed to ~/.claude/');
+  const targetLabels = targets.map(id => TARGETS[id]?.label ?? id).join(', ');
+  s.stop(`Installed for ${targetLabels}`);
 
   // ─── Summary table ─────────────────────────────────
   p.log.message(formatSummaryTable(componentResults));
@@ -139,16 +144,19 @@ export async function initCommand(options) {
   // Width comes from the names actually shown: a fixed column silently misaligns the
   // moment a longer skill is suggested, and which names appear depends on the selection.
   const nameWidth = Math.max(0, ...entryPoints.map(e => e.name.length));
+  // Customize paths follow the targets actually installed — naming ~/.claude/ after a
+  // Codex-only install would send the user to edit a file nothing reads.
+  const primary = TARGETS[targets[0]] ?? TARGETS['claude-code'];
+  const rulesHint = `${primary.instructionRoot}/ace/rules/`;
   p.note(
     [
       'Get started',
       '  1. cd <your-project>',
-      '  2. Open Claude Code and type:',
+      '  2. Open your agent tool and type:',
       ...entryPoints.map(e => `       /${e.name.padEnd(nameWidth)}  ${e.blurb}`),
       '',
       'Customize',
-      '  Change role    edit ~/.claude/memory/user_profile.md',
-      '  Adjust rules   edit ~/.claude/ace/rules/',
+      `  Adjust rules   edit ${rulesHint}`,
       '  Verify setup   ace doctor',
     ].join('\n'),
     'Next steps'
@@ -187,6 +195,51 @@ export function suggestedEntryPoints(installedSkills) {
 }
 
 // ─── Helpers ───────────────────────────────────────────
+
+/**
+ * Decide which agent tools to install into.
+ *
+ * The question is "which tools do you use?" rather than "does your tool scan ~/.agents?" —
+ * users know the former and have no reason to know the latter. Detected tools are
+ * pre-checked, but detection never silently excludes: a tool installed after ACE would
+ * otherwise be unreachable with no indication why.
+ *
+ * @returns {Promise<string[]>} target ids
+ */
+async function chooseTargets(options) {
+  const stored = await readTargetSelection();
+  const detected = await detectTargets(dir => fs.pathExists(dir));
+  // Claude Code stays in the default set even when undetected: it is the historical
+  // behaviour of this command, and an upgrade must not silently drop it.
+  const fallback = stored ?? (detected.length > 0 ? detected : ['claude-code']);
+
+  if (options.force || !process.stdin.isTTY) {
+    p.log.info(`Targets: ${fallback.map(id => TARGETS[id]?.label ?? id).join(', ')}`);
+    return fallback;
+  }
+
+  const chosen = await p.multiselect({
+    message: 'Which agent tools do you use?',
+    options: TARGET_ORDER.map(id => ({
+      value: id,
+      label: TARGETS[id].label,
+      hint: TARGETS[id].projection === 'none'
+        ? 'reads ~/.agents/skills natively'
+        : TARGETS[id].projection === 'registry'
+          ? 'plugin marketplace'
+          : `${TARGETS[id].projection} into ${TARGETS[id].skillsDir.replace(/\\/g, '/')}`,
+    })),
+    initialValues: fallback,
+    required: true,
+  });
+  if (p.isCancel(chosen)) {
+    p.cancel('Cancelled.');
+    process.exit(0);
+  }
+
+  if (!options.dryRun) await writeTargetSelection(chosen);
+  return chosen;
+}
 
 /**
  * Decide which skills to install, prompting when there is a terminal to prompt on.

@@ -7,6 +7,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const CLAUDE_DIR = path.join(os.homedir(), '.claude');
 export const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
 
+/**
+ * The cross-agent skill root.
+ *
+ * Codex, OpenCode and DeepSeek Harness all discover `~/.agents/skills/<skill>/SKILL.md`
+ * natively, so a single flat store there is read by three tools with no projection at all.
+ * `$DSH_AGENTS_HOME` is honoured because DSH itself resolves the root that way, and a user
+ * who moved it would otherwise get a store nothing reads.
+ */
+export const AGENTS_HOME = path.resolve(
+  process.env.DSH_AGENTS_HOME || path.join(os.homedir(), '.agents')
+);
+export const CANONICAL_SKILLS_DIR = path.join(AGENTS_HOME, 'skills');
+
 // ace's own global config lives outside ~/.claude/ so it survives Claude Code resets
 export const ACE_HOME = path.join(os.homedir(), '.ace');
 export const ACE_CONFIG_DIR = path.join(ACE_HOME, 'config');
@@ -83,12 +96,20 @@ export function isAceOwnedFile(relativePath) {
 
 /**
  * Check if an @reference path is owned by ACE.
- * @param {string} refPath - Reference path like '@~/.claude/rules/ace/thinking.md' or '~/.claude/hooks/ace.java-compile-check.sh'
+ *
+ * The instruction-root prefix is stripped generically rather than matched against
+ * `~/.claude/` alone: the same rules are now referenced from per-tool instruction files
+ * (`~/.codex/AGENTS.md`, `~/.agents/AGENTS.md`, ...), and a prefix-specific test would
+ * silently stop recognizing ACE's own refs there — leaving obsolete refs uncleaned.
+ *
+ * @param {string} refPath - Reference like '@~/.claude/ace/rules/thinking.md' or '~/.codex/ace/rules/thinking.md'
  * @returns {boolean}
  */
 export function isAceOwnedRef(refPath) {
-  // Remove the @~/.claude/ or ~/.claude/ prefix if present
-  const relativePath = refPath.replace(/^@?~\/\.claude\//, '');
+  // Strip a leading '@' and any '~/.<tool>/' instruction-root prefix.
+  const relativePath = refPath
+    .replace(/^@/, '')
+    .replace(/^~\/\.[^/]+\//, '');
   return isAceOwnedFile(relativePath);
 }
 

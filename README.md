@@ -92,7 +92,65 @@ npm install -g @shirayner/ace --registry=https://registry.npmjs.org/
 ace init
 ```
 
-ACE 自动配置：全局规则、Skills 插件、CLAUDE.md 索引。
+`ace init` 会先问你**用哪些 AI 编码工具**（多选，已安装的会自动勾选）：
+
+```
+Which agent tools do you use?
+  ◼ Claude Code        ◻ Codex          ◻ OpenCode
+  ◻ DeepSeek Harness   ◻ Kiro
+```
+
+选择会记在 `~/.ace/config/target-selection.json`，之后 `ace upgrade` 和 `ace init --force`
+直接复用，不再重复询问。
+
+---
+
+## 多工具安装（Multi-target）
+
+### 一份 skills，多个工具共用
+
+Skills 只写一份到**规范存储** `~/.agents/skills/`（可用 `DSH_AGENTS_HOME` 覆盖），
+再按每个工具的实际发现机制投影：
+
+| 工具                | Skills 来源                | 投影方式         | 指令文件                      |
+| ------------------- | -------------------------- | ---------------- | ----------------------------- |
+| **Codex**           | `~/.agents/skills/` 原生读 | 无（零拷贝）     | `~/.codex/AGENTS.md`          |
+| **OpenCode**        | `~/.agents/skills/` 原生读 | 无（零拷贝）     | `~/.config/opencode/AGENTS.md`|
+| **DeepSeek Harness**| `~/.agents/skills/` 原生读 | 无（零拷贝）     | `~/.agents/AGENTS.md`         |
+| **Kiro**            | `~/.kiro/skills/`          | **复制**         | `~/.kiro/AGENTS.md`           |
+| **Claude Code**     | 插件市场（plugin cache）   | 本地 marketplace | `~/.claude/CLAUDE.md`         |
+
+三个工具原生读取 `~/.agents/skills/`，因此**完全不需要投影**——写一次，三个工具都能看到。
+只有 Kiro 需要真实副本（它对指向 `.agents` 的链接处理不可靠；被静默跳过的链接和安装失败无法区分，
+所以宁可牺牲去重也要保证正确）。Claude Code 继续走它原有的插件市场机制。
+
+### 两条硬约束
+
+**1. 规范存储必须是扁平的 `<skill>/SKILL.md`。**
+DeepSeek Harness 用 `segments.length === 2` 校验路径，`<category>/<skill>/SKILL.md`（三段）
+永远匹配不上；Claude Code 同样只扫一层。递归扫描器能读扁平结构，反过来不成立——
+所以扁平化不是某个工具的怪癖，而是唯一所有工具都能读的布局。
+分类信息只存在于源码树 `plugin/skills/<category>/`。
+
+**2. 只动自己的东西。**
+`~/.agents/skills/` 是**共享**目录，其它安装器也往里写。因此 ACE 只清理回执里记录过的条目，
+从不删除存储根目录，也绝不猜测。
+
+### 安装回执
+
+每次安装会写 `~/.ace/config/install-receipt.json`，记录实际落地的路径。
+卸载**只**依据这份回执——因为无法从"选了哪些工具"反推出该删什么：
+副本散落在各工具目录下，而源已失效的链接对 `pathExists` 表现为"不存在"却仍占着名字。
+回执里没有的东西，一概不动。
+
+`ace doctor` 用 `lstat` 逐个核对真实路径（不是读某个"已安装"标记位），
+并检查每个工具指令文件里的规则引用是否都能解析——
+指向不存在文件的索引能正常加载却静默解析为空，只查"是否写了文件"是发现不了的。
+
+### 工具间互不干扰
+
+只选 Codex 时，`~/.claude/` 一个文件都不会创建（`CLAUDE.md`、`settings.json`、hooks
+都只有 Claude Code 会读）；反过来只选 Claude Code 时也不会污染 `~/.agents/`。
 
 ### 3. 开始使用
 
@@ -120,11 +178,11 @@ SpecHub接力开发
 
 | 命令              | 说明                                         |
 | ----------------- | -------------------------------------------- |
-| `ace init`      | 初始化 AI 编码环境（全局配置 + 规则 + 插件） |
-| `ace doctor`    | 检查安装完整性                               |
-| `ace list`      | 查看已安装组件状态                           |
-| `ace upgrade`   | 升级到最新版本                               |
-| `ace uninstall` | 卸载所有 ace 管理的组件                      |
+| `ace init`      | 初始化 AI 编码环境（选择工具 + 规则 + Skills） |
+| `ace doctor`    | 检查安装完整性（逐工具核对真实路径与指令引用） |
+| `ace list`      | 查看已安装组件与各工具安装状态                |
+| `ace upgrade`   | 升级到最新版本（沿用已保存的工具选择）        |
+| `ace uninstall` | 卸载所有 ace 管理的组件（依据安装回执）        |
 
 ---
 
