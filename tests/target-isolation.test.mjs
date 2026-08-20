@@ -16,7 +16,7 @@
  * the API alone is what let it through the first time.
  */
 
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
@@ -28,9 +28,18 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const REPO = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 
+/** Temp dirs created by this file, removed after the run. */
+const scratch = [];
+after(async () => {
+  // Each case installs a full skill tree into a throwaway HOME, so leaving them behind
+  // accumulates hundreds of directories in the system temp dir across runs.
+  await Promise.all(scratch.map(dir => fs.remove(dir).catch(() => {})));
+});
+
 /** Run the real `ace init --force` against a throwaway HOME with a pinned target selection. */
 async function initWithTargets(targets) {
   const home = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-iso-home-'));
+  scratch.push(home);
   await fs.outputJson(path.join(home, '.ace', 'config', 'target-selection.json'), {
     version: 1, targets, updatedAt: new Date().toISOString(),
   });

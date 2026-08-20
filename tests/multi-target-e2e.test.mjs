@@ -8,7 +8,7 @@
  * exists — it stats the path a tool would actually open.
  */
 
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
@@ -19,6 +19,12 @@ import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
+
+/** Temp dirs created by this file, removed after the run. */
+const scratch = [];
+after(async () => {
+  await Promise.all(scratch.map(dir => fs.remove(dir).catch(() => {})));
+});
 
 /**
  * Build a plugin+templates fixture and run a real install against a throwaway HOME.
@@ -32,6 +38,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 async function runInstall({ targets }) {
   const home = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-e2e-home-'));
   const repo = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-e2e-repo-'));
+  scratch.push(home, repo);
 
   // Minimal plugin source, categorized like the real tree.
   await fs.outputJson(path.join(repo, 'plugin', '.claude-plugin', 'plugin.json'), {

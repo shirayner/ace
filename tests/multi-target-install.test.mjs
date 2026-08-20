@@ -12,7 +12,7 @@
  *   4. A receipt records real paths, because uninstall cannot re-derive them.
  */
 
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
@@ -21,8 +21,15 @@ import { writeCanonicalStore, projectToTarget, linkDir } from '../src/core/proje
 import { PROJECTION, resolveTargets, detectTargets, TARGETS, nativeTargets } from '../src/core/targets.js';
 import { retargetRefs } from '../src/core/instructions.js';
 
+/** Temp dirs created by this file, removed after the run. */
+const scratch = [];
+after(async () => {
+  await Promise.all(scratch.map(dir => fs.remove(dir).catch(() => {})));
+});
+
 async function fixtureSource() {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-canon-src-'));
+  scratch.push(root);
   const skills = { coding: ['spec-coding', 'code-review'], general: ['auto-goal'] };
   for (const [category, names] of Object.entries(skills)) {
     for (const name of names) {
@@ -37,7 +44,9 @@ async function fixtureSource() {
 }
 
 async function tmpDir(tag) {
-  return fs.mkdtemp(path.join(os.tmpdir(), `ace-${tag}-`));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), `ace-${tag}-`));
+  scratch.push(dir);
+  return dir;
 }
 
 test('the canonical store is flat — the category layer does not survive', async () => {

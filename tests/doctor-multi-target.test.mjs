@@ -10,7 +10,7 @@
  * so each case here pairs "clean install reports clean" with "broken install is caught".
  */
 
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
@@ -23,10 +23,17 @@ const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.join(HERE, '..');
 
+/** Temp dirs created by this file, removed after the run. */
+const scratch = [];
+after(async () => {
+  await Promise.all(scratch.map(dir => fs.remove(dir).catch(() => {})));
+});
+
 /** Install into a throwaway HOME, then run the real `ace doctor` against it. */
 async function installThenDoctor({ targets, breakIt }) {
   const home = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-doc-home-'));
   const repo = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-doc-repo-'));
+  scratch.push(home, repo);
 
   await fs.outputJson(path.join(repo, 'plugin', '.claude-plugin', 'plugin.json'), {
     name: 'ace', version: '9.9.9', description: 'fixture',

@@ -13,7 +13,7 @@
  * over-eager uninstall destroys skills ACE never owned.
  */
 
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
@@ -25,10 +25,17 @@ import { promisify } from 'node:util';
 const execFileAsync = promisify(execFile);
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
+/** Temp dirs created by this file, removed after the run. */
+const scratch = [];
+after(async () => {
+  await Promise.all(scratch.map(dir => fs.remove(dir).catch(() => {})));
+});
+
 /** Run install then uninstall in separate processes, each with its own HOME. */
 async function roundtrip({ targets, seedForeign = false }) {
   const home = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-rt-home-'));
   const repo = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-rt-repo-'));
+  scratch.push(home, repo);
 
   await fs.outputJson(path.join(repo, 'plugin', '.claude-plugin', 'plugin.json'), {
     name: 'ace', version: '9.9.9', description: 'fixture',
