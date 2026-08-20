@@ -8,6 +8,7 @@ import {
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
   PLUGIN_KEY, PLUGIN_NAME,
 } from './constants.js';
+import { discoverCatalog, indexSkills, resolveSelection } from './skills-catalog.js';
 import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, mergeKnownMarketplaces, conflictCheck, backupFile, backupPreInstall } from './merger.js';
 
 export class Installer {
@@ -23,7 +24,17 @@ export class Installer {
     this.resolutions = options.resolutions || {};
     // Suppress inline console.log when caller handles UI
     this.quiet = options.quiet || false;
+    // { categories: string[], skills: string[] } — null installs the recommended set
+    this.skillSelection = options.skillSelection || null;
+    // Plugin source root; overridable so tests can deploy from a fixture tree
+    this.pluginSrcDir = options.pluginSrcDir || PLUGIN_SRC_DIR;
   }
+
+  /** Categorized skills directory inside the plugin source. */
+  get skillsSrcDir() {
+    return path.join(this.pluginSrcDir, 'skills');
+  }
+
 
   /**
    * Detect conflicts for all components before installation.
@@ -208,14 +219,14 @@ export class Installer {
   }
 
   async installPlugin() {
-    const pluginJsonPath = path.join(PLUGIN_SRC_DIR, '.claude-plugin', 'plugin.json');
+    const pluginJsonPath = path.join(this.pluginSrcDir, '.claude-plugin', 'plugin.json');
     if (!await fs.pathExists(pluginJsonPath)) {
       this.results.errors.push({ component: 'plugin', error: 'Plugin source not found' });
       return;
     }
 
     // Use package.json version as single source of truth, sync to plugin.json
-    const pkgJsonPath = path.join(PLUGIN_SRC_DIR, '..', 'package.json');
+    const pkgJsonPath = path.join(this.pluginSrcDir, '..', 'package.json');
     const pluginJson = await fs.readJson(pluginJsonPath);
     if (await fs.pathExists(pkgJsonPath)) {
       const pkgJson = await fs.readJson(pkgJsonPath);
@@ -227,21 +238,22 @@ export class Installer {
     const version = pluginJson.version || '0.0.0';
     const destDir = path.join(PLUGIN_CACHE_DIR, version);
 
+    const skills = await this.resolveSkillsToInstall();
+
     if (this.dryRun) {
       !this.quiet && console.log(chalk.cyan(`  [dry-run] Would create marketplace ${MARKETPLACE_NAME}`));
       !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install plugin ${PLUGIN_KEY} v${version} to ${destDir}`));
+      !this.quiet && console.log(chalk.cyan(`  [dry-run] Would install ${skills.length} skill(s): ${skills.join(', ')}`));
       !this.quiet && console.log(chalk.cyan(`  [dry-run] Would update ${INSTALLED_PLUGINS_FILE}`));
       this.results.installed.push(`plugin:${PLUGIN_KEY} v${version}`);
       return;
     }
 
     // 1. Setup local marketplace (directory + marketplace.json + known_marketplaces.json)
-    await this.setupMarketplace(pluginJson);
+    await this.setupMarketplace(pluginJson, skills);
 
-    // 2. Copy plugin to cache (clean first to remove stale files)
-    await fs.remove(destDir);
-    await fs.ensureDir(path.dirname(destDir));
-    await fs.copy(PLUGIN_SRC_DIR, destDir, { overwrite: true });
+    // 2. Deploy plugin to cache (clean first to remove stale files)
+    await this.deployPlugin(destDir, skills);
 
     // 3. Register in installed_plugins.json
     const pluginEntry = {
@@ -257,11 +269,9 @@ export class Installer {
     this.results.merged.push({ file: 'plugins/installed_plugins.json' });
   }
 
-  async setupMarketplace(pluginJson) {
-    // 1. Copy plugin files to marketplace directory (clean first to remove stale files)
-    await fs.remove(MARKETPLACE_DIR);
-    await fs.ensureDir(MARKETPLACE_DIR);
-    await fs.copy(PLUGIN_SRC_DIR, MARKETPLACE_DIR, { overwrite: true });
+  async setupMarketplace(pluginJson, skills) {
+    // 1. Deploy plugin files to marketplace directory (clean first to remove stale files)
+    await this.deployPlugin(MARKETPLACE_DIR, skills);
 
     // 2. Create marketplace.json alongside the existing plugin.json
     const marketplaceJson = {
@@ -289,6 +299,65 @@ export class Installer {
     await mergeKnownMarketplaces(KNOWN_MARKETPLACES_FILE, MARKETPLACE_NAME, marketplaceEntry);
 
     this.results.merged.push({ file: 'plugins/known_marketplaces.json' });
+  }
+
+  /**
+   * Copy the plugin into `destDir`, flattening the selected skills.
+   *
+   * Source layout groups skills by category (`plugin/skills/<category>/<skill>/`) for
+   * readability, but Claude Code only discovers `skills/<skill>/SKILL.md` one level deep,
+   * so the category layer is dropped on the way out. Unselected skills are not copied at
+   * all — the destination is the installed surface, so absence is what disables them.
+   *
+   * @param {string} destDir - Destination plugin root.
+   * @param {string[]} skills - Skill names to install (already resolved from the selection).
+   */
+  async deployPlugin(destDir, skills) {
+    await fs.remove(destDir);
+    await fs.ensureDir(destDir);
+
+    // Everything outside skills/ is shared infrastructure (agents, commands, shared protocols)
+    const skillsSrcDir = this.skillsSrcDir;
+    await fs.copy(this.pluginSrcDir, destDir, {
+      overwrite: true,
+      filter: src => src !== skillsSrcDir && !src.startsWith(skillsSrcDir + path.sep),
+    });
+
+    const index = indexSkills(await this.getCatalog());
+    const destSkillsDir = path.join(destDir, 'skills');
+    await fs.ensureDir(destSkillsDir);
+
+    for (const skill of skills) {
+      const category = index.get(skill);
+      if (!category) {
+        this.results.errors.push({ component: 'plugin', error: `Skill not found in catalog: ${skill}` });
+        continue;
+      }
+      await fs.copy(
+        path.join(skillsSrcDir, category, skill),
+        path.join(destSkillsDir, skill),
+        { overwrite: true }
+      );
+    }
+  }
+
+  /** Discover the catalog once per installer run. */
+  async getCatalog() {
+    if (!this._catalog) this._catalog = await discoverCatalog(this.skillsSrcDir);
+    return this._catalog;
+  }
+
+  /**
+   * Resolve the configured selection into concrete skill names.
+   * A null selection installs the recommended categories.
+   */
+  async resolveSkillsToInstall() {
+    const catalog = await this.getCatalog();
+    const resolved = resolveSelection(catalog, this.skillSelection);
+    for (const skill of resolved.dropped) {
+      this.results.skipped.push(`skill:${skill} (no longer in catalog)`);
+    }
+    return resolved.skills;
   }
 
   async installRulesDir(rulesDir, componentName) {

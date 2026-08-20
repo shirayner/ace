@@ -1,0 +1,233 @@
+{
+  "changeName": "controller-worker-v3",
+  "type": "simple",
+  "skillName": "auto-goal-v3",
+  "status": "in_progress",
+  "outcome": null,
+  "created_at": "2026-08-14T03:50:56Z",
+  "updated_at": "2026-08-14T06:55:45Z",
+  "completed_at": null,
+  "archived_at": null,
+  "goal": "把 auto-goal-v3 改造成主 Agent 只调度、所有探索与实现工作由子 Agent 执行的 Controller–Worker 内核",
+  "criteria": [
+    {
+      "id": "C001",
+      "text": "文档明确规定 Controller 不得直接实现或修复，独立探索域必须委派，每个实现任务必须委派 fresh subagent；多个无依赖且资源不冲突的 ready item 必须同轮并行",
+      "text_sha256": "71f1a3ec44efac4ee93e56032c9daf628adb6bd25dfe55e027e105a90f63894f"
+    },
+    {
+      "id": "C002",
+      "text": "goal.py 支持创建和推进 Work Graph；每个 work item 含稳定 ID、可观察产出、局部判据、非空 criterion_ids、依赖、资源与委派生命周期",
+      "text_sha256": "fc9bddd6c2abdca5afb26e18fec3a563b7dd1c0060b48eb4360904cfc87ea0ed"
+    },
+    {
+      "id": "C003",
+      "text": "goal.py done 拒绝空 Work Graph、标准覆盖不完整、未委派或未完成的任务以及缺少 Controller 验证或独立审查的任务；合法单任务和多任务流程可关闭",
+      "text_sha256": "95b9a10c1594b4503bb74fb0954d79ce8288ac64bb742d3b57fc3b5a1ef7c19b"
+    },
+    {
+      "id": "C004",
+      "text": "黑盒测试至少覆盖完整、单原子任务、缺失委派、伪造或非法迁移、依赖与覆盖错误，并证明现有 criteria/verdict 契约不回归",
+      "text_sha256": "b49e71dbb16aa8cdba2857f72b26b74f02531e06994955d47edc5d7711f14088"
+    },
+    {
+      "id": "C005",
+      "text": "至少 3 处实现侧变异会使测试转红，记录变异证据",
+      "text_sha256": "80fc297ac8cc97b8236e2adca40b4f68068ead505b7cbca595dca3f8d8077c35"
+    },
+    {
+      "id": "C006",
+      "text": "npm test、V3 契约测试与 ace doctor 通过；SKILL.md 不超过 6144 字节，峰值 reference 摄入不超过 20480 字节",
+      "text_sha256": "bad0a7e99bb1362d4c4eacd3df29256659806dafe482cc7ab87a60e81eea3ba6"
+    }
+  ],
+  "criteria_sha256": "7b058c0685bcb6a34744f34d6a039a192e31ec91418d17c10c3dee229c431e6c",
+  "completion_criteria": [
+    "文档明确规定 Controller 不得直接实现或修复，独立探索域必须委派，每个实现任务必须委派 fresh subagent；多个无依赖且资源不冲突的 ready item 必须同轮并行",
+    "goal.py 支持创建和推进 Work Graph；每个 work item 含稳定 ID、可观察产出、局部判据、非空 criterion_ids、依赖、资源与委派生命周期",
+    "goal.py done 拒绝空 Work Graph、标准覆盖不完整、未委派或未完成的任务以及缺少 Controller 验证或独立审查的任务；合法单任务和多任务流程可关闭",
+    "黑盒测试至少覆盖完整、单原子任务、缺失委派、伪造或非法迁移、依赖与覆盖错误，并证明现有 criteria/verdict 契约不回归",
+    "至少 3 处实现侧变异会使测试转红，记录变异证据",
+    "npm test、V3 契约测试与 ace doctor 通过；SKILL.md 不超过 6144 字节，峰值 reference 摄入不超过 20480 字节"
+  ],
+  "tasks": [
+    {
+      "id": "W1",
+      "title": "接管审计并完善 Work Graph 与委派生命周期状态机",
+      "output": "plugin/skills/general/auto-goal-v3/scripts/goal.py 与对应黑盒契约测试",
+      "acceptance": "新 CLI 无任意状态跳转；完整、单任务、缺失、伪造、依赖与覆盖各臂通过；既有 criteria/verdict 契约不回归",
+      "criterion_ids": [
+        "C002",
+        "C003",
+        "C004"
+      ],
+      "depends_on": [],
+      "resources": {
+        "reads": [
+          "plugin/skills/general/auto-goal-v3/scripts/goal.py",
+          "plugin/skills/general/auto-goal-v3/tests"
+        ],
+        "writes": [
+          "plugin/skills/general/auto-goal-v3/scripts/goal.py",
+          "plugin/skills/general/auto-goal-v3/tests"
+        ],
+        "external": [],
+        "exclusive": [
+          "auto-goal-v3-kernel"
+        ]
+      },
+      "lifecycle": "reviewed",
+      "status": "done",
+      "delegation": {
+        "agent": "w1-kernel-fix-2",
+        "invocation": "impl-w1-kernel-fix-2-20260814",
+        "dispatched_at": "2026-08-14T05:19:05Z",
+        "self_report": "PARTIAL",
+        "summary": "已修复审查确认的状态机与伪造门禁；按用户要求未运行完整测试，仅完成静态与语法检查",
+        "returned_at": "2026-08-14T05:49:18Z"
+      },
+      "controller_verification": {
+        "evidence": "Controller 已核对 goal.py 中处女图门禁、图级身份重验、criteria 投影校验、悬空依赖诊断与 returned 记录门禁，并核对对应黑盒伪造臂已落盘；未执行测试",
+        "verified_at": "2026-08-14T05:49:21Z"
+      },
+      "independent_review": {
+        "agent": "w1-fix-review-2",
+        "invocation": "review-w1-fix-2-20260814",
+        "verdict": "PASS",
+        "evidence": "独立静态复审确认处女图门禁、图级身份重验、criteria 投影、悬空依赖诊断与 collect 记录门禁均封住；自动测试按用户要求未执行",
+        "reviewed_at": "2026-08-14T06:10:55Z"
+      },
+      "delegation_history": [
+        {
+          "agent": "w1-kernel-takeover",
+          "invocation": "agent-w1-kernel-takeover-20260814",
+          "dispatched_at": "2026-08-14T04:48:46Z",
+          "self_report": "PARTIAL",
+          "summary": "实现与契约测试已落盘；按用户要求停止自动测试，独立静态审查发现阻塞缺陷",
+          "returned_at": "2026-08-14T05:18:49Z"
+        }
+      ],
+      "review_history": [
+        {
+          "agent": "w1-independent-review",
+          "invocation": "review-w1-static-20260814",
+          "verdict": "FAIL",
+          "evidence": "静态审查确认 FAIL 历史可被 plan 洗掉、done 未重验图级身份、completion_criteria 可漂移，并有悬空依赖 KeyError",
+          "reviewed_at": "2026-08-14T05:18:55Z"
+        },
+        {
+          "agent": "w1-fix-review-2",
+          "invocation": "review-w1-fix-2-20260814",
+          "verdict": "PASS",
+          "evidence": "独立静态复审确认处女图门禁、图级身份重验、criteria 投影、悬空依赖诊断与 collect 记录门禁均封住；自动测试按用户要求未执行",
+          "reviewed_at": "2026-08-14T06:10:55Z"
+        }
+      ]
+    },
+    {
+      "id": "W2",
+      "title": "收紧 Controller-Worker skill 与阶段协议",
+      "output": "SKILL.md 与 discover-align/execute/verify-close references 的一致协议",
+      "acceptance": "文档禁止 Controller 直接实现或修复，要求独立探索域与每个实现项委派 fresh subagent，并明确并行只由依赖和资源冲突决定",
+      "criterion_ids": [
+        "C001"
+      ],
+      "depends_on": [
+        "W1"
+      ],
+      "resources": {
+        "reads": [
+          "plugin/skills/general/auto-goal-v3/scripts/goal.py",
+          "plugin/skills/general/auto-goal-v3/tests"
+        ],
+        "writes": [
+          "plugin/skills/general/auto-goal-v3/SKILL.md",
+          "plugin/skills/general/auto-goal-v3/references"
+        ],
+        "external": [],
+        "exclusive": [
+          "auto-goal-v3-protocol"
+        ]
+      },
+      "lifecycle": "reviewed",
+      "status": "done",
+      "delegation": {
+        "agent": "w2-protocol-implementer",
+        "invocation": "impl-w2-protocol-20260814",
+        "dispatched_at": "2026-08-14T06:10:16Z",
+        "self_report": "PARTIAL",
+        "summary": "协议文档已落盘；implementer 仅返回 idle、未提交最终自评，测试按用户要求未运行",
+        "returned_at": "2026-08-14T06:52:11Z"
+      },
+      "controller_verification": {
+        "evidence": "已读取 SKILL.md、discover-align.md、execute.md、verify-close.md；新五步 CLI 与 Controller-Worker 规则已落盘；实测字节 SKILL=6060、峰值组合=17423",
+        "verified_at": "2026-08-14T06:52:26Z"
+      },
+      "independent_review": {
+        "agent": "w2-protocol-reviewer-fast",
+        "invocation": "review-w2-protocol-fast-20260814",
+        "verdict": "PASS",
+        "evidence": "独立静态审查：Controller 禁止实现/修复、实现 item 无条件 fresh 委派、五步 CLI、并行与身份/关闭协议一致；单探索缺口例外被判为与 >=2 域强制门禁的数量分层；预算 6060/17423 合规",
+        "reviewed_at": "2026-08-14T06:55:24Z"
+      },
+      "delegation_history": [],
+      "review_history": [
+        {
+          "agent": "w2-protocol-reviewer-fast",
+          "invocation": "review-w2-protocol-fast-20260814",
+          "verdict": "PASS",
+          "evidence": "独立静态审查：Controller 禁止实现/修复、实现 item 无条件 fresh 委派、五步 CLI、并行与身份/关闭协议一致；单探索缺口例外被判为与 >=2 域强制门禁的数量分层；预算 6060/17423 合规",
+          "reviewed_at": "2026-08-14T06:55:24Z"
+        }
+      ]
+    },
+    {
+      "id": "W3",
+      "title": "执行实现侧变异、全量验证与预算量具",
+      "output": ".ace/tasks/controller-worker-v3/artifacts 下的变异与验证证据",
+      "acceptance": "至少 3 个实现侧变异被测试杀死；恢复后 npm test、V3 契约、ace doctor 与上下文预算门禁均有新鲜证据",
+      "criterion_ids": [
+        "C005",
+        "C006"
+      ],
+      "depends_on": [
+        "W1",
+        "W2"
+      ],
+      "resources": {
+        "reads": [
+          "plugin/skills/general/auto-goal-v3",
+          "tests",
+          "scripts/run-tests.mjs"
+        ],
+        "writes": [
+          ".ace/tasks/controller-worker-v3/artifacts"
+        ],
+        "external": [
+          "ace doctor"
+        ],
+        "exclusive": [
+          "auto-goal-v3-verification"
+        ]
+      },
+      "lifecycle": "dispatched",
+      "status": "in-progress",
+      "delegation": {
+        "agent": "w3-verification-worker",
+        "invocation": "verify-mutations-20260814-a",
+        "dispatched_at": "2026-08-14T06:55:45Z",
+        "self_report": null,
+        "summary": null,
+        "returned_at": null
+      },
+      "controller_verification": null,
+      "independent_review": null,
+      "delegation_history": [],
+      "review_history": []
+    }
+  ],
+  "simple": {
+    "phase": "discover",
+    "decisions": []
+  }
+}

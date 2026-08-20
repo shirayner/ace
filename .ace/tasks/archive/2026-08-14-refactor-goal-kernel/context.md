@@ -1,0 +1,21 @@
+# refactor-goal-kernel
+
+## 目标
+
+把 auto-goal-v3 重构为四阶段内核 + 机械验收契约
+
+## 完成标准
+
+- [ ] goal.py init 在零 --criteria 时非零退出；成功时 state 内每条标准带唯一 id 与 text_sha256，并有集合级 criteria_sha256
+- [ ] goal.py accept-report 对重复 criterion_id、缺失标准、未知 ID、criteria_sha256 不符四类畸形输入全部非零退出，合法输入正常聚合
+- [ ] goal.py done 在存在 FAIL 时拒绝归档；存在 UNVERIFIABLE 且无 FAIL 时归档为 partial 而非 completed；tally 由 verdicts 重算，篡改 state 内 tally 不能绕过
+- [ ] v3 目录 references 为 discover-align.md/execute.md/verify-close.md，旧三份已删除；goal.py 无 tree 子命令；全库无指向旧文件名的残留引用
+- [ ] 新增测试覆盖完整/最小/缺失/伪造四臂，且对 goal.py 至少 3 处门禁做实现侧变异后测试转红，变异记录写入 artifacts
+- [ ] npm test 全绿、ace doctor 通过、SKILL.md ≤ 6144 字节且峰值摄入 ≤ 20480 字节
+
+## 决策
+
+（见 state.json 的 simple.decisions）
+
+## 中间结论
+

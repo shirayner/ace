@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Test runner for the whole repo: root `tests/` plus every `plugin/skills/<name>/tests/`.
+ * Test runner for the whole repo: root `tests/` plus every `plugin/skills/<category>/<skill>/tests/`.
  *
  * Why a script instead of `node --test <dir>`: the two forms of `node --test`
  * that would cover these directories each fail on a Node version we support.
@@ -41,11 +41,28 @@ const SECRET_NAME_PATTERN = /(KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL)/i;
 /** Directories that hold test files: root tests/ and each skill's tests/. */
 function testRoots() {
   const roots = [path.join(REPO_ROOT, 'tests')];
-  const skillsDir = path.join(REPO_ROOT, 'plugin', 'skills');
-  for (const skill of readDirNames(skillsDir)) {
-    roots.push(path.join(skillsDir, skill, 'tests'));
-  }
+  for (const skill of skillDirs()) roots.push(path.join(skill, 'tests'));
   return roots.filter(isDirectory);
+}
+
+/**
+ * Absolute paths of every skill directory.
+ *
+ * Skills live at `plugin/skills/<category>/<skill>/`, so the walk goes two levels
+ * deep and keeps only directories that actually carry a SKILL.md. Deriving the set
+ * from that marker rather than from depth alone means a category directory holding
+ * shared assets never gets mistaken for a skill.
+ */
+function skillDirs() {
+  const skillsDir = path.join(REPO_ROOT, 'plugin', 'skills');
+  const found = [];
+  for (const category of readDirNames(skillsDir)) {
+    for (const skill of readDirNames(path.join(skillsDir, category))) {
+      const dir = path.join(skillsDir, category, skill);
+      if (fs.existsSync(path.join(dir, 'SKILL.md'))) found.push(dir);
+    }
+  }
+  return found;
 }
 
 function readDirNames(dir) {
@@ -95,11 +112,10 @@ function collectCodeFiles(dir) {
 
 /** Skills that ship executable code, and therefore owe the runner a test suite. */
 function skillsWithRuntimeCode() {
-  const skillsDir = path.join(REPO_ROOT, 'plugin', 'skills');
-  return readDirNames(skillsDir).filter(skill => {
-    const root = path.join(skillsDir, skill);
-    return collectCodeFiles(root)
-      .some(file => !toRepoPath(file).includes(`/${skill}/tests/`));
+  return skillDirs().filter(dir => {
+    const testsPrefix = `${toRepoPath(path.join(dir, 'tests'))}/`;
+    return collectCodeFiles(dir)
+      .some(file => !toRepoPath(file).startsWith(testsPrefix));
   });
 }
 
@@ -119,10 +135,10 @@ function discoveryShortfalls(discovered) {
   // 1. Code without a suite. This is what makes "a skill's tests/ vanished"
   //    fail instead of quietly reporting one fewer file.
   for (const skill of skillsWithRuntimeCode()) {
-    const prefix = `plugin/skills/${skill}/tests/`;
+    const prefix = `${toRepoPath(path.join(skill, 'tests'))}/`;
     if (!discovered.some(file => file.startsWith(prefix))) {
       shortfalls.push(
-        `plugin/skills/${skill}/ ships runtime code but no test file was discovered under ${prefix}`,
+        `${toRepoPath(skill)}/ ships runtime code but no test file was discovered under ${prefix}`,
       );
     }
   }
@@ -145,10 +161,7 @@ function discoveryShortfalls(discovered) {
 
 /** Where an undiscoverable test could plausibly hide: alongside the code it tests. */
 function searchRoots() {
-  const roots = [path.join(REPO_ROOT, 'tests')];
-  const skillsDir = path.join(REPO_ROOT, 'plugin', 'skills');
-  for (const skill of readDirNames(skillsDir)) roots.push(path.join(skillsDir, skill));
-  return roots.filter(isDirectory);
+  return [path.join(REPO_ROOT, 'tests'), ...skillDirs()].filter(isDirectory);
 }
 
 /**
@@ -206,7 +219,7 @@ if (shortfalls.length > 0) {
 
 if (files.length === 0) {
   const scope = filters.length > 0 ? ` matching ${filters.join(', ')}` : '';
-  console.error(`No test files${scope} found under tests/ or plugin/skills/*/tests/.`);
+  console.error(`No test files${scope} found under tests/ or plugin/skills/*/*/tests/.`);
   process.exit(1);
 }
 

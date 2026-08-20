@@ -26,7 +26,7 @@ G4 worker 必须经 dispatch/proxy → 不得直收长结果
 G5 outcome 只能由 `lib/outcome.mjs` 的 `deriveOutcome()` 产生
 </HARD-GATE>
 
-`checkHardGates()`（`protocols/runtime/planning-gate.mjs`）机械检查 G1–G5。**未证明的前置条件计为未满足**——"心里对齐了" = 未对齐；"上个目标批准过" = 未批准。
+`checkHardGates()` 机械检查 G1–G5。**未证明的前置条件计为未满足**——"心里对齐了" = 未对齐；"上个目标批准过" = 未批准。
 
 **clean-context 是正确性约束，不是优化。** `resolveBackend()` 返回 null → `DISPATCH_REJECTED(no_clean_context_backend)`，硬阻塞；不得退化为普通 Agent 调用并声称隔离。软性限长约束**生成端**，污染来自**摄入端**，"请简短"对已进入上下文的内容无效。
 
@@ -35,7 +35,7 @@ G5 outcome 只能由 `lib/outcome.mjs` 的 `deriveOutcome()` 产生
 ## 主 Agent 的读取面
 
 **可读**：`checkpoint.json` ≤2 KiB、单个 envelope ≤1 KiB、恢复期 cursor 后事件 ≤2 KiB。
-**不可读**：worker 原文、完整日志、完整 diff、搜索全集、`raw_output`/`log`/`diff` 类 artifact（I4）。
+**不可读**：worker 原文、完整日志、完整 diff、搜索全集、`raw_output`/`log`/`diff` 类 artifact（I4）。模块签名见 `protocols/runtime-contract.md`，**不得为核对签名而读实现**；同一文件一次运行只摄入一次。
 
 主 Agent **不亲自验证**、**不直接写** journal/checkpoint/manifest、**不自行宣布 DONE**。验证由独立 verifier worker 读原文——主 Agent 一旦亲自读，保护上下文就已失败，且随后是在自己的叙述上做判断而非在证据上。
 
@@ -58,30 +58,32 @@ G5 outcome 只能由 `lib/outcome.mjs` 的 `deriveOutcome()` 产生
 
 非终态 checkpoint 必须恰好有**一个** `next_action`（I8）。0 个或多个是 reducer 错误，不是灵活性——多个候选意味着方向决策未做，应先决策或发起中断。
 
-每步的模块调用、合法事件与短步粒度：Read `protocols/control-loop.md`。
+每步的模块调用、合法事件与短步粒度：Read `control-loop.md`。
 
 ---
 
 ## 按 phase 条件加载
 
+路径相对 `protocols/`，`templates/` 与 `methods/` 显式标注。
+
 | phase | 加载 | 出口条件 |
 |---|---|---|
-| `NEW` | `protocols/control-loop.md` | task root 与首事件已持久化 |
-| `ALIGNING` | `protocols/alignment.md` + `methods/router.md` + 命中 pack | 对齐卡已确认；criteria 已分类 |
-| `PLANNING` | `protocols/goal-model.md` + `protocols/risk-approval.md` | next step 唯一；Mandate 可达；guard 通过 |
-| `EXECUTING` | `protocols/dispatch.md` | 产物存在且已登记 manifest |
-| `VERIFYING` | `protocols/verification.md` | 台账更新完毕 |
-| `NEEDS_INPUT` | `protocols/risk-approval.md` | 用户提供命名输入 |
-| `RECOVERING` | `protocols/recovery.md` | checkpoint 已重建；悬空副作用已观测 |
+| `NEW` | `control-loop.md` + `runtime-contract.md` | task root 与首事件已持久化 |
+| `ALIGNING` | `alignment.md` + `methods/router.md` + 命中 pack | 对齐卡已确认；criteria 已分类 |
+| `PLANNING` | `goal-model.md` + `risk-approval.md` | next step 唯一；Mandate 可达；guard 通过 |
+| `EXECUTING` | `dispatch.md` | 产物存在且已登记 manifest |
+| `VERIFYING` | `verification.md` | 台账更新完毕 |
+| `NEEDS_INPUT` | `risk-approval.md` | 用户提供命名输入 |
+| `RECOVERING` | `recovery.md` | checkpoint 已重建；悬空副作用已观测 |
 | `TERMINAL` | `templates/handoff.md` | 交接物齐全 |
 
-一次只加载当前 phase 所需的一份。**不全文加载后在 prompt 内用 `[IF]` 跳过**——对已进入上下文的内容无效。
+一次只加载当前 phase 所需的一份。**不全文加载后用 `[IF]` 跳过**——摄入即计费。
 
-`phase` 与 `outcome` 是两个字段：`BLOCKED` 是 outcome 不是 phase；`NEEDS_INPUT` 是唯一合法重叠（可恢复 phase + 可上报 outcome），不产生 `GOAL_TERMINATED`。转换 guard 见 `protocols/state-machine.md`。
+`phase` 与 `outcome` 是两个字段：`BLOCKED` 是 outcome 不是 phase；`NEEDS_INPUT` 是唯一合法重叠（可恢复 phase + 可上报 outcome），不产生 `GOAL_TERMINATED`。转换 guard 见 `state-machine.md`。
 
 ---
 
-## 提问与批准（细则见 `risk-approval.md`）
+## 提问与批准
 
 提问判据：`不确定性 × 猜错代价 > 提问成本` 且答案只在 principal 手中。可查事实派 `DISCOVER` worker 查，**不把用户当搜索引擎**。惊讶测试兜底。
 
@@ -100,7 +102,6 @@ EFFECT_INTENDED（approval ref + 枚举目标集 + idempotency key）
 外部请求返回 200 只是 E1，不能判 STATE 满足。崩溃后只见 intent：**先查询世界，禁止盲重放**（I6）；无法查询且动作非幂等 → `NEEDS_INPUT` 或 `UNVERIFIABLE`，不猜测。
 
 等待用户输入前不得有在途不可回滚副作用；不回复时的默认动作必须是 `NO_ACTION` 或安全回滚。
-
 ---
 
 ## 终态
@@ -114,7 +115,7 @@ EFFECT_INTENDED（approval ref + 枚举目标集 + idempotency key）
 
 **所有终态都必须有交接物，包括 `DONE`**（`validateHandoff()`，I15）。
 
-Seal：写最终 manifest 与 handoff，journal 追加 `GOAL_TERMINATED`。**不依赖外部 CLI 归档**。
+Seal：写最终 manifest 与 handoff，journal 追加 `GOAL_TERMINATED`。
 
 ---
 

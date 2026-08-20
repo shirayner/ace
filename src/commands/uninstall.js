@@ -4,7 +4,7 @@ import chalk from 'chalk';
 import inquirer from 'inquirer';
 import ora from 'ora';
 import {
-  CLAUDE_DIR, COMPONENTS,
+  CLAUDE_DIR, COMPONENTS, ACE_HOME,
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
 } from '../core/constants.js';
@@ -209,6 +209,23 @@ export async function uninstallCommand(options) {
     errors.push({ component: 'restore', error: err.message });
   }
 
+  // 6. Remove ace's own config (~/.ace/), which lives outside ~/.claude/
+  const spinner6 = ora('Removing ace config...').start();
+  try {
+    // A surviving skills-selection.json would silently drive the next install, so an
+    // uninstall that left it behind would not actually reset anything.
+    if (await fs.pathExists(ACE_HOME)) {
+      await fs.remove(ACE_HOME);
+      removed.push('~/.ace/ (skill selection)');
+      spinner6.succeed('ace config removed');
+    } else {
+      spinner6.succeed('no ace config found');
+    }
+  } catch (err) {
+    spinner6.fail('ace config removal failed');
+    errors.push({ component: 'ace-config', error: err.message });
+  }
+
   // Summary
   console.log(chalk.bold('\n  Uninstall Summary\n'));
   if (removed.length > 0) {
@@ -227,8 +244,7 @@ export async function uninstallCommand(options) {
   console.log();
   if (errors.length === 0) {
     console.log(chalk.green('  ace has been uninstalled.'));
-    console.log(chalk.dim('  Note: memory/ and CLAUDE.md (without ace refs) are preserved.\n'));
-  } else {
+    console.log(chalk.dim('  Note: memory/ and CLAUDE.md (without ace refs) are preserved.\n'));  } else {
     console.log(chalk.yellow('  Uninstall completed with errors.\n'));
   }
 }

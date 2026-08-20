@@ -1,7 +1,7 @@
 /**
  * The producer half of the `ACE_REQUIRE_STUB_BACKEND` contract.
  *
- * `plugin/skills/auto-goal-v2/tests/stub-gate-cohesion.test.mjs` pins the CONSUMER
+ * `plugin/skills/general/auto-goal-v2/tests/stub-gate-cohesion.test.mjs` pins the CONSUMER
  * side: every read is a strict `=== '1'`. That alone does not make the contract safe,
  * because it says nothing about what CI actually sends. A wiring of
  * `ACE_REQUIRE_STUB_BACKEND: true` satisfies every consumer assertion and still turns
@@ -116,7 +116,7 @@ test('the consumer-side gate that this test partners with still exists', () => {
   // keep passing while the premise it depends on ("readers are strict") goes unchecked --
   // a green light guarding nothing. Naming the partner makes that deletion visible.
   const partner = path.join(
-    REPO_ROOT, 'plugin', 'skills', 'auto-goal-v2', 'tests', 'stub-gate-cohesion.test.mjs',
+    REPO_ROOT, 'plugin', 'skills', 'general', 'auto-goal-v2', 'tests', 'stub-gate-cohesion.test.mjs',
   );
   assert.ok(existsSync(partner), `${path.relative(REPO_ROOT, partner)} is missing: the reader-side half of this contract is ungated`);
 });

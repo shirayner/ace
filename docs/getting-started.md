@@ -25,11 +25,23 @@ ace init
 - 10 条编码规则（`~/.claude/ace/rules/`）
 - Skills 插件（`~/.claude/plugins/`）
 
+### 选择要安装的 Skills
+
+`ace init` 会分两步询问：先选分类（coding / general / meta / docs），再在选中的分类里勾选具体 skill。四个分类默认全部预勾选，回车即全量安装；不需要的分类或 skill 自行取消。
+
+选择会保存到 `~/.ace/config/skills-selection.json`。之后：
+
+- `ace init --force` 和 `ace upgrade` 按保存的选择重装，不会装回你取消掉的 skill
+- 想调整选择，重新跑一次不带 `--force` 的 `ace init`
+- 非交互环境（CI、无 TTY）不提问，直接沿用已保存的选择；没有则用默认推荐集
+
 ### 验证安装
 
 ```bash
 ace doctor
 ```
+
+`ace doctor` 按你保存的选择校验 —— 只检查应当安装的 skill，取消掉的不会被报成失败。
 
 ### 查看已安装组件
 

@@ -1,0 +1,30 @@
+{
+  "verdicts": [
+    {
+      "id": 1,
+      "verdict": "PASS",
+      "evidence": "报告第 1、2 节分别以 plugin/skills/general/auto-goal、plugin/shared 协议和 auto-goal-v3 文件行号还原核心抽象、控制流及协议依赖。"
+    },
+    {
+      "id": 2,
+      "verdict": "PASS",
+      "evidence": "报告第 3 节按 P0/P1/P2 排序，每项均给出文件证据、机制根因与影响链；P0 另有 init 空标准和重复 id=999 verdict 的变异实跑。"
+    },
+    {
+      "id": 3,
+      "verdict": "PASS",
+      "evidence": "报告第 4 节明确列出保留为内核、合并、下沉为策略、删除四类能力。"
+    },
+    {
+      "id": 4,
+      "verdict": "PASS",
+      "evidence": "报告第 5、6 节给出四阶段内核、Goal Contract、uncertainty DAG、Work Graph、Evidence Ledger 与 M0-M5 迁移路径。"
+    },
+    {
+      "id": 5,
+      "verdict": "PASS",
+      "evidence": "报告第 7 节分别评价运行可靠性、上下文成本、用户体验和交付质量，并明确静态测量与真实 transcript A/B 的证据边界。"
+    }
+  ],
+  "notes": "本验收是架构设计类人工逐条检查，并通过 Python 结构检查确认七个必需章节均存在。未声称完成真实 v1/v3 transcript A/B；报告将其明确列为迁移验证工作。"
+}

@@ -1,0 +1,91 @@
+{
+  "changeName": "skill-categories-install",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-13T14:09:29Z",
+  "updated_at": "2026-08-13T17:05:00Z",
+  "completed_at": "2026-08-13T14:43:44Z",
+  "archived_at": "2026-08-13T14:43:44Z",
+  "completion_criteria": [
+    "plugin/skills/<category>/<skill>/SKILL.md 结构落地，4 个分类覆盖全部 23 个 skill（原定 7 个分类，实际收敛为 4：coding/general/meta/docs —— 见 simple.decisions）",
+    "ace init 可两级交互选择（分类 → 类内 skill），recommended 分类预选",
+    "安装后 ~/.claude/plugins/marketplaces/ace-local/skills/ 下只有选中 skill 且为平铺结构",
+    "选择写入 ~/.ace/config/skills-selection.json，ace init --force 复用该选择而非装全部",
+    "ace doctor 只校验已选 skill 并全部通过",
+    "node scripts/run-tests.mjs 通过",
+    "spec-coding/phases/apply.md 的 ../subagent-execute/SKILL.md 引用在打平安装后可解析"
+  ],
+  "tasks": [
+    {
+      "id": "1",
+      "subject": "建立分类清单单一真相源（constants.js）",
+      "status": "done",
+      "parallel": true
+    },
+    {
+      "id": "2",
+      "subject": "重组 plugin/skills 为分类目录",
+      "status": "done",
+      "parallel": true
+    },
+    {
+      "id": "3",
+      "subject": "Installer 实现按选择打平安装",
+      "status": "done",
+      "depends": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "id": "4",
+      "subject": "实现 ~/.ace/config 选择持久化",
+      "status": "done",
+      "depends": [
+        "1"
+      ]
+    },
+    {
+      "id": "5",
+      "subject": "init 两级交互选择",
+      "status": "done",
+      "depends": [
+        "3",
+        "4"
+      ]
+    },
+    {
+      "id": "6",
+      "subject": "同步 doctor / run-tests / uninstall",
+      "status": "done",
+      "depends": [
+        "1",
+        "2"
+      ]
+    },
+    {
+      "id": "7",
+      "subject": "端到端验证与文档更新",
+      "status": "done",
+      "depends": [
+        "5",
+        "6"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "delivered",
+    "decisions": [
+      "分类只在 ACE 源码仓库，安装时打平到 plugin skills 根（用户明确澄清）",
+      "未选中 skill 既不 copy 也不注册（双保险）",
+      "跨 skill 耦合组全部塞进 core-workflow 一个分类，不另建依赖表",
+      "首装只预选 recommended 分类；存量用户无 selection 记录时按新用户处理",
+      "全局配置目录为 ~/.ace/，配置文件在 ~/.ace/config/",
+      "分类数由原定 7 收敛为 4（coding 16 / general 2 / meta 2 / docs 3）：跨 skill 耦合组集中在 coding，再细分会把互相 Read 的 skill 拆到不同分类，用户取消一个就断掉另一个的引用",
+      "init 的 Next Steps 槽命令清单改为由已安装集合推导；原硬编码会在部分安装下教给用户不存在的命令",
+      "docs/architecture.md 的分类表用 tests/docs-skill-catalog.test.mjs 钉住，防手维护漂移",
+      "meta/docs 改为默认勾选，四类全部 recommended（用户要求，D0027）：默认安装 = 全量 24 个 skill"
+    ]
+  }
+}

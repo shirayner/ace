@@ -4,6 +4,8 @@ import fs from 'fs-extra';
 import { createRequire } from 'module';
 import { PRESETS, COMPONENTS, CLAUDE_DIR, TEMPLATES_DIR, isAceOwnedFile } from '../core/constants.js';
 import { Installer } from '../core/installer.js';
+import { discoverCatalog, resolveSelection } from '../core/skills-catalog.js';
+import { readSelection, writeSelection, selectionFileLabel } from '../core/skills-selection.js';
 import { mergeClaudeMd } from '../core/merger.js';
 
 const require = createRequire(import.meta.url);
@@ -23,12 +25,15 @@ export async function initCommand(options) {
 
   p.intro(`ace v${version}`);
 
+  const skillSelection = await chooseSkills(options);
+
   const installer = new Installer({
     force: options.force,
     dryRun: options.dryRun,
     role: 'fullstack',
     components,
     quiet: true,
+    skillSelection,
   });
 
   let resolutions = {};
@@ -130,14 +135,16 @@ export async function initCommand(options) {
   }
 
   // ─── Next Steps ────────────────────────────────────
+  const entryPoints = suggestedEntryPoints(skillSelection.skills);
+  // Width comes from the names actually shown: a fixed column silently misaligns the
+  // moment a longer skill is suggested, and which names appear depends on the selection.
+  const nameWidth = Math.max(0, ...entryPoints.map(e => e.name.length));
   p.note(
     [
       'Get started',
       '  1. cd <your-project>',
       '  2. Open Claude Code and type:',
-      '       /spec-coding   spec-driven development',
-      '       /auto-goal     general purpose tasks',
-      '       /auto-goal-v2  evidence-driven goal controller',
+      ...entryPoints.map(e => `       /${e.name.padEnd(nameWidth)}  ${e.blurb}`),
       '',
       'Customize',
       '  Change role    edit ~/.claude/memory/user_profile.md',
@@ -147,14 +154,124 @@ export async function initCommand(options) {
     'Next steps'
   );
 
-  if (errors.length === 0) {
-    p.outro('Done. Start using /ace:spec-coding or /ace:spechub-coding in your project.');
-  } else {
+  if (errors.length > 0) {
     p.outro('Done with errors. Run ace doctor to diagnose.');
+  } else if (entryPoints.length > 0) {
+    p.outro(`Done. Start using /ace:${entryPoints[0].name} in your project.`);
+  } else {
+    p.outro('Done. Run ace init again to add skills.');
   }
 }
 
+/**
+ * The headline skills worth naming, narrowed to what was actually installed.
+ *
+ * Suggesting a deselected skill teaches the user a slash command that does not resolve,
+ * which reads as a broken install rather than as a choice they made. Skills with no blurb
+ * are left out of the note instead of listed bare — the list is a starting point, not an
+ * inventory, and `ace doctor` is where the full set is visible.
+ */
+export function suggestedEntryPoints(installedSkills) {
+  const BLURBS = [
+    ['spec-coding', 'spec-driven development'],
+    ['spechub-coding', 'spec-driven development (SpecHub)'],
+    ['auto-goal', 'general purpose tasks'],
+    ['auto-goal-v2', 'evidence-driven goal controller'],
+    ['requirement-analysis', 'requirement analysis & PRD'],
+    ['skill-creator', 'author and optimize skills'],
+  ];
+  const installed = new Set(installedSkills);
+  return BLURBS
+    .filter(([name]) => installed.has(name))
+    .map(([name, blurb]) => ({ name, blurb }));
+}
+
 // ─── Helpers ───────────────────────────────────────────
+
+/**
+ * Decide which skills to install, prompting when there is a terminal to prompt on.
+ *
+ * `--force` deliberately does not prompt: it is what `ace upgrade` runs, and an upgrade
+ * that re-asked the question would either block a non-interactive run or quietly restore
+ * skills the user had deselected. In that path the stored selection is the answer, and a
+ * fresh machine with no stored selection falls back to the recommended categories.
+ *
+ * @returns {Promise<{categories: string[], skills: string[]}>}
+ */
+async function chooseSkills(options) {
+  const catalog = await discoverCatalog();
+  if (catalog.length === 0) return { categories: [], skills: [] };
+
+  const stored = await readSelection();
+  const current = resolveSelection(catalog, stored);
+
+  if (options.force || !process.stdin.isTTY) {
+    const source = stored ? selectionFileLabel() : 'recommended set';
+    p.log.info(`Skills: ${current.skills.length} from ${source}`);
+    return { categories: current.categories, skills: current.skills };
+  }
+
+  const selection = await promptSkills(catalog, current);
+  if (!selection) {
+    p.cancel('Cancelled.');
+    process.exit(0);
+  }
+
+  if (!options.dryRun) {
+    await writeSelection(selection);
+    p.log.info(`Selection saved to ${selectionFileLabel()}`);
+  }
+  return selection;
+}
+
+/**
+ * Two-level picker: categories first, then individual skills inside them.
+ *
+ * The category step exists so the common case is a handful of keystrokes; the skill step
+ * then only shows what the chosen categories contain, which keeps the list short enough
+ * to read. Returns null when the user cancels either step.
+ */
+async function promptSkills(catalog, current) {
+  const previousCategories = new Set(current.categories);
+  const chosenCategories = await p.multiselect({
+    message: 'Which skill categories do you want?',
+    options: catalog.map(category => ({
+      value: category.key,
+      label: `${category.label} (${category.skills.length})`,
+      hint: category.description,
+    })),
+    initialValues: catalog.filter(c => previousCategories.has(c.key)).map(c => c.key),
+    required: false,
+  });
+  if (p.isCancel(chosenCategories)) return null;
+  if (chosenCategories.length === 0) return { categories: [], skills: [] };
+
+  const byKey = new Map(catalog.map(category => [category.key, category]));
+  const previousSkills = new Set(current.skills);
+
+  // A category the user is opting into for the first time has no prior per-skill answer,
+  // so all of its skills start checked; within a category they already had, their
+  // previous per-skill choices are preserved.
+  const isPreChecked = (key, skill) =>
+    previousCategories.has(key) ? previousSkills.has(skill) : true;
+
+  const options = chosenCategories.flatMap(key => byKey.get(key).skills.map(skill => ({
+    value: skill,
+    label: skill,
+    hint: byKey.get(key).label,
+    checked: isPreChecked(key, skill),
+  })));
+
+  const chosenSkills = await p.multiselect({
+    message: 'Which skills within them?',
+    options: options.map(({ value, label, hint }) => ({ value, label, hint })),
+    initialValues: options.filter(o => o.checked).map(o => o.value),
+    required: false,
+  });
+  if (p.isCancel(chosenSkills)) return null;
+
+  return { categories: chosenCategories, skills: chosenSkills };
+}
 
 /**
  * Scan target directory and categorize existing files by handling strategy.

@@ -15,10 +15,10 @@
 
 ## 什么是 ACE？
 
-ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 14 个专业 skill + 8 个共享认知协议 + 10 条编码规则，覆盖编码全生命周期：
+ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 24 个专业 skill + 11 个共享认知协议 + 10 条编码规则，覆盖编码全生命周期：
 
 - **认知基础设施** — 理解协议、对齐协议、验证铁律，确保 AI 做对事
-- **14 个专业 Skill** — 从PRD撰写到需求理解到代码实现到复盘归档的完整能力
+- **24 个专业 Skill**（按 coding / general / meta / docs 四类组织，安装时可选）— 从PRD撰写到需求理解到代码实现到复盘归档的完整能力
 - **规范驱动工作流** — 门禁系统确保每个决策经过对齐确认
 - **经验进化** — 项目级经验积累，跨会话持续成长
 
@@ -37,12 +37,15 @@ ACE 是一个 **AI 编码环境**，为 Coding Agent 提供 14 个专业 skill +
 
 ## Skill 概览
 
+下表按使用场景挑选常用 skill，便于快速上手；**安装分类**（coding / general / meta / docs）是另一套维度，完整清单见[系统架构](docs/architecture.md#layer-2-skills能力单元层)。
+
 ### 一、核心编码流水线
 
 | Skill          | 命令                    | 说明                                                 |
 | -------------- | ----------------------- | ---------------------------------------------------- |
 | auto-goal      | `/ace:auto-goal`      | 自主目标编排——万能通用，设定定一个目标，AI努力完成 |
 | auto-goal-v2   | `/ace:auto-goal-v2`   | 证据驱动的目标控制器——判据台账推导终态，与 V1 并存 |
+| auto-goal-v3   | `/ace:auto-goal-v3`   | 决策树理解 + 苏格拉底澄清 + 并行派发 + 独立验收       |
 | spec-coding    | `/ace:spec-coding`    | 全生命周期规范驱动编码（6 Phase + 门禁系统）         |
 | spechub-coding | `/ace:spechub-coding` | 基于 SpecHub 平台产物的本地编码                      |
 
@@ -131,7 +134,7 @@ SpecHub接力开发
 | ----------------------------------------- | ------------------------ |
 | [系统架构](docs/architecture.md)             | 三层架构设计与协作模型   |
 | [安装与快速上手](docs/getting-started.md)    | 详细安装步骤与典型工作流 |
-| [Skill 使用手册](docs/skills-guide.md)       | 14 个 skill 的分类详解   |
+| [Skill 使用手册](docs/skills-guide.md)       | skill 的分类详解         |
 | [产物目录规范](docs/artifacts-convention.md) | .ace/ 目录组织约定       |
 
 ---
@@ -147,7 +150,11 @@ ace/
 │   └── utils/            #   工具函数
 ├── plugin/               # Claude Code 插件（安装到 ~/.claude/plugins/）
 │   ├── shared/           #   共享协议层
-│   ├── skills/           #   14 个 skill
+│   ├── skills/           #   skill 按分类分目录（安装时打平）
+│   │   ├── coding/       #     spec-coding、review、需求与设计
+│   │   ├── general/      #     通用目标编排与调研
+│   │   ├── meta/         #     skill 自身的编写与优化
+│   │   └── docs/         #     文档工作流与配图
 │   └── commands/         #   插件命令
 ├── docs/                 # 文档库
 └── package.json

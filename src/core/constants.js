@@ -7,9 +7,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export const CLAUDE_DIR = path.join(os.homedir(), '.claude');
 export const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
 
+// ace's own global config lives outside ~/.claude/ so it survives Claude Code resets
+export const ACE_HOME = path.join(os.homedir(), '.ace');
+export const ACE_CONFIG_DIR = path.join(ACE_HOME, 'config');
+export const SKILLS_SELECTION_FILE = path.join(ACE_CONFIG_DIR, 'skills-selection.json');
+
 export const PLUGIN_NAME = 'ace';
 export const MARKETPLACE_NAME = 'ace-local';
 export const PLUGIN_SRC_DIR = path.join(__dirname, '..', '..', 'plugin');
+export const PLUGIN_SKILLS_SRC_DIR = path.join(PLUGIN_SRC_DIR, 'skills');
 export const PLUGIN_CACHE_DIR = path.join(CLAUDE_DIR, 'plugins', 'cache', MARKETPLACE_NAME, PLUGIN_NAME);
 export const INSTALLED_PLUGINS_FILE = path.join(CLAUDE_DIR, 'plugins', 'installed_plugins.json');
 export const KNOWN_MARKETPLACES_FILE = path.join(CLAUDE_DIR, 'plugins', 'known_marketplaces.json');
@@ -86,6 +92,43 @@ export function isAceOwnedRef(refPath) {
   return isAceOwnedFile(relativePath);
 }
 
+/**
+ * Skill categories — presentation metadata only.
+ *
+ * Category membership is NOT listed here: it comes from the directory layout
+ * `plugin/skills/<category>/<skill>/SKILL.md`, so adding a skill means adding
+ * one directory rather than editing a list that can drift out of sync.
+ * See `skills-catalog.js` for discovery.
+ *
+ * Keys must match the directory names under `plugin/skills/`.
+ * `recommended: true` categories are pre-checked on a fresh install.
+ */
+export const SKILL_CATEGORIES = {
+  coding: {
+    label: 'Coding',
+    description: 'Spec-driven development, review, testing, requirements & design',
+    recommended: true,
+  },
+  general: {
+    label: 'General',
+    description: 'Open-ended goal orchestration and research',
+    recommended: true,
+  },
+  meta: {
+    label: 'Meta',
+    description: 'Authoring and optimizing skills themselves',
+    recommended: true,
+  },
+  docs: {
+    label: 'Docs',
+    description: 'Document workflows and image generation',
+    recommended: true,
+  },
+};
+
+/** Category display order for interactive prompts. */
+export const SKILL_CATEGORY_ORDER = ['coding', 'general', 'meta', 'docs'];
+
 export const COMPONENTS = {
   core: {
     description: 'Core config (CLAUDE.md + settings.json)',
@@ -101,7 +144,7 @@ export const COMPONENTS = {
     rulesDir: 'ace/rules',
   },
   plugin: {
-    description: 'Ace plugin (skills: auto-goal, auto-goal-v2, ut, code-review, skill-creator, skill-optimize, requirement-analysis; commands: report)',
+    description: 'Ace plugin (skills grouped by category: coding, general, meta, docs; commands: report)',
     required: true,
     isPlugin: true,
   },

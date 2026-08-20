@@ -1,0 +1,60 @@
+{
+  "changeName": "analyze-auto-goal-v3",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-13T16:52:15Z",
+  "updated_at": "2026-08-13T17:27:31Z",
+  "completed_at": "2026-08-13T17:27:31Z",
+  "archived_at": "2026-08-13T17:27:31Z",
+  "completion_criteria": [
+    "以文件证据还原 v1/v3 核心抽象、控制流和协议依赖",
+    "按严重度说明 v3 的机制根因及影响链",
+    "给出能力保留、合并、下沉、删除清单",
+    "提出更小且可执行的重构内核与迁移路径",
+    "覆盖运行可靠性、上下文成本、用户体验和交付质量"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "还原 v1 核心模型",
+      "status": "in-progress",
+      "parallel": true
+    },
+    {
+      "id": "T2",
+      "title": "诊断 v3 机制问题",
+      "status": "in-progress",
+      "parallel": true
+    },
+    {
+      "id": "T3",
+      "title": "测算协议上下文成本",
+      "status": "in-progress",
+      "parallel": true
+    },
+    {
+      "id": "T4",
+      "title": "综合并设计重构蓝图",
+      "status": "pending",
+      "depends": [
+        "T1",
+        "T2",
+        "T3"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      {
+        "decision": "本轮产出深度诊断与重构蓝图，不修改 auto-goal-v3",
+        "reason": "用户选择诊断＋重构蓝图",
+        "alternatives": [
+          "仅诊断",
+          "诊断后直接修改"
+        ]
+      }
+    ]
+  }
+}

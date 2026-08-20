@@ -25,6 +25,8 @@
 - D0022 不为可测性在产品代码留测试后门
 - D0023 时序容差必须由实测分布导出，不得手挑（处方部分已被 D0024 取代）
 - D0024 前提用观测量断言，不用前提式断言
+- D0025 auto-goal-v2 审计后直接优化，语言迁移由总体成本证据决定
+- D0029 auto-goal-v3 采用 Controller–Worker 强制分工
 
 ---
 
@@ -148,3 +150,37 @@
 - 依据: 变异测试四臂 + 全量 16 轮，见 `.ace/tasks/implement-auto-goal-v2/artifacts/{mutate-premise,mutate-under-load,hunt-mutant-flake,measure-detach-distribution}.mjs`。手挑 150ms 全量 1/16 红（`raw_bytes=0`），实测导出容差 0/13 红——D0023 前半条（容差导出）由此坐实
 - 附带教训: 变异测试若把 `run-tests.mjs` 过滤到单个 suite，就抽掉了 flake 所需的并发压力，M2/M3 因此"存活"并给出错误结论。这是本任务第三次同类错误（cmd.exe 循环、`node --test <dir>`、过滤变异）：**harness 擅自改变条件后照常报告结论**
 
+## D0025 — auto-goal-v2 审计后直接优化，语言迁移由总体成本证据决定
+- 2026-08-13 · accepted
+- 决策: 对 V2 先实测真实 transcript 注入成本、审计协议—实现—测试断层，再直接实施高置信优化；Node.js/Python 取舍依据等价能力、依赖、跨平台、启动与维护总成本，不以 LOC 单点决定
+- 否决: 只出审计报告不修改；未经测量直接压缩文档；因 Python 表面行数更少就全量重写
+
+
+## D0026 — Skill 分类只存在于仓库，安装时打平；选择持久化在 ~/.ace/config
+- 2026-08-13 · accepted
+- 决策: `plugin/skills/<category>/<skill>/` 加一层分类目录用于可读性与选择粒度，但 `ace init` 安装时去掉分类层，落成 `~/.claude/plugins/.../skills/<skill>/`。约束来自 Claude Code 只发现 `skills/<skill>/SKILL.md` 且不递归——分类层若保留则一个 skill 都发现不了。因此 skill 之间的 `../<sibling>/SKILL.md` 与 `../../shared/x.md` 引用按**打平后**布局书写，仓库内相对路径故意差一层
+- 决策: 分类清单单一真相源为 `src/core/constants.js` 的 `SKILL_CATEGORIES`（label/description/recommended），成员关系不写清单、直接由目录树推导（含 `SKILL.md` 才算 skill）；同名 skill 跨分类重复必须抛错，因为打平后会互相覆盖
+- 决策: 用户选择持久化在 `~/.ace/config/skills-selection.json`（带 schema version）。`ace init --force` 与 `ace upgrade` 复用它且不提问——升级若重新提问，要么阻塞非交互运行，要么悄悄装回用户取消掉的 skill。`ace uninstall` 一并删除 `~/.ace/`，否则残留的选择文件会静默驱动下一次安装
+- 决策: 取消勾选的语义是**目标目录中不存在**，不是"拷贝了但不注册"——未注册但存在的 skill 仍会被发现。因此安装前先清理，否则在装过该 skill 的机器上取消勾选纯属装饰
+- 否决: 保留平铺目录仅在 CLI 侧做过滤（分类信息无处安放，无法做两级选择）；分类成员关系写死在 constants.js 清单里（新增 skill 必须改两处，清单必然漂移）；doctor 用硬编码 skill 列表校验（会把用户主动取消的 skill 报成失败，且新增 skill 检查不到）
+- 依据: 打平后引用可解析、取消勾选真删除、doctor 跟随选择，均由 `tests/{flattened-plugin-refs,installer-skill-deploy,skills-catalog,init-entry-points,docs-skill-catalog}.test.mjs` 覆盖（542 tests / 0 fail），并在临时 HOME 沙箱做了 装→收窄→卸载 全生命周期实测
+- 附带教训: 面向用户的收尾文案（init 的 "Next steps" 槽命令清单）也是选择的函数。原先硬编码 `/spec-coding` 等三条，在只装了 general+meta 的安装里会教给用户三个不存在的命令——读起来像装坏了，而不是像用户自己的取消。同类风险在 docs 的分类表上，已用测试钉住
+
+## D0027 — 四个分类默认全部预勾选：分类是取消入口，不是预判入口
+- 2026-08-13 · accepted · 修订 D0026 中 meta/docs 不推荐的部分
+- 决策: `SKILL_CATEGORIES` 四类（coding/general/meta/docs）`recommended` 全部为 `true`，即默认安装 = 全量安装（24 个 skill）。分类的价值在于让用户**主动取消**不需要的部分，而不是由我们预判"你大概用不上写 skill 和画图"——预判错了的代价是用户根本不知道这些能力存在（默认不装 = 事实上不存在），而全装的代价仅是一份可自行取消的清单
+- 否决: 保留 meta/docs 默认不勾（用户明确要求勾上，且 D0026 的"最小默认集"论据经不起"用户发现不了未安装能力"这一反证）
+- 附带效应: `recommendedSelection === fullSelection`，此前用 `meta` 作"未推荐分类"样例的两处 fixture 前提随之失效（`tests/skills-catalog.test.mjs`、`tests/installer-skill-deploy.test.mjs`）。改用**未声明分类**（`not-declared-anywhere`）承担该角色——它在 `SKILL_CATEGORIES` 里没有元数据，因此永不预勾，且这正是新增目录在补元数据之前的真实形态。改 fixture 而非删测试：默认集不等于全集的行为仍需被守护，否则将来任何一类改回不推荐都无人拦截
+- 依据: 临时 HOME 沙箱实测 装（24/24，doctor 全绿）→ 取消 meta+docs（skills/ 只剩 2 个，doctor 全绿）；542 tests / 0 fail；docs 表格的 ✅ 标记经变异验证仍会转红
+
+## D0029 — auto-goal-v3 采用 Controller–Worker 强制分工
+- 2026-08-14 · accepted
+- 决策: 主 Agent 只负责目标对齐、任务拆分、调度、状态推进、产物核验与关闭；独立探索域直接委派，每个实现或修复 work item 必须由 fresh subagent 执行。依赖与资源冲突只决定串行或并行，不决定是否委派；强制建立 Work Graph，但不设人为任务数量下限
+- 否决: 保留当前“只有多个无冲突 ready item 才派发、单任务由主 Agent 实现”的条件式委派；恢复 V1 的固定 ≥3 任务数量门槛
+
+## D0028 — skill 体积预算量的是"进模型上下文的字节"，脚本不计入
+- 2026-08-14 · accepted · 修订 auto-goal-v3 立项时"全目录 ≤30 KB"的声明
+- 决策: skill 的上下文预算只约束**会被模型读取的文本**：`SKILL.md`（每次调用必进）+ 单阶段加载的 reference（峰值 1 份）。`scripts/*` 只在 Bash 里执行、内容从不进上下文，不计入预算。auto-goal-v3 实测：SKILL.md 6028 B ≤ 6144，峰值摄入 = 6028 + 7336（grill.md，三份 reference 中最大）= 13.4 KB；全目录 38.6 KB 里 goal.py 占 15.6 KB，与上下文成本无关
+- 否决: 守住"全目录 ≤30 KB"并压缩 goal.py（压缩对象会落在注释与错误提示文本上，而那些提示正是七个门禁能拦住误用的原因——为一个量错对象的指标损害真实可用性）；拆成"上下文 ≤20 KB + 脚本不限"两个声明（多一个概念，且脚本侧无需门禁）
+- 依据: v2 的真实病根是**级联加载**而非目录大小——v2 SKILL.md 仅 6.1 KB 却实测单会话摄入 1,002,190 字符，其中 `dispatch-worker.mjs` 单文件被摄入 296,803 字符。注意 v2 那个脚本之所以被摄入，是因为协议要求模型读它去核对语义；v3 的 goal.py "只管账不做判断"（见本任务决策）就切断了这条路径。**"目录大小"与"上下文成本"的解耦，是靠脚本不承载语义实现的，不是靠脚本小。**
+- 附带教训: 立项时把"目录 ≤30 KB"写进 completion_criteria，是把易测量的代理指标当成了目标本身。代理指标失真时应改指标，而非削目标——但前提是能说清新指标为什么才是真的那个量。

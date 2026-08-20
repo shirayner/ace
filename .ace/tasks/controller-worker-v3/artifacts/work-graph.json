@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "id": "W1",
+      "title": "接管审计并完善 Work Graph 与委派生命周期状态机",
+      "output": "plugin/skills/general/auto-goal-v3/scripts/goal.py 与对应黑盒契约测试",
+      "acceptance": "新 CLI 无任意状态跳转；完整、单任务、缺失、伪造、依赖与覆盖各臂通过；既有 criteria/verdict 契约不回归",
+      "criterion_ids": ["C002", "C003", "C004"],
+      "depends_on": [],
+      "resources": {
+        "reads": ["plugin/skills/general/auto-goal-v3/scripts/goal.py", "plugin/skills/general/auto-goal-v3/tests"],
+        "writes": ["plugin/skills/general/auto-goal-v3/scripts/goal.py", "plugin/skills/general/auto-goal-v3/tests"],
+        "external": [],
+        "exclusive": ["auto-goal-v3-kernel"]
+      }
+    },
+    {
+      "id": "W2",
+      "title": "收紧 Controller-Worker skill 与阶段协议",
+      "output": "SKILL.md 与 discover-align/execute/verify-close references 的一致协议",
+      "acceptance": "文档禁止 Controller 直接实现或修复，要求独立探索域与每个实现项委派 fresh subagent，并明确并行只由依赖和资源冲突决定",
+      "criterion_ids": ["C001"],
+      "depends_on": ["W1"],
+      "resources": {
+        "reads": ["plugin/skills/general/auto-goal-v3/scripts/goal.py", "plugin/skills/general/auto-goal-v3/tests"],
+        "writes": ["plugin/skills/general/auto-goal-v3/SKILL.md", "plugin/skills/general/auto-goal-v3/references"],
+        "external": [],
+        "exclusive": ["auto-goal-v3-protocol"]
+      }
+    },
+    {
+      "id": "W3",
+      "title": "执行实现侧变异、全量验证与预算量具",
+      "output": ".ace/tasks/controller-worker-v3/artifacts 下的变异与验证证据",
+      "acceptance": "至少 3 个实现侧变异被测试杀死；恢复后 npm test、V3 契约、ace doctor 与上下文预算门禁均有新鲜证据",
+      "criterion_ids": ["C005", "C006"],
+      "depends_on": ["W1", "W2"],
+      "resources": {
+        "reads": ["plugin/skills/general/auto-goal-v3", "tests", "scripts/run-tests.mjs"],
+        "writes": [".ace/tasks/controller-worker-v3/artifacts"],
+        "external": ["ace doctor"],
+        "exclusive": ["auto-goal-v3-verification"]
+      }
+    }
+  ]
+}

@@ -35,21 +35,29 @@ understanding → alignment → spec-engine → verification → experience
 
 ### Layer 2: Skills（能力单元层）
 
-路径：`plugin/skills/`
+路径：`plugin/skills/<category>/<skill>/`
 
-15 个 skill，按职责分 4 类：
+Skill 按分类分目录，分类即安装单位 —— `ace init` 先选分类，再在分类内选具体 skill。分类清单的单一真相源是 `src/core/constants.js` 的 `SKILL_CATEGORIES`，成员关系直接来自目录树（含 `SKILL.md` 的目录才是 skill）。
 
-| 类别 | Skills |
-|------|--------|
-| 核心编码流水线 | auto-goal, auto-goal-v2, spec-coding, spechub-coding, subagent-execute |
-| 质量保障 | code-review, ut, verify |
-| 知识与分析 | init, requirement-analysis, llm-wiki-generator, llm-wiki-reader |
-| 元工具 | skill-creator, skill-optimize, parallel-dispatch |
+| 分类 | 默认安装 | Skills |
+|------|---------|--------|
+| coding | ✅ | code-review, init, llm-wiki-generator, llm-wiki-reader, parallel-dispatch, requirement-analysis, requirement-review, requirement-understanding, requirement-writing, spec-coding, spechub-coding, subagent-execute, tech-design, test-case-gen, ut, verify |
+| general | ✅ | auto-goal, auto-goal-v2, auto-goal-v3 |
+| meta | ✅ | skill-creator, skill-optimize |
+| docs | ✅ | feishu-doc, simple-text-to-image, text-to-image |
+
+四个分类默认全部预勾选，即全量安装。分类的作用是让用户能**主动取消**不需要的部分，而不是替用户预判哪些用不上。
+
+**内部专有 skill 不在这里。** ACE 发布到公开 npm（`files` 含 `plugin/`），所以任何含内部域名、serviceCode、真实业务标识符的 skill 都不能放进 `plugin/skills/` —— 那等于随包公开。它们住在独立的 `ace-internal` 插件（`platform` / `member` 两类），与 ACE 并存安装、互不依赖。分类元数据只控制预勾选，控制不了打包，所以这条边界靠仓库隔离而非命名约定来保证。
+
+**安装时打平**：Claude Code 只发现 `skills/<skill>/SKILL.md`（不递归），所以分类层仅存在于仓库中，安装到 `~/.claude/` 时被去掉。skill 内部的 `../<sibling>/SKILL.md`、`../../shared/x.md` 引用是按打平后的布局写的。
+
+**用户选择持久化**在 `~/.ace/config/skills-selection.json`，`ace init --force` 与 `ace upgrade` 复用它，不会悄悄装回用户取消掉的 skill。
 
 **Skill 内部结构**：
 
 ```
-plugin/skills/{name}/
+plugin/skills/<category>/{name}/
 ├── SKILL.md        # 入口定义（必须）
 ├── phases/         # 多阶段流程（可选）
 ├── references/     # 参考知识（可选）

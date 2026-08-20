@@ -6,6 +6,8 @@ import {
   PLUGIN_CACHE_DIR, INSTALLED_PLUGINS_FILE, PLUGIN_KEY,
   KNOWN_MARKETPLACES_FILE, MARKETPLACE_DIR, MARKETPLACE_NAME,
 } from '../core/constants.js';
+import { discoverCatalog, resolveSelection } from '../core/skills-catalog.js';
+import { readSelection } from '../core/skills-selection.js';
 
 export async function doctorCommand() {
   console.log(chalk.bold('\n  ace doctor — verifying installation\n'));
@@ -41,8 +43,10 @@ export async function doctorCommand() {
     checks.push(await check('plugin: ace directory', Promise.resolve(true)));
     checks.push(await check('plugin: plugin.json', fs.pathExists(pluginJsonPath)));
 
-    const skillNames = ['auto-goal', 'auto-goal-v2', 'ut', 'code-review', 'skill-creator', 'skill-optimize', 'spec-coding', 'spechub-coding', 'requirement-analysis'];
-    for (const skill of skillNames) {
+    // Check exactly the skills the selection asks for — a hardcoded list would report
+    // a deliberately deselected skill as a failure, and would miss newly added ones.
+    const expected = resolveSelection(await discoverCatalog(), await readSelection());
+    for (const skill of expected.skills) {
       const skillMd = path.join(pluginInstallDir, 'skills', skill, 'SKILL.md');
       checks.push(await check(`plugin: skill ace:${skill}`, fs.pathExists(skillMd)));
     }

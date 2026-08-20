@@ -2,7 +2,7 @@
 
 auto-goal 使用统一的 `.ace/tasks/{changeName}/` 目录结构。
 
-详细模板见 `../../shared/state-template.md`。
+详细模板见 `../../../shared/state-template.md`。
 
 ---
 
