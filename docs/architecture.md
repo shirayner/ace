@@ -41,7 +41,7 @@ Skill 按分类分目录，分类即安装单位 —— `ace init` 先选分类�
 
 | 分类 | 默认安装 | Skills |
 |------|---------|--------|
-| coding | ✅ | code-review, init, llm-wiki-generator, llm-wiki-reader, parallel-dispatch, requirement-analysis, requirement-review, requirement-understanding, requirement-writing, spec-coding, spechub-coding, subagent-execute, tech-design, test-case-gen, ut, verify |
+| coding | ✅ | code-review, init, llm-wiki-generator, llm-wiki-reader, parallel-dispatch, requirement-analysis, requirement-review, requirement-understanding, requirement-writing, software-thinking, spec-coding, spechub-coding, subagent-execute, tech-design, test-case-gen, ut, verify |
 | general | ✅ | auto-goal, auto-goal-v2, auto-goal-v3 |
 | meta | ✅ | skill-creator, skill-optimize |
 | docs | ✅ | feishu-doc, simple-text-to-image, text-to-image |
