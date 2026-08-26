@@ -106,7 +106,7 @@ test('a healthy multi-target install reports no failures', async () => {
 test('a missing skill in the canonical store is caught', async () => {
   const { failed, failures } = await installThenDoctor({
     targets: ['codex'],
-    breakIt: home => fs.remove(path.join(home, '.agents', 'skills', 'spec-coding')),
+    breakIt: home => fs.remove(path.join(home, '.agents', 'skills', 'ace-coding', 'spec-coding')),
   });
 
   assert.ok(failed > 0, 'a deleted skill must not pass');

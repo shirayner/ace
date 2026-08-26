@@ -16,17 +16,10 @@ import { CLAUDE_DIR, AGENTS_HOME, CANONICAL_SKILLS_DIR } from './constants.js';
  * `~/.agents/skills` natively. For them the projection is `none`: ACE writes the canonical
  * store once and all three see it. No copies, no links, no per-tool code.
  *
- * ── Why the canonical store is flat ──────────────────────────────────────────────
- * `scanDepth` is the binding constraint. Codex and OpenCode recurse
- * (`skills/**\/SKILL.md`), but DeepSeek Harness reads a single level — its provider does a
- * plain `readdir` and validates paths with `segments.length === 2 && segments[1] === 'SKILL.md'`,
- * so `<category>/<skill>/SKILL.md` (three segments) can never match. Claude Code is
- * likewise one level deep.
- *
- * Taking the intersection: the store must be flat `<skill>/SKILL.md`. Recursive scanners
- * read a flat tree fine; single-level scanners cannot read a nested one. So flattening is
- * not a Claude Code quirk — it is the one layout every target can read, and the category
- * layer (`plugin/skills/<category>/`) stays a source-tree convenience only.
+ * ── Why the canonical store preserves categories ─────────────────────────────────
+ * Native consumers recurse under `~/.agents/skills`, so ACE installs its skills below
+ * `ace-<category>/`. Claude Code and Kiro keep dedicated flat deployment paths because their
+ * loaders have different constraints; those projections do not dictate the shared layout.
  *
  * ── Evidence ─────────────────────────────────────────────────────────────────────
  * Every `skillsDir` / `scanDepth` below was verified on a real machine (probe skills
@@ -95,10 +88,9 @@ export const TARGETS = {
     instructions: path.join(AGENTS_HOME, 'AGENTS.md'),
     instructionRoot: '~/.agents',
     projection: PROJECTION.NONE,
-    // Single level: dsh-skill-filesystem readdir + segments.length === 2 check.
-    scanDepth: 1,
+    scanDepth: Infinity,
     detect: [path.join(os.homedir(), '.dsh'), AGENTS_HOME],
-    verifiedBy: 'provider source (depth:1, segments.length===2) + probe: flat found, nested not found',
+    verifiedBy: 'environment evidence: nested skills under ~/.agents/skills are discovered',
   },
 
   kiro: {

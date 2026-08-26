@@ -3,13 +3,12 @@ import path from 'path';
 import { PROJECTION } from './targets.js';
 
 /**
- * Write the canonical flat skill store, then project it into targets that need copies.
+ * Write the categorized canonical skill store, then project it into targets that need copies.
  *
- * ── The flattening happens here, once ────────────────────────────────────────────
- * Source is `plugin/skills/<category>/<skill>/`; the store is `<skill>/`. The category
- * layer is a source-tree convenience: DeepSeek Harness and Claude Code only scan one level,
- * so a nested SKILL.md is invisible to them. Flattening once up front means every target
- * reads the same layout and no target needs its own flattening step.
+ * Source is `plugin/skills/<category>/<skill>/`; the shared store is
+ * `ace-<category>/<skill>/`. The `ace-` prefix makes ownership explicit inside the shared
+ * `~/.agents/skills` root and avoids mixing every ACE skill into one flat directory.
+ * Targets that still require a flat layout receive one during projection.
  *
  * ── Why absence, not registration, disables a skill ──────────────────────────────
  * The store is rebuilt from scratch each run. A deselected skill is *removed*, not merely
@@ -26,28 +25,39 @@ import { PROJECTION } from './targets.js';
  * @param {string[]} args.skills - Skill names to install.
  * @param {Map<string,string>} args.index - skill name → category.
  * @param {(msg: string) => void} [args.onError]
- * @returns {Promise<{written: string[], dir: string}>}
+ * @returns {Promise<{written: string[], entries: Array<{name: string, category: string, path: string}>, dir: string}>}
  */
 export async function writeCanonicalStore({ destDir, skillsSrcDir, skills, index, onError }) {
-  // Prune only ACE's own entries: the cross-agent store is shared with other installers
-  // (the `skills` CLI keeps its own tree there), so wiping the directory would delete
-  // skills ACE never owned.
-  await pruneManagedSkills(destDir, skills);
+  // Prune only ACE-owned category namespaces plus legacy flat paths. The root is shared
+  // with other installers, so wiping it would delete skills ACE never owned.
+  await pruneManagedSkills(destDir, index);
   await fs.ensureDir(destDir);
 
   const written = [];
+  const entries = [];
   for (const skill of skills) {
     const category = index.get(skill);
     if (!category) {
       onError?.(`Skill not found in catalog: ${skill}`);
       continue;
     }
-    const dest = path.join(destDir, skill);
+    const dest = canonicalSkillDir(destDir, category, skill);
     await fs.remove(dest);
     await fs.copy(path.join(skillsSrcDir, category, skill), dest, { overwrite: true });
     written.push(dest);
+    entries.push({ name: skill, category, path: dest });
   }
-  return { written, dir: destDir };
+  return { written, entries, dir: destDir };
+}
+
+/** Directory name used for one ACE skill category in the shared store. */
+export function canonicalCategoryName(category) {
+  return `ace-${category}`;
+}
+
+/** Absolute canonical path for one categorized skill. */
+export function canonicalSkillDir(canonicalDir, category, skill) {
+  return path.join(canonicalDir, canonicalCategoryName(category), skill);
 }
 
 /**
@@ -58,7 +68,7 @@ export async function writeCanonicalStore({ destDir, skillsSrcDir, skills, index
  *
  * @returns {Promise<{mode: string, paths: string[]}>}
  */
-export async function projectToTarget({ target, canonicalDir, skills }) {
+export async function projectToTarget({ target, canonicalDir, skills, index }) {
   if (target.projection === PROJECTION.NONE) {
     return { mode: PROJECTION.NONE, paths: [] };
   }
@@ -72,7 +82,10 @@ export async function projectToTarget({ target, canonicalDir, skills }) {
   const paths = [];
 
   for (const skill of skills) {
-    const src = path.join(canonicalDir, skill);
+    const category = index?.get(skill);
+    const src = category
+      ? canonicalSkillDir(canonicalDir, category, skill)
+      : path.join(canonicalDir, skill);
     const dest = path.join(target.skillsDir, skill);
     if (!await fs.pathExists(src)) continue;
 
@@ -112,16 +125,18 @@ export async function linkDir(src, dest) {
 }
 
 /**
- * Remove ACE-managed skill entries that are no longer selected.
+ * Remove ACE-managed category namespaces and legacy flat entries before rebuilding.
  *
- * Identifying "managed" by the current selection alone is not sufficient across runs, so
- * the caller passes the full desired set and anything stale is dropped by the receipt-driven
- * cleanup instead. Here we only clear entries we are about to rewrite, which keeps the
- * shared directory's foreign entries untouched.
+ * The catalog index contains every currently shipped skill, not only the selected set. That
+ * makes deselection real and migrates pre-category installs without touching foreign entries.
  */
-async function pruneManagedSkills(destDir, skills) {
+async function pruneManagedSkills(destDir, index) {
   if (!await fs.pathExists(destDir)) return;
-  for (const skill of skills) {
+
+  for (const category of new Set(index.values())) {
+    await fs.remove(path.join(destDir, canonicalCategoryName(category)));
+  }
+  for (const skill of index.keys()) {
     await fs.remove(path.join(destDir, skill));
   }
 }

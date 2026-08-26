@@ -38,7 +38,7 @@ export class Installer {
     this.targets = options.targets || ['claude-code'];
     this.canonicalDir = options.canonicalDir || CANONICAL_SKILLS_DIR;
     // Records what was written where, for uninstall.
-    this.receipt = { targets: [], skills: [], canonicalDir: this.canonicalDir };
+    this.receipt = { targets: [], skills: [], canonicalSkills: [], canonicalDir: this.canonicalDir };
   }
 
 
@@ -349,13 +349,14 @@ export class Installer {
    */
   async installSharedSkills(targets, skills) {
     const index = indexSkills(await this.getCatalog());
-    const { dir } = await writeCanonicalStore({
+    const { dir, entries } = await writeCanonicalStore({
       destDir: this.canonicalDir,
       skillsSrcDir: this.skillsSrcDir,
       skills,
       index,
       onError: error => this.results.errors.push({ component: 'plugin', error }),
     });
+    this.receipt.canonicalSkills = entries;
 
     this.results.installed.push(`skills:${skills.length} → ${dir}`);
 
@@ -365,6 +366,7 @@ export class Installer {
           target,
           canonicalDir: dir,
           skills,
+          index,
         });
 
         // Rules and the index that references them are only useful together, so the

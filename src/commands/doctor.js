@@ -150,8 +150,12 @@ export async function doctorCommand() {
         ok: true,
       });
       for (const skill of receipt.skills ?? []) {
+        const canonicalEntry = receipt.canonicalSkills?.find(entry => entry.name === skill);
         const expected = target.projection === 'none'
-          ? path.join(receipt.canonicalDir ?? CANONICAL_SKILLS_DIR, skill, 'SKILL.md')
+          ? path.join(
+              canonicalEntry?.path ?? path.join(receipt.canonicalDir ?? CANONICAL_SKILLS_DIR, skill),
+              'SKILL.md',
+            )
           : path.join(target.skillsDir, skill, 'SKILL.md');
         checks.push(await check(`${target.id}: ${skill}`, pathIsPresent(expected)));
       }

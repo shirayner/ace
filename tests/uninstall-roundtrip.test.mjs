@@ -92,9 +92,16 @@ test('uninstall removes ACE skills from the canonical store', async () => {
   const { home } = await roundtrip({ targets: ['codex', 'deepseek-harness'] });
 
   for (const skill of ['spec-coding', 'auto-goal']) {
+    const category = skill === 'spec-coding' ? 'ace-coding' : 'ace-general';
     assert.equal(
-      await fs.pathExists(path.join(home, '.agents', 'skills', skill)), false,
+      await fs.pathExists(path.join(home, '.agents', 'skills', category, skill)), false,
       `${skill} survived in the shared store`,
+    );
+  }
+  for (const category of ['ace-coding', 'ace-general']) {
+    assert.equal(
+      await fs.pathExists(path.join(home, '.agents', 'skills', category)), false,
+      `${category} survived after its skills were removed`,
     );
   }
 });

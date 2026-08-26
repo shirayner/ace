@@ -50,7 +50,7 @@ Skill 按分类分目录，分类即安装单位 —— `ace init` 先选分类�
 
 **内部专有 skill 不在这里。** ACE 发布到公开 npm（`files` 含 `plugin/`），所以任何含内部域名、serviceCode、真实业务标识符的 skill 都不能放进 `plugin/skills/` —— 那等于随包公开。它们住在独立的 `ace-internal` 插件（`platform` / `member` 两类），与 ACE 并存安装、互不依赖。分类元数据只控制预勾选，控制不了打包，所以这条边界靠仓库隔离而非命名约定来保证。
 
-**安装时打平**：Claude Code 只发现 `skills/<skill>/SKILL.md`（不递归），所以分类层仅存在于仓库中，安装到 `~/.claude/` 时被去掉。skill 内部的 `../<sibling>/SKILL.md`、`../../shared/x.md` 引用是按打平后的布局写的。
+**按目标安装**：共享规范存储保留分类，路径为 `~/.agents/skills/ace-<category>/<skill>/SKILL.md`。Claude Code 只发现 `skills/<skill>/SKILL.md`，因此插件 marketplace/cache 仍去掉分类层；Kiro 的专用 skills 目录也使用扁平副本。换言之，分类在支持递归发现的共享存储中保留，只在目标工具明确需要时才投影为扁平布局。
 
 **用户选择持久化**在 `~/.ace/config/skills-selection.json`，`ace init --force` 与 `ace upgrade` 复用它，不会悄悄装回用户取消掉的 skill。
 

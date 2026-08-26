@@ -45,7 +45,8 @@ export async function readReceipt() {
  * Record an install.
  *
  * @param {{targets: Array<{id: string, projection: string, skillsDir: string, paths: string[]}>,
- *          skills: string[], canonicalDir: string}} install
+ *          skills: string[], canonicalSkills?: Array<{name: string, category: string, path: string}>,
+ *          canonicalDir: string}} install
  */
 export async function writeReceipt(install) {
   await fs.ensureDir(ACE_CONFIG_DIR);
@@ -54,6 +55,7 @@ export async function writeReceipt(install) {
     updatedAt: new Date().toISOString(),
     canonicalDir: install.canonicalDir,
     skills: install.skills,
+    canonicalSkills: install.canonicalSkills ?? [],
     targets: install.targets,
   }, { spaces: 2 });
 }

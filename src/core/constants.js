@@ -10,8 +10,8 @@ export const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
 /**
  * The cross-agent skill root.
  *
- * Codex, OpenCode and DeepSeek Harness all discover `~/.agents/skills/<skill>/SKILL.md`
- * natively, so a single flat store there is read by three tools with no projection at all.
+ * Codex, OpenCode and DeepSeek Harness all discover nested `SKILL.md` files under
+ * `~/.agents/skills` natively, so ACE keeps its categories as `ace-<category>/<skill>/`.
  * `$DSH_AGENTS_HOME` is honoured because DSH itself resolves the root that way, and a user
  * who moved it would otherwise get a store nothing reads.
  */

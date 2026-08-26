@@ -126,15 +126,14 @@ Skills 只写一份到**规范存储** `~/.agents/skills/`（可用 `DSH_AGENTS_
 
 ### 两条硬约束
 
-**1. 规范存储必须是扁平的 `<skill>/SKILL.md`。**
-DeepSeek Harness 用 `segments.length === 2` 校验路径，`<category>/<skill>/SKILL.md`（三段）
-永远匹配不上；Claude Code 同样只扫一层。递归扫描器能读扁平结构，反过来不成立——
-所以扁平化不是某个工具的怪癖，而是唯一所有工具都能读的布局。
-分类信息只存在于源码树 `plugin/skills/<category>/`。
+**1. 规范存储保留 ACE 分类。**
+共享目录按 `~/.agents/skills/ace-<category>/<skill>/SKILL.md` 安装，例如
+`ace-coding/spec-coding/`、`ace-general/auto-goal/`。这样既保留源码分类，也避免把 ACE 的
+所有 skill 平铺到共享根目录。Claude Code 与 Kiro 仍在各自的专用目录使用扁平投影。
 
 **2. 只动自己的东西。**
-`~/.agents/skills/` 是**共享**目录，其它安装器也往里写。因此 ACE 只清理回执里记录过的条目，
-从不删除存储根目录，也绝不猜测。
+`~/.agents/skills/` 是**共享**目录，其它安装器也往里写。因此 ACE 只重建 `ace-*` 分类目录、
+迁移自己旧版的扁平 skill，并在卸载时按回执清理；从不删除存储根目录。
 
 ### 安装回执
 
@@ -208,7 +207,7 @@ ace/
 │   └── utils/            #   工具函数
 ├── plugin/               # Claude Code 插件（安装到 ~/.claude/plugins/）
 │   ├── shared/           #   共享协议层
-│   ├── skills/           #   skill 按分类分目录（安装时打平）
+│   ├── skills/           #   skill 按分类分目录（共享存储保留分类）
 │   │   ├── coding/       #     spec-coding、review、需求与设计
 │   │   ├── general/      #     通用目标编排与调研
 │   │   ├── meta/         #     skill 自身的编写与优化

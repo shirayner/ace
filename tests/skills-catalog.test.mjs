@@ -1,10 +1,9 @@
 /**
  * The skill catalog and the selection it resolves to.
  *
- * Source layout groups skills by category (`plugin/skills/<category>/<skill>/`) while the
- * install is flat, so two facts have to hold or the install silently breaks: names must be
- * globally unique across categories (a duplicate would overwrite at the destination), and a
- * stored selection written against an older catalog must degrade rather than throw.
+ * Source and canonical layouts group skills by category, but selection and command surfaces
+ * still identify them by name. Names must therefore remain globally unique, and a stored
+ * selection written against an older catalog must degrade rather than throw.
  *
  * The catalog tests run against fixture trees so they assert the discovery rules themselves;
  * the real `plugin/skills/` tree is checked separately at the bottom, because that is where a
@@ -96,7 +95,7 @@ test('the same skill name in two categories fails loudly', () => {
   assert.throws(
     () => indexSkills(catalog),
     /Duplicate skill name "shared-name"/,
-    'skills install flat, so a duplicate would silently overwrite at the destination',
+    'selection and command routing cannot disambiguate duplicate skill names',
   );
 });
 

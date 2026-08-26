@@ -39,10 +39,10 @@ export async function discoverCatalog(skillsDir = PLUGIN_SKILLS_SRC_DIR) {
 }
 
 /**
- * Flatten a catalog into `{ skillName: category }`, failing loudly on duplicates.
+ * Index a catalog as `{ skillName: category }`, failing loudly on duplicates.
  *
- * Skills are installed flat, so two categories holding the same skill name would silently
- * overwrite each other at the destination.
+ * Selection and slash-command surfaces identify skills by name, so duplicate names would be
+ * ambiguous even though the canonical filesystem layout preserves categories.
  *
  * @param {Array} catalog - Result of discoverCatalog().
  * @returns {Map<string, string>} skill name → category key
@@ -56,7 +56,7 @@ export function indexSkills(catalog) {
       if (existing) {
         throw new Error(
           `Duplicate skill name "${skill}" in categories "${existing}" and "${category.key}". `
-          + 'Skills install flat, so names must be globally unique.'
+          + 'Skill names must be globally unique.'
         );
       }
       index.set(skill, category.key);

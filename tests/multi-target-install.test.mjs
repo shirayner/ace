@@ -3,9 +3,9 @@
  *
  * The load-bearing claims are behavioural, not cosmetic, so each is pinned here:
  *
- *   1. The canonical store is FLAT. Codex and OpenCode recurse, but DeepSeek Harness and
- *      Claude Code read a single level, so a category directory in the store makes those
- *      skills invisible. Flat is the only layout every target can read.
+ *   1. The canonical store preserves categories under ACE-owned namespaces such as
+ *      `ace-coding/` and `ace-general/`, preventing a large flat list from polluting the
+ *      shared root while leaving other installers' entries untouched.
  *   2. A `none` target needs no projection — that is the entire reason the canonical root is
  *      `~/.agents/skills` rather than a private ACE directory.
  *   3. The store is SHARED with other installers, so pruning must not touch foreign entries.
@@ -49,29 +49,30 @@ async function tmpDir(tag) {
   return dir;
 }
 
-test('the canonical store is flat — the category layer does not survive', async () => {
+test('the canonical store groups skills under ACE-prefixed category directories', async () => {
   const { root, index } = await fixtureSource();
   const destDir = await tmpDir('canon');
 
   await writeCanonicalStore({ destDir, skillsSrcDir: root, skills: ['spec-coding'], index });
 
   assert.ok(
-    await fs.pathExists(path.join(destDir, 'spec-coding', 'SKILL.md')),
-    'single-level scanners (DeepSeek Harness, Claude Code) only ever find <skill>/SKILL.md',
+    await fs.pathExists(path.join(destDir, 'ace-coding', 'spec-coding', 'SKILL.md')),
+    'categorized scanners should discover ace-coding/<skill>/SKILL.md',
   );
   assert.equal(
-    await fs.pathExists(path.join(destDir, 'coding')), false,
-    'a surviving category directory would hide the skill from every single-level scanner',
+    await fs.pathExists(path.join(destDir, 'spec-coding')), false,
+    'the shared root should not contain ACE skills as a flat list',
   );
 });
 
-test('skills from different categories flatten side by side', async () => {
+test('skills from different categories stay in separate ACE namespaces', async () => {
   const { root, index } = await fixtureSource();
   const destDir = await tmpDir('canon');
 
   await writeCanonicalStore({ destDir, skillsSrcDir: root, skills: ['spec-coding', 'auto-goal'], index });
 
-  assert.deepEqual((await fs.readdir(destDir)).sort(), ['auto-goal', 'spec-coding']);
+  assert.deepEqual((await fs.readdir(destDir)).sort(), ['ace-coding', 'ace-general']);
+  assert.ok(await fs.pathExists(path.join(destDir, 'ace-general', 'auto-goal', 'SKILL.md')));
 });
 
 test('a skill keeps its own subdirectories', async () => {
@@ -80,7 +81,7 @@ test('a skill keeps its own subdirectories', async () => {
 
   await writeCanonicalStore({ destDir, skillsSrcDir: root, skills: ['spec-coding'], index });
 
-  assert.ok(await fs.pathExists(path.join(destDir, 'spec-coding', 'references', 'r.md')));
+  assert.ok(await fs.pathExists(path.join(destDir, 'ace-coding', 'spec-coding', 'references', 'r.md')));
 });
 
 test('foreign entries in the shared store are left alone', async () => {
@@ -103,13 +104,24 @@ test('a deselected skill is removed, not merely left unregistered', async () => 
   const destDir = await tmpDir('canon');
 
   await writeCanonicalStore({ destDir, skillsSrcDir: root, skills: ['spec-coding', 'code-review'], index });
-  assert.ok(await fs.pathExists(path.join(destDir, 'code-review')), 'setup');
+  assert.ok(await fs.pathExists(path.join(destDir, 'ace-coding', 'code-review')), 'setup');
 
   await writeCanonicalStore({ destDir, skillsSrcDir: root, skills: ['spec-coding'], index });
-  // Discovery is by directory scan, so an entry left behind stays discoverable — the
-  // deselection has to remove it or it is cosmetic on any machine that had it.
-  await fs.remove(path.join(destDir, 'code-review'));
-  assert.equal(await fs.pathExists(path.join(destDir, 'code-review')), false);
+  assert.equal(
+    await fs.pathExists(path.join(destDir, 'ace-coding', 'code-review')), false,
+    'the ACE-owned category directory is rebuilt so deselection removes stale skills',
+  );
+});
+
+test('writing the categorized store removes legacy flat ACE entries', async () => {
+  const { root, index } = await fixtureSource();
+  const destDir = await tmpDir('canon');
+  await fs.outputFile(path.join(destDir, 'spec-coding', 'SKILL.md'), '# legacy flat copy\n');
+
+  await writeCanonicalStore({ destDir, skillsSrcDir: root, skills: ['spec-coding'], index });
+
+  assert.equal(await fs.pathExists(path.join(destDir, 'spec-coding')), false);
+  assert.ok(await fs.pathExists(path.join(destDir, 'ace-coding', 'spec-coding', 'SKILL.md')));
 });
 
 test('an unknown skill name is reported, not silently skipped', async () => {
@@ -149,7 +161,7 @@ test('a copy target materializes real files in its own skills dir', async () => 
   const skillsDir = await tmpDir('kiro');
   const target = { ...TARGETS['kiro'], id: 'kiro', skillsDir };
 
-  const result = await projectToTarget({ target, canonicalDir, skills: ['spec-coding'] });
+  const result = await projectToTarget({ target, canonicalDir, skills: ['spec-coding'], index });
 
   assert.equal(result.mode, PROJECTION.COPY);
   assert.ok(

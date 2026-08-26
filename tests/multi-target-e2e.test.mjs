@@ -82,10 +82,9 @@ test('a Codex install lands in the canonical store Codex actually reads', async 
   const { home, errors } = await runInstall({ targets: ['codex'] });
 
   assert.deepEqual(errors, []);
-  const skillMd = path.join(home, '.agents', 'skills', 'spec-coding', 'SKILL.md');
+  const skillMd = path.join(home, '.agents', 'skills', 'ace-coding', 'spec-coding', 'SKILL.md');
   assert.ok(await fs.pathExists(skillMd), `expected ${skillMd}`);
-  // Flat: the category layer must be gone, or single-level scanners see nothing.
-  assert.equal(await fs.pathExists(path.join(home, '.agents', 'skills', 'coding')), false);
+  assert.equal(await fs.pathExists(path.join(home, '.agents', 'skills', 'spec-coding')), false);
 });
 
 test('one canonical store serves all three native targets', async () => {
@@ -94,9 +93,8 @@ test('one canonical store serves all three native targets', async () => {
   });
 
   assert.deepEqual(errors, []);
-  for (const skill of ['spec-coding', 'auto-goal']) {
-    assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', skill, 'SKILL.md')));
-  }
+  assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', 'ace-coding', 'spec-coding', 'SKILL.md')));
+  assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', 'ace-general', 'auto-goal', 'SKILL.md')));
   // The payoff: three tools, zero projected paths.
   const projected = receipt.targets.flatMap(t => t.paths.filter(p => p.includes('skills')));
   assert.deepEqual(projected, [], 'native targets must not duplicate the store');
@@ -162,6 +160,13 @@ test('the receipt records real paths, so uninstall does not have to guess', asyn
   const kiro = receipt.targets.find(t => t.id === 'kiro');
   assert.ok(kiro, 'the target must be recorded');
   assert.deepEqual(receipt.skills.sort(), ['auto-goal', 'spec-coding']);
+  assert.deepEqual(
+    receipt.canonicalSkills.map(entry => [entry.category, entry.name]).sort(),
+    [['coding', 'spec-coding'], ['general', 'auto-goal']],
+  );
+  for (const entry of receipt.canonicalSkills) {
+    assert.ok(await fs.pathExists(entry.path), `receipt lists a canonical path that was never written: ${entry.path}`);
+  }
   // Every recorded path must exist: a receipt that lists paths it never wrote is the exact
   // unreliability this design set out to avoid.
   for (const recorded of kiro.paths) {
@@ -196,7 +201,7 @@ test('Claude Code and a native target coexist in one install', async () => {
   });
 
   assert.deepEqual(errors, []);
-  assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', 'spec-coding', 'SKILL.md')));
+  assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', 'ace-coding', 'spec-coding', 'SKILL.md')));
   assert.ok(await fs.pathExists(path.join(home, '.claude', 'plugins', 'installed_plugins.json')));
   assert.deepEqual(receipt.targets.map(t => t.id).sort(), ['claude-code', 'codex']);
 });

@@ -238,12 +238,28 @@ export async function uninstallCommand(options) {
         removed.push(`target ${target.id} (${target.projection}, ${(target.paths ?? []).length} path(s))`);
       }
 
-      // The canonical store is shared with other installers, so only ACE's own skill
-      // entries are removed — never the directory itself.
-      for (const skill of receipt.skills ?? []) {
-        const dir = path.join(receipt.canonicalDir ?? CANONICAL_SKILLS_DIR, skill);
-        await removeProjectedPath(dir);
-        count++;
+      // The canonical store is shared with other installers, so only receipt-recorded ACE
+      // entries are removed — never the shared root itself. Old receipts have no
+      // `canonicalSkills`, so their legacy flat paths remain supported.
+      const canonicalEntries = receipt.canonicalSkills ?? [];
+      const categoryDirs = new Set();
+      if (canonicalEntries.length > 0) {
+        for (const entry of canonicalEntries) {
+          await removeProjectedPath(entry.path);
+          categoryDirs.add(path.dirname(entry.path));
+          count++;
+        }
+        for (const dir of categoryDirs) {
+          if (await fs.pathExists(dir) && (await fs.readdir(dir)).length === 0) {
+            await removeProjectedPath(dir);
+          }
+        }
+      } else {
+        for (const skill of receipt.skills ?? []) {
+          const dir = path.join(receipt.canonicalDir ?? CANONICAL_SKILLS_DIR, skill);
+          await removeProjectedPath(dir);
+          count++;
+        }
       }
       if ((receipt.skills ?? []).length > 0) {
         removed.push(`canonical skills: ${receipt.skills.length} removed from ${receipt.canonicalDir}`);
