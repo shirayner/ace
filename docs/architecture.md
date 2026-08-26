@@ -43,7 +43,7 @@ Skill 按分类分目录，分类即安装单位 —— `ace init` 先选分类�
 |------|---------|--------|
 | coding | ✅ | code-review, git-commit, init, llm-wiki-generator, llm-wiki-reader, parallel-dispatch, requirement-analysis, requirement-review, requirement-understanding, requirement-writing, software-thinking, spec-coding, spechub-coding, subagent-execute, tech-design, test-case-gen, ut, verify |
 | general | ✅ | auto-goal, auto-goal-v2, auto-goal-v3 |
-| meta | ✅ | skill-creator, skill-optimize |
+| meta | ✅ | find-skills, skill-creator, skill-optimize |
 | docs | ✅ | feishu-doc, simple-text-to-image, text-to-image |
 
 四个分类默认全部预勾选，即全量安装。分类的作用是让用户能**主动取消**不需要的部分，而不是替用户预判哪些用不上。
