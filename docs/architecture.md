@@ -41,7 +41,7 @@ Skill 按分类分目录，分类即安装单位 —— `ace init` 先选分类�
 
 | 分类 | 默认安装 | Skills |
 |------|---------|--------|
-| coding | ✅ | code-review, init, llm-wiki-generator, llm-wiki-reader, parallel-dispatch, requirement-analysis, requirement-review, requirement-understanding, requirement-writing, software-thinking, spec-coding, spechub-coding, subagent-execute, tech-design, test-case-gen, ut, verify |
+| coding | ✅ | code-review, git-commit, init, llm-wiki-generator, llm-wiki-reader, parallel-dispatch, requirement-analysis, requirement-review, requirement-understanding, requirement-writing, software-thinking, spec-coding, spechub-coding, subagent-execute, tech-design, test-case-gen, ut, verify |
 | general | ✅ | auto-goal, auto-goal-v2, auto-goal-v3 |
 | meta | ✅ | skill-creator, skill-optimize |
 | docs | ✅ | feishu-doc, simple-text-to-image, text-to-image |
@@ -81,9 +81,9 @@ plugin/skills/<category>/{name}/
 | memory-policy.md | 保存记忆前 |
 | reporting.md | 生成报告前 |
 | thinking.md | 始终 |
-| git.md | Git 操作时 |
-| gitflow.md | 分支管理时 |
 | task-recovery.md | 恢复任务时 |
+
+Git 提交规范与分支命名不在这一层 —— 由 `git-commit` skill 承载（原 `git.md`、`gitflow.md` 已废止）。
 
 ---
 

@@ -153,9 +153,9 @@ ACE 会：首轮对齐 → 任务分解 → 并行执行 → 验证 → 经验�
 | `memory-policy.md`       | 保存记忆前 |
 | `reporting.md`           | 生成报告前 |
 | `thinking.md`            | 始终       |
-| `git.md`                 | Git 操作时 |
-| `gitflow.md`             | 分支管理时 |
 | `task-recovery.md`       | 恢复任务时 |
+
+Git 提交规范与分支命名由 `git-commit` skill 承载，不再是规则文件。
 
 ---
 

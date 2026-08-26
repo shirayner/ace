@@ -26,8 +26,6 @@
 - ~/.claude/ace/rules/reporting.md — 报告输出规则（生成报告前阅读）
 - ~/.claude/ace/rules/memory-policy.md — 记忆质量策略（保存记忆前阅读）
 - ~/.claude/ace/rules/interactive-clarify.md — 交互式澄清规则（需要提问时阅读）
-- ~/.claude/ace/rules/git.md — Git 提交规范与分支命名（Git 操作时阅读）
-- ~/.claude/ace/rules/gitflow.md — GitFlow 工作流（分支管理时阅读）
 
 ## 流程门禁优先级
 
