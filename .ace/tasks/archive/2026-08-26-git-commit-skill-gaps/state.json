@@ -1,0 +1,27 @@
+{
+  "changeName": "git-commit-skill-gaps",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-26T22:10:00+08:00",
+  "updated_at": "2026-08-26T14:22:55Z",
+  "completed_at": "2026-08-26T14:22:55Z",
+  "archived_at": "2026-08-26T14:22:55Z",
+  "completion_criteria": [
+    "SKILL.md 新增「特殊提交」节，明确 merge/revert/release 三类的格式与豁免理由",
+    "SKILL.md 新增 trailer 说明，声明 Co-Authored-By 不由本 skill 规定也不禁止",
+    "merge commit 的 body 判据被显式说明为仍然适用",
+    "改动后 SKILL.md 行数 < 500，无新增 references",
+    "已安装副本（marketplaces / cache）与源文件差异符合预期（源为真相源，副本待 ace init 同步）"
+  ],
+  "tasks": [],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      "merge commit 豁免 Conventional Commits：历史证据 221 个标准 Merge 格式、其中 70 个由 GitLab MR 自动生成，无法要求平台改行为；工具链靠 Merge 前缀识别并跳过",
+      "13d6874a 历史不动（用户选 A）：未推送但 amend merge 有丢第二 parent 风险，且其 body 是全仓库唯一有实质内容的 merge body",
+      "本轮范围限定为 skill 缺口 1/3/4（特殊提交 + trailer），不做 description 边界与真相源措辞修正，不做密钥防护强化",
+      "不在 spec-portal-service 跑测试验证（用户明确只改 skill）"
+    ]
+  }
+}

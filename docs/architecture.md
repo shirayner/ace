@@ -76,7 +76,7 @@ plugin/skills/<category>/{name}/
 |------|---------|
 | clean-code.md | 始终（@import） |
 | code-quality.md | 始终（@import） |
-| interactive-clarify.md | 始终（@import） |
+| ask-user-guide.md | 始终（@import） |
 | context-hygiene.md | 长任务时 |
 | memory-policy.md | 保存记忆前 |
 | reporting.md | 生成报告前 |

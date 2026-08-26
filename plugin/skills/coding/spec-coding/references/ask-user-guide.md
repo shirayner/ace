@@ -3,6 +3,7 @@
 定义 spec-coding 与用户交互时的标准模式。所有 AskUserQuestion 调用必须遵循。
 
 **关于 Other 选项**：AskUserQuestion 工具会自动为每个 question 附加一个"Other"选项，允许用户自由输入文本。因此：
+
 - options 中**不要手动添加 Other**，只定义预设选项即可
 - 用户选择 Other 时，需要在文本框中输入内容
 - AI 收到 Other 回复时，应读取用户输入的文本并据此行动
@@ -33,6 +34,7 @@ AskUserQuestion(questions: [
 ```
 
 **规则**：
+
 - 每个 question = 一个独立问题（独立 tab）
 - options = 2-3 个预设选项（系统自动附加 Other）
 - 推荐项加"(推荐)"后缀，放在第一位
@@ -41,6 +43,7 @@ AskUserQuestion(questions: [
 - 超过 4 个 → 分多轮提问（每轮 ≤4）
 
 **适用场景**：
+
 - Phase 1: 引导性澄清（unknowns → 问题）
 - Phase 3: 设计决策确认（需澄清级决策）
 - Phase 4: 范围分解确认
@@ -70,6 +73,7 @@ AskUserQuestion(questions: [{
 ```
 
 **规则**：
+
 - **信息展示在 markdown 中，不塞进 AskUserQuestion**
 - AskUserQuestion 只做轻量审批决策
 - 固定两选项：通过 / 拒绝（Other 由系统自动附加）
@@ -79,6 +83,7 @@ AskUserQuestion(questions: [{
   - 拒绝 → 回退到前一步重新执行
 
 **适用场景**：
+
 - Phase 1: 对齐四要素确认
 - Phase 3: 设计文档审批
 - Phase 4: 实施计划审批
@@ -88,11 +93,11 @@ AskUserQuestion(questions: [{
 
 ## 反模式
 
-| 错误做法 | 正确做法 |
-|---------|---------|
-| 把长文本塞进 AskUserQuestion 的 question 字段 | 先 markdown 输出，再用审批模式确认 |
-| 一个 question 里放 4+ 选项 | 最多 2-3 个预设选项（Other 自动附加） |
-| 审批时列出所有细节作为选项 | 审批只有通过/补充/拒绝 |
-| 混合"澄清"和"审批"在同一次调用 | 分开：先澄清得到答案，再基于答案做审批 |
-| 问题过于开放（"你觉得怎么样？"） | 给具体选项 + 推荐 |
-| 手动在 options 中添加"Other"或"自由输入" | 系统自动提供，不要重复 |
+| 错误做法                                      | 正确做法                               |
+| --------------------------------------------- | -------------------------------------- |
+| 把长文本塞进 AskUserQuestion 的 question 字段 | 先 markdown 输出，再用审批模式确认     |
+| 一个 question 里放 4+ 选项                    | 最多 2-3 个预设选项（Other 自动附加）  |
+| 审批时列出所有细节作为选项                    | 审批只有通过/补充/拒绝                 |
+| 混合"澄清"和"审批"在同一次调用                | 分开：先澄清得到答案，再基于答案做审批 |
+| 问题过于开放（"你觉得怎么样？"）              | 给具体选项 + 推荐                      |
+| 手动在 options 中添加"Other"或"自由输入"      | 系统自动提供，不要重复                 |

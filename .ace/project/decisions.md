@@ -184,3 +184,11 @@
 - 否决: 守住"全目录 ≤30 KB"并压缩 goal.py（压缩对象会落在注释与错误提示文本上，而那些提示正是七个门禁能拦住误用的原因——为一个量错对象的指标损害真实可用性）；拆成"上下文 ≤20 KB + 脚本不限"两个声明（多一个概念，且脚本侧无需门禁）
 - 依据: v2 的真实病根是**级联加载**而非目录大小——v2 SKILL.md 仅 6.1 KB 却实测单会话摄入 1,002,190 字符，其中 `dispatch-worker.mjs` 单文件被摄入 296,803 字符。注意 v2 那个脚本之所以被摄入，是因为协议要求模型读它去核对语义；v3 的 goal.py "只管账不做判断"（见本任务决策）就切断了这条路径。**"目录大小"与"上下文成本"的解耦，是靠脚本不承载语义实现的，不是靠脚本小。**
 - 附带教训: 立项时把"目录 ≤30 KB"写进 completion_criteria，是把易测量的代理指标当成了目标本身。代理指标失真时应改指标，而非削目标——但前提是能说清新指标为什么才是真的那个量。
+
+## D0030 — 常驻交互规则改为给可照抄的调用骨架，而非抽象描述
+- 2026-08-26 · accepted · 取代 interactive-clarify.md
+- 决策: `ace/rules/interactive-clarify.md` 由 `ace/rules/ask-user-guide.md` 取代，仍留在**常驻 @import** 层。新规则的核心是两段可逐字照抄的 `AskUserQuestion(...)` 调用骨架（问题澄清 / 审批确认），外加 Other 语义（"Other + 输入内容 = 有补充的通过"）、`preview` 用法与跨平台降级说明；同时剥离原 spec-coding 专属措辞与 Phase 1/3/4/5/6 编号列表——那些编号在全局规则里既无所指又会误导。98 行 → 69 行
+- 否决: 降级为按需加载的"工作流规则"（澄清与审批是 auto-goal/spec-coding 的硬门禁，按需加载意味着 agent 可能不读就提问，门禁形同虚设——省下的几十行上下文换不来这个风险）；原样常驻 98 行（其中 spec-coding Phase 列表对全局场景是纯噪音）
+- 依据: 精简的下限是**代码骨架必须逐字保留**。原 interactive-clarify 只有"批量组织问题""提供明确选项"这类抽象描述，agent 需自行发明参数结构；骨架的价值正是消除这层发明成本，删掉它就退回到了被取代的那个文件
+- 附带效应: `installRulesDir` 只做覆盖拷贝、不清理孤儿文件，已安装用户的 `~/.claude/ace/rules/interactive-clarify.md` 会残留在磁盘，但 merger 已从 CLAUDE.md 摘除对应 @import → 不再被加载，属无害残留，未为此增加清理逻辑
+- 待收敛: `templates/ace/rules/ask-user-guide.md` 与 `plugin/skills/coding/spec-coding/references/ask-user-guide.md` 内容近乎重复（DRY 隐患）。本次不动——spec-coding 是独立分发的插件技能，不应假设全局 rules 已安装。注意 `requirement-understanding/references/ask-user-guide.md` 是**另一套更严格的独立契约**（Other 一律视为不通过、单候选项须标"待确认建议"），不是副本，不要一并收敛

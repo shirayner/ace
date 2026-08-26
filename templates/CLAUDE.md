@@ -18,7 +18,7 @@
 
 - @~/.claude/ace/rules/code-quality.md
 - @~/.claude/ace/rules/clean-code.md
-- @~/.claude/ace/rules/interactive-clarify.md
+- @~/.claude/ace/rules/ask-user-guide.md
 
 ## 工作流规则（对应场景时参考）
 

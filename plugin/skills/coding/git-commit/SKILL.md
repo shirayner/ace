@@ -66,6 +66,25 @@ allowed-tools: Bash
 | `chore` | 杂项维护 |
 | `revert` | 回退 |
 
+## 特殊提交（豁免上表格式）
+
+有三类提交不套 `<type>(<scope>): <subject>`——不是例外通融，是套了反而更糟。
+
+| 场景 | 格式 | 为什么豁免 |
+| --- | --- | --- |
+| 合并 | 保留 git / 平台生成的 `Merge ...` | 多数由 PR/MR 平台自动生成，改不动；且 commitlint、semantic-release 等工具靠 `Merge ` 前缀识别并跳过 |
+| 回退 | `revert: <被回退的 subject>` | `git revert` 默认就生成这个格式，照用即可 |
+| 发布 | `chore(release): v1.2.0` | 发布是杂项维护，不是新功能——用 `feat` 会污染 changelog |
+
+给 merge commit 套 `chore(merge): ...` 会让它被当成普通提交写进 changelog，
+一条「杂项维护」混在功能列表里，纯噪声。看到默认的 `Merge branch ...` 不要"修正"它。
+
+**但 body 判据照旧适用**——合并冲突的解决取舍常常正是「无法从 diff 看出来」的典型：
+哪两侧改动正交、为什么某行必须放在某个守卫之前、哪处是 git 未标记的语义冲突。
+这类信息只存在于解冲突者的头脑里，值得写进 merge commit 的 body。
+
+`release:` / `merge:` 都不是合法 type，别造。
+
 ## 何时写 body（例外，非常态）
 
 **唯一判据：「为什么这么改」无法从 diff 看出来。**
@@ -82,6 +101,9 @@ allowed-tools: Bash
 
 body 至多 2 行，写「为什么」，不复述「做了什么」。
 **禁止**为凑内容而把一次改动拆成 bullet 列表罗列——那是 diff 的职责。
+
+唯一的例外是合并冲突的解决说明：逐处交代取舍时，2 行放不下，
+按冲突点分条写清楚即可——那不是凑内容，每条都在回答「为什么这样解」。
 
 ## 破坏性变更
 
@@ -131,6 +153,14 @@ EOF
 )"
 ```
 
+## Trailer
+
+`Co-Authored-By:`、`Signed-off-by:` 这类 footer trailer 由环境决定——
+系统指令或仓库约定要求加就加，本 skill 既不规定也不禁止，两者不冲突。
+
+只有一条要求：trailer 与 body 之间空一行，且集中放在信息末尾。
+trailer 不计入 body 的「至多 2 行」限额。
+
 ## 安全协议
 
 - 绝不修改 git config
@@ -149,6 +179,8 @@ feat(config): 支持 WORKERS 多进程配置
 refactor(logging): 用应用层日志替代 uvicorn access log
 docs(skill): 补充兑换码创建流程
 chore: 忽略 .omc/ 工具状态目录
+Merge branch 'feature/session-recovery' into 'main'    ← 合并保留默认格式
+chore(release): v1.2.0
 ```
 
 反例（均取自真实历史）：
@@ -158,4 +190,7 @@ feat: udpate                     ← 拼写错误 + subject 无信息量
 feat: udpate -mfeat: udpate      ← -m 参数漏进了 message
 update                           ← 缺 type
 权益日报工具调用超时设置成200s      ← 缺 type
+merge code                       ← 合并该保留默认 Merge 格式，别自创
+merge: integrate main into feat  ← merge 不是合法 type
+release: v0.1.15                 ← 应为 chore(release): v0.1.15
 ```

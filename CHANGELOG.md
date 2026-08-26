@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 - **auto-goal-v2** skill（`/ace:auto-goal-v2`）：证据驱动的目标控制器——对齐目标差量 → 规划可验证短步 → clean-context worker 执行 → 独立验证 → 由判据台账推导确定性终态（DONE/PARTIAL/BLOCKED/UNVERIFIABLE）。与 auto-goal V1 并存，不迁移 V1 任务；零新增第三方依赖，运行时依赖内聚在 `plugin/skills/auto-goal-v2/`
 
+### Changed
+- **全局规则**：`ace/rules/interactive-clarify.md` 由 `ace/rules/ask-user-guide.md` 取代，仍为常驻 @import 规则。新规则给出问题澄清与审批确认两种模式的可直接照抄的 `AskUserQuestion` 调用骨架（原 interactive-clarify 只有抽象描述），并吸收其 `preview` 用法与跨平台降级说明；同时剥离 spec-coding 专属措辞与 Phase 编号列表，98 行精简至 69 行
+  - 升级影响：`installRulesDir` 只做覆盖拷贝、不清理孤儿文件，已安装用户的 `~/.claude/ace/rules/interactive-clarify.md` 会残留在磁盘；但 CLAUDE.md 中对应 @import 已被 merger 移除，该文件不再被加载，可手动删除
+  - 待办：`templates/ace/rules/ask-user-guide.md` 与 `plugin/skills/coding/spec-coding/references/ask-user-guide.md` 内容近乎重复，待评估收敛（spec-coding 作为独立分发的插件技能，不应依赖全局 rules 存在）
+
 ## [1.1.0] - 2026-06-25
 
 ### Added
