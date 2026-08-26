@@ -1,0 +1,47 @@
+src/commands/uninstall.js
+  s_fcf78066245972::t_b2a65219425198 241-262
+tests/skills-catalog.test.mjs
+  s_fcf78066245972::t_608674cae9c97b 4-6,98
+src/core/projector.js
+  s_fcf78066245972::t_b2a65219425198 6,8-11,28,31-33,37,44,48,50-60,71,85-88,128,130-131,133,135-139
+tests/multi-target-install.test.mjs
+  s_fcf78066245972::t_2075ae555b7fe2 6-8,52,59-60,63-64,68,74-75,84,107,110-124,164
+src/core/targets.js
+  s_fcf78066245972::t_b2a65219425198 19-22,91,93
+src/core/skills-catalog.js
+  s_fcf78066245972::t_b2a65219425198 42,44-45,59
+tests/multi-target-e2e.test.mjs
+  s_fcf78066245972::t_608674cae9c97b 163-169
+  s_fcf78066245972::t_2075ae555b7fe2 85,87,96-97,204
+README.md
+  s_fcf78066245972::t_608674cae9c97b 129-132,135-136,210
+tests/uninstall-roundtrip.test.mjs
+  s_fcf78066245972::t_a2aa8e05657288 101-106
+  s_fcf78066245972::t_2075ae555b7fe2 95,97
+src/core/constants.js
+  s_fcf78066245972::t_b2a65219425198 13-14
+src/core/install-receipt.js
+  s_fcf78066245972::t_b2a65219425198 48-49,58
+src/commands/doctor.js
+  s_fcf78066245972::t_b2a65219425198 153,155-158
+tests/doctor-multi-target.test.mjs
+  s_fcf78066245972::t_2075ae555b7fe2 109
+src/core/installer.js
+  s_fcf78066245972::t_b2a65219425198 41,352,359,369
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.4.43-trip",
+  "base_commit_sha": "087206a00a8558498b82974a65e298ce0c6ba382",
+  "prompts": {},
+  "sessions": {
+    "s_fcf78066245972": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "01a03298-57f8-71b3-a625-e1cc5535b1e7",
+        "model": "gpt-5.6-sol"
+      },
+      "human_author": "r.shi <r.shi@trip.com>"
+    }
+  }
+}
