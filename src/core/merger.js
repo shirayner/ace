@@ -67,8 +67,7 @@ function mergeWithMarkers(existingContent, templateContent) {
     const refs = extractRefs(line);
     const hasObsoleteAceRef = refs.some(ref => {
       if (isAceOwnedRef(ref)) {
-        const refWithAt = `@${ref}`;
-        if (!templateRefs.includes(refWithAt)) {
+        if (!templateRefs.includes(ref)) {
           removed.push(ref);
           return true;
         }
@@ -96,9 +95,7 @@ function mergeWithMarkers(existingContent, templateContent) {
 
   // Get the new refs that were added (in the managed section)
   const existingRefs = extractRefs(existingContent);
-  const added = templateRefs
-    .map(ref => ref.replace(/^@/, ''))
-    .filter(ref => !existingRefs.includes(ref));
+  const added = templateRefs.filter(ref => !existingRefs.includes(ref));
 
   return { content: result, added, removed };
 }
@@ -146,10 +143,9 @@ function mergeWithAppend(existingContent, templateContent) {
   // Filter out ACE-owned refs from existing (we'll add current ones from template)
   // This provides some cleanup even in legacy mode
   const userRefs = existingRefs.filter(ref => !isAceOwnedRef(ref));
-  const templateRefsBare = templateRefs.map(ref => ref.replace(/^@/, ''));
 
   // Find refs in template but not in user's refs
-  const missingRefs = templateRefsBare.filter(ref => !userRefs.includes(ref));
+  const missingRefs = templateRefs.filter(ref => !userRefs.includes(ref));
 
   if (missingRefs.length === 0) {
     return { content: existingContent, added: [], removed: [] };
@@ -176,12 +172,17 @@ function mergeWithAppend(existingContent, templateContent) {
 }
 
 /**
- * Extract @reference paths from content.
+ * Extract @reference paths from content, without the leading '@'.
+ *
+ * Bare paths are returned rather than the raw `@...` match because every consumer
+ * compares these against bare paths (`isAceOwnedRef`, the template/existing ref diff).
+ * Returning the '@' made those comparisons build `@@...` and silently never match, which
+ * deleted every managed @import as "obsolete" the moment the template started using them.
  */
 function extractRefs(content) {
   const refPattern = /@~?\/?\.?claude\/[^\s)]+/g;
   const matches = content.match(refPattern) || [];
-  return matches;
+  return matches.map(ref => ref.replace(/^@/, ''));
 }
 
 /**
