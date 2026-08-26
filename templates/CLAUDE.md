@@ -14,10 +14,11 @@
 
 **优先级** — 正确性 > 可读性 > 清晰 > 简单 > 显式。
 
-## 编码规则（编辑代码前，先阅读对应规则文件）
+## 常驻规则（始终加载）
 
-- ~/.claude/ace/rules/code-quality.md — 代码质量标准（函数/命名/结构/SOLID 检查清单）
-- ~/.claude/ace/rules/clean-code.md — Clean Code 详细原则与反模式速查
+- @~/.claude/ace/rules/code-quality.md
+- @~/.claude/ace/rules/clean-code.md
+- @~/.claude/ace/rules/interactive-clarify.md
 
 ## 工作流规则（对应场景时参考）
 
@@ -25,7 +26,6 @@
 - ~/.claude/ace/rules/task-recovery.md — 任务恢复流程（用户说"继续"时阅读）
 - ~/.claude/ace/rules/reporting.md — 报告输出规则（生成报告前阅读）
 - ~/.claude/ace/rules/memory-policy.md — 记忆质量策略（保存记忆前阅读）
-- ~/.claude/ace/rules/interactive-clarify.md — 交互式澄清规则（需要提问时阅读）
 
 ## 流程门禁优先级
 

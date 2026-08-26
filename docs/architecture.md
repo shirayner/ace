@@ -74,10 +74,10 @@ plugin/skills/<category>/{name}/
 
 | 规则 | 加载时机 |
 |------|---------|
-| clean-code.md | 编辑代码前 |
-| code-quality.md | 编辑代码前 |
+| clean-code.md | 始终（@import） |
+| code-quality.md | 始终（@import） |
+| interactive-clarify.md | 始终（@import） |
 | context-hygiene.md | 长任务时 |
-| interactive-clarify.md | 需要提问时 |
 | memory-policy.md | 保存记忆前 |
 | reporting.md | 生成报告前 |
 | thinking.md | 始终 |
