@@ -17,7 +17,9 @@ import assert from 'node:assert/strict';
 import fs from 'fs-extra';
 import os from 'node:os';
 import path from 'node:path';
-import { writeCanonicalStore, projectToTarget, linkDir } from '../src/core/projector.js';
+import {
+  writeCanonicalStore, projectToTarget, findProjectionConflicts, linkDir,
+} from '../src/core/projector.js';
 import { PROJECTION, resolveTargets, detectTargets, TARGETS, nativeTargets } from '../src/core/targets.js';
 import { retargetRefs } from '../src/core/instructions.js';
 
@@ -146,11 +148,18 @@ test('a native target needs no projection at all', async () => {
   assert.deepEqual(result.paths, [], 'Codex reads ~/.agents/skills directly — copying would duplicate for nothing');
 });
 
-test('Codex, OpenCode and DeepSeek Harness all read the canonical store natively', () => {
-  assert.deepEqual(nativeTargets().sort(), ['codex', 'deepseek-harness', 'opencode']);
+test('only recursive consumers read the canonical store natively', () => {
+  assert.deepEqual(nativeTargets().sort(), ['codex', 'opencode']);
   for (const id of nativeTargets()) {
-    assert.equal(TARGETS[id].skillsDir, TARGETS['codex'].skillsDir, `${id} shares the canonical root`);
+    assert.equal(TARGETS[id].skillsDir, TARGETS.codex.skillsDir, `${id} shares the canonical root`);
   }
+});
+
+test('DeepSeek Harness uses a protected flat copy target', () => {
+  assert.equal(TARGETS['deepseek-harness'].projection, PROJECTION.COPY);
+  assert.equal(TARGETS['deepseek-harness'].scanDepth, 1);
+  assert.equal(TARGETS['deepseek-harness'].protectExistingSkills, true);
+  assert.notEqual(TARGETS['deepseek-harness'].skillsDir, TARGETS.codex.skillsDir);
 });
 
 test('a copy target materializes real files in its own skills dir', async () => {
@@ -168,6 +177,44 @@ test('a copy target materializes real files in its own skills dir', async () => 
     await fs.pathExists(path.join(skillsDir, 'spec-coding', 'SKILL.md')),
     'Kiro reads its own dir and mishandles links into .agents, so it gets real files',
   );
+});
+
+test('a protected target reports every unowned skill before projection', async () => {
+  const skillsDir = await tmpDir('protected');
+  await fs.outputFile(path.join(skillsDir, 'spec-coding', 'SKILL.md'), '# theirs\n');
+  await fs.outputFile(path.join(skillsDir, 'auto-goal', 'SKILL.md'), '# theirs\n');
+  const target = { ...TARGETS['deepseek-harness'], skillsDir };
+
+  const conflicts = await findProjectionConflicts({
+    target, skills: ['spec-coding', 'auto-goal'], previousPaths: [],
+  });
+
+  assert.deepEqual(conflicts.sort(), [
+    path.join(skillsDir, 'auto-goal'), path.join(skillsDir, 'spec-coding'),
+  ].sort());
+});
+
+test('a protected target updates owned skills and removes deselected owned skills', async () => {
+  const { root, index } = await fixtureSource();
+  const canonicalDir = await tmpDir('canon');
+  await writeCanonicalStore({
+    destDir: canonicalDir, skillsSrcDir: root, skills: ['spec-coding', 'auto-goal'], index,
+  });
+  const skillsDir = await tmpDir('dsh');
+  const target = { ...TARGETS['deepseek-harness'], skillsDir };
+  const previousPaths = [
+    path.join(skillsDir, 'spec-coding'), path.join(skillsDir, 'auto-goal'),
+  ];
+  await fs.outputFile(path.join(previousPaths[0], 'SKILL.md'), '# old\n');
+  await fs.outputFile(path.join(previousPaths[1], 'SKILL.md'), '# old\n');
+
+  await projectToTarget({
+    target, canonicalDir, skills: ['spec-coding'], index, previousPaths,
+  });
+
+  assert.match(await fs.readFile(path.join(previousPaths[0], 'SKILL.md'), 'utf8'), /spec-coding/);
+  assert.equal(await fs.pathExists(previousPaths[1]), false);
+  assert.ok(await fs.pathExists(path.join(previousPaths[0], 'references', 'r.md')));
 });
 
 test('Kiro is a copy target, not a link target', () => {

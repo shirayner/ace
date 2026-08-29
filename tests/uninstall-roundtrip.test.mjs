@@ -88,6 +88,17 @@ test('uninstall removes projected copies from a target directory', async () => {
   );
 });
 
+test('uninstall removes DeepSeek Harness flat copies', async () => {
+  const { home } = await roundtrip({ targets: ['deepseek-harness'] });
+
+  for (const skill of ['spec-coding', 'auto-goal']) {
+    assert.equal(
+      await fs.pathExists(path.join(home, '.dsh', 'skills', skill)), false,
+      `${skill} survived in the DeepSeek Harness skills directory`,
+    );
+  }
+});
+
 test('uninstall removes ACE skills from the canonical store', async () => {
   const { home } = await roundtrip({ targets: ['codex', 'deepseek-harness'] });
 

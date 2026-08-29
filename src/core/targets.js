@@ -1,6 +1,8 @@
 import path from 'path';
 import os from 'os';
-import { CLAUDE_DIR, AGENTS_HOME, CANONICAL_SKILLS_DIR } from './constants.js';
+import {
+  CLAUDE_DIR, AGENTS_HOME, CANONICAL_SKILLS_DIR, DSH_HOME, DSH_SKILLS_DIR,
+} from './constants.js';
 
 /**
  * Install targets: the agent tools ACE can install into.
@@ -12,14 +14,14 @@ import { CLAUDE_DIR, AGENTS_HOME, CANONICAL_SKILLS_DIR } from './constants.js';
  *   1. Where skills are read from   → `skillsDir`
  *   2. How they have to get there   → `projection`
  *
- * Three tools (Codex, OpenCode, DeepSeek Harness) read the shared cross-agent root
- * `~/.agents/skills` natively. For them the projection is `none`: ACE writes the canonical
- * store once and all three see it. No copies, no links, no per-tool code.
+ * Codex and OpenCode recursively read the shared cross-agent root `~/.agents/skills`, so their
+ * projection is `none`. DeepSeek Harness only scans direct children of its skill roots; it gets
+ * flat copies under `${DSH_HOME:-~/.dsh}/skills` instead.
  *
  * ── Why the canonical store preserves categories ─────────────────────────────────
- * Native consumers recurse under `~/.agents/skills`, so ACE installs its skills below
- * `ace-<category>/`. Claude Code and Kiro keep dedicated flat deployment paths because their
- * loaders have different constraints; those projections do not dictate the shared layout.
+ * Recursive consumers can read ACE skills below `ace-<category>/`. Claude Code, DeepSeek
+ * Harness and Kiro keep dedicated flat deployment paths because their loaders have different
+ * constraints; those projections do not dictate the shared layout.
  *
  * ── Evidence ─────────────────────────────────────────────────────────────────────
  * Every `skillsDir` / `scanDepth` below was verified on a real machine (probe skills
@@ -83,14 +85,15 @@ export const TARGETS = {
 
   'deepseek-harness': {
     label: 'DeepSeek Harness',
-    home: path.join(os.homedir(), '.dsh'),
-    skillsDir: CANONICAL_SKILLS_DIR,
+    home: DSH_HOME,
+    skillsDir: DSH_SKILLS_DIR,
     instructions: path.join(AGENTS_HOME, 'AGENTS.md'),
     instructionRoot: '~/.agents',
-    projection: PROJECTION.NONE,
-    scanDepth: Infinity,
-    detect: [path.join(os.homedir(), '.dsh'), AGENTS_HOME],
-    verifiedBy: 'environment evidence: nested skills under ~/.agents/skills are discovered',
+    projection: PROJECTION.COPY,
+    protectExistingSkills: true,
+    scanDepth: 1,
+    detect: [DSH_HOME, AGENTS_HOME],
+    verifiedBy: 'provider source: scans each skill root direct child as <skill>/SKILL.md',
   },
 
   kiro: {

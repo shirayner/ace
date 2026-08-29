@@ -109,20 +109,21 @@ Which agent tools do you use?
 
 ### 一份 skills，多个工具共用
 
-Skills 只写一份到**规范存储** `~/.agents/skills/`（可用 `DSH_AGENTS_HOME` 覆盖），
+Skills 先写入**规范存储** `~/.agents/skills/`（可用 `DSH_AGENTS_HOME` 覆盖），
 再按每个工具的实际发现机制投影：
 
-| 工具                | Skills 来源                | 投影方式         | 指令文件                      |
-| ------------------- | -------------------------- | ---------------- | ----------------------------- |
-| **Codex**           | `~/.agents/skills/` 原生读 | 无（零拷贝）     | `~/.codex/AGENTS.md`          |
-| **OpenCode**        | `~/.agents/skills/` 原生读 | 无（零拷贝）     | `~/.config/opencode/AGENTS.md`|
-| **DeepSeek Harness**| `~/.agents/skills/` 原生读 | 无（零拷贝）     | `~/.agents/AGENTS.md`         |
-| **Kiro**            | `~/.kiro/skills/`          | **复制**         | `~/.kiro/AGENTS.md`           |
-| **Claude Code**     | 插件市场（plugin cache）   | 本地 marketplace | `~/.claude/CLAUDE.md`         |
+| 工具                | Skills 来源                         | 投影方式         | 指令文件                      |
+| ------------------- | ----------------------------------- | ---------------- | ----------------------------- |
+| **Codex**           | `~/.agents/skills/` 原生读          | 无（零拷贝）     | `~/.codex/AGENTS.md`          |
+| **OpenCode**        | `~/.agents/skills/` 原生读          | 无（零拷贝）     | `~/.config/opencode/AGENTS.md`|
+| **DeepSeek Harness**| `${DSH_HOME:-~/.dsh}/skills/<skill>`| **扁平复制**     | `~/.agents/AGENTS.md`         |
+| **Kiro**            | `~/.kiro/skills/`                   | **复制**         | `~/.kiro/AGENTS.md`           |
+| **Claude Code**     | 插件市场（plugin cache）            | 本地 marketplace | `~/.claude/CLAUDE.md`         |
 
-三个工具原生读取 `~/.agents/skills/`，因此**完全不需要投影**——写一次，三个工具都能看到。
-只有 Kiro 需要真实副本（它对指向 `.agents` 的链接处理不可靠；被静默跳过的链接和安装失败无法区分，
-所以宁可牺牲去重也要保证正确）。Claude Code 继续走它原有的插件市场机制。
+Codex 和 OpenCode 递归读取 `~/.agents/skills/`，因此无需投影。DeepSeek Harness 只扫描 skill
+根目录的直接子目录，所以 ACE 会把已选 skill 的完整 bundle 扁平复制到它自己的 `skills/` 下；
+如果那里已有非 ACE 托管的同名目录，安装会明确报错而不是覆盖。Kiro 也需要真实副本（它对指向
+`.agents` 的链接处理不可靠）。Claude Code 继续走它原有的插件市场机制。
 
 ### 两条硬约束
 

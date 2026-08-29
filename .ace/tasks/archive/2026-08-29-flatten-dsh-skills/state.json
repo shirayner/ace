@@ -1,0 +1,68 @@
+{
+  "changeName": "flatten-dsh-skills",
+  "type": "simple",
+  "skillName": "auto-goal",
+  "status": "completed",
+  "created_at": "2026-08-30T02:15:34+08:00",
+  "updated_at": "2026-08-29T18:25:55Z",
+  "completed_at": "2026-08-29T18:25:55Z",
+  "archived_at": "2026-08-29T18:25:55Z",
+  "completion_criteria": [
+    "选择 DeepSeek Harness 后将每个已选 skill 完整打平复制到 ${DSH_HOME:-~/.dsh}/skills/<skill>/",
+    "未托管同名 skill 触发明确冲突错误，ACE 托管 skill 可安全更新和取消选择",
+    "doctor、uninstall、DSH_HOME、目标隔离和重复初始化测试通过",
+    "README 与实际 DSH 安装布局一致"
+  ],
+  "tasks": [
+    {
+      "id": "T1",
+      "title": "实现 DSH 扁平安全投影",
+      "status": "completed"
+    },
+    {
+      "id": "T2",
+      "title": "完善 DSH 生命周期处理",
+      "status": "completed",
+      "depends": [
+        "T1"
+      ]
+    },
+    {
+      "id": "T3",
+      "title": "补充测试和文档",
+      "status": "completed",
+      "depends": [
+        "T2"
+      ]
+    },
+    {
+      "id": "T4",
+      "title": "执行验证并归档",
+      "status": "completed",
+      "depends": [
+        "T3"
+      ]
+    }
+  ],
+  "simple": {
+    "phase": "executing",
+    "decisions": [
+      {
+        "decision": "仅为 DeepSeek Harness 增加 ${DSH_HOME:-~/.dsh}/skills 的扁平副本，保留共享 canonical store 的分类布局",
+        "reason": "DSH 只扫描 skill 根目录直接子项，而 Codex/OpenCode 仍可使用分类共享布局",
+        "alternatives": [
+          "全局打平 ~/.agents/skills",
+          "仅打平一层"
+        ]
+      },
+      {
+        "decision": "未托管同名 skill 报错，禁止静默覆盖",
+        "reason": "保护用户或其他安装器管理的内容",
+        "alternatives": [
+          "后者覆盖前者",
+          "自动添加来源前缀"
+        ]
+      }
+    ]
+  }
+}

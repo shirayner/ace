@@ -8,17 +8,19 @@ export const CLAUDE_DIR = path.join(os.homedir(), '.claude');
 export const TEMPLATES_DIR = path.join(__dirname, '..', '..', 'templates');
 
 /**
- * The cross-agent skill root.
- *
- * Codex, OpenCode and DeepSeek Harness all discover nested `SKILL.md` files under
- * `~/.agents/skills` natively, so ACE keeps its categories as `ace-<category>/<skill>/`.
- * `$DSH_AGENTS_HOME` is honoured because DSH itself resolves the root that way, and a user
- * who moved it would otherwise get a store nothing reads.
+ * The cross-agent skill root used by recursive consumers such as Codex and OpenCode.
+ * `$DSH_AGENTS_HOME` is retained for compatibility with users who relocated this shared root.
  */
 export const AGENTS_HOME = path.resolve(
   process.env.DSH_AGENTS_HOME || path.join(os.homedir(), '.agents')
 );
 export const CANONICAL_SKILLS_DIR = path.join(AGENTS_HOME, 'skills');
+
+/** DeepSeek Harness' private root. Its skill loader only scans direct child directories. */
+export const DSH_HOME = path.resolve(
+  process.env.DSH_HOME || path.join(os.homedir(), '.dsh')
+);
+export const DSH_SKILLS_DIR = path.join(DSH_HOME, 'skills');
 
 // ace's own global config lives outside ~/.claude/ so it survives Claude Code resets
 export const ACE_HOME = path.join(os.homedir(), '.ace');

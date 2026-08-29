@@ -35,7 +35,7 @@ after(async () => {
  * specifier is unqualified and resolves to the already-loaded module. A separate process per
  * case is what actually gives each one its own HOME.
  */
-async function runInstall({ targets }) {
+async function runInstall({ targets, environment = {} }) {
   const home = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-e2e-home-'));
   const repo = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-e2e-repo-'));
   scratch.push(home, repo);
@@ -68,7 +68,7 @@ async function runInstall({ targets }) {
       home,
       repo,
       targets.join(','),
-    ], { env: { ...process.env, HOME: home, USERPROFILE: home } });
+    ], { env: { ...process.env, HOME: home, USERPROFILE: home, ...environment } });
 
     const result = JSON.parse(stdout);
     return { home, repo, ...result };
@@ -87,7 +87,7 @@ test('a Codex install lands in the canonical store Codex actually reads', async 
   assert.equal(await fs.pathExists(path.join(home, '.agents', 'skills', 'spec-coding')), false);
 });
 
-test('one canonical store serves all three native targets', async () => {
+test('recursive targets share the canonical store while DSH gets flat copies', async () => {
   const { home, errors, receipt } = await runInstall({
     targets: ['codex', 'opencode', 'deepseek-harness'],
   });
@@ -95,9 +95,29 @@ test('one canonical store serves all three native targets', async () => {
   assert.deepEqual(errors, []);
   assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', 'ace-coding', 'spec-coding', 'SKILL.md')));
   assert.ok(await fs.pathExists(path.join(home, '.agents', 'skills', 'ace-general', 'auto-goal', 'SKILL.md')));
-  // The payoff: three tools, zero projected paths.
-  const projected = receipt.targets.flatMap(t => t.paths.filter(p => p.includes('skills')));
-  assert.deepEqual(projected, [], 'native targets must not duplicate the store');
+  assert.ok(await fs.pathExists(path.join(home, '.dsh', 'skills', 'spec-coding', 'SKILL.md')));
+  assert.ok(await fs.pathExists(path.join(home, '.dsh', 'skills', 'auto-goal', 'SKILL.md')));
+
+  const codex = receipt.targets.find(target => target.id === 'codex');
+  const opencode = receipt.targets.find(target => target.id === 'opencode');
+  const dsh = receipt.targets.find(target => target.id === 'deepseek-harness');
+  assert.deepEqual(codex.paths.filter(file => file.includes('skills')), []);
+  assert.deepEqual(opencode.paths.filter(file => file.includes('skills')), []);
+  assert.equal(dsh.paths.filter(file => file.includes(`${path.sep}skills${path.sep}`)).length, 2);
+});
+
+test('DSH_HOME relocates the flat DeepSeek Harness projection', async () => {
+  const customDshHome = await fs.mkdtemp(path.join(os.tmpdir(), 'ace-e2e-dsh-'));
+  scratch.push(customDshHome);
+
+  const { home, errors } = await runInstall({
+    targets: ['deepseek-harness'],
+    environment: { DSH_HOME: customDshHome },
+  });
+
+  assert.deepEqual(errors, []);
+  assert.ok(await fs.pathExists(path.join(customDshHome, 'skills', 'spec-coding', 'SKILL.md')));
+  assert.equal(await fs.pathExists(path.join(home, '.dsh', 'skills')), false);
 });
 
 test('Kiro gets real files in its own skills directory', async () => {

@@ -9,9 +9,11 @@ import {
   PLUGIN_KEY, PLUGIN_NAME, CANONICAL_SKILLS_DIR,
 } from './constants.js';
 import { resolveTargets, PROJECTION } from './targets.js';
-import { writeCanonicalStore, projectToTarget } from './projector.js';
+import {
+  writeCanonicalStore, projectToTarget, findProjectionConflicts,
+} from './projector.js';
 import { installInstructions } from './instructions.js';
-import { writeReceipt } from './install-receipt.js';
+import { readReceipt, writeReceipt } from './install-receipt.js';
 import { discoverCatalog, indexSkills, resolveSelection } from './skills-catalog.js';
 import { mergeClaudeMd, mergeSettingsJson, mergeInstalledPlugins, mergeKnownMarketplaces, conflictCheck, backupFile, backupPreInstall } from './merger.js';
 
@@ -349,6 +351,23 @@ export class Installer {
    */
   async installSharedSkills(targets, skills) {
     const index = indexSkills(await this.getCatalog());
+    const previousReceipt = await readReceipt();
+    const previousTargets = new Map(
+      (previousReceipt?.targets ?? []).map(target => [target.id, target]),
+    );
+
+    const conflicts = [];
+    for (const target of targets) {
+      conflicts.push(...await findProjectionConflicts({
+        target,
+        skills,
+        previousPaths: previousTargets.get(target.id)?.paths ?? [],
+      }));
+    }
+    if (conflicts.length > 0) {
+      throw new Error(`Skill projection conflicts:\n${conflicts.map(file => `- ${file}`).join('\n')}`);
+    }
+
     const { dir, entries } = await writeCanonicalStore({
       destDir: this.canonicalDir,
       skillsSrcDir: this.skillsSrcDir,
@@ -367,6 +386,7 @@ export class Installer {
           canonicalDir: dir,
           skills,
           index,
+          previousPaths: previousTargets.get(target.id)?.paths ?? [],
         });
 
         // Rules and the index that references them are only useful together, so the

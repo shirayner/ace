@@ -60,6 +60,19 @@ export function canonicalSkillDir(canonicalDir, category, skill) {
   return path.join(canonicalDir, canonicalCategoryName(category), skill);
 }
 
+/** Reject protected target paths that exist without being recorded by ACE. */
+export async function findProjectionConflicts({ target, skills, previousPaths = [] }) {
+  if (!target.protectExistingSkills) return [];
+
+  const owned = new Set(previousPaths.map(previousPath => path.resolve(previousPath)));
+  const conflicts = [];
+  for (const skill of skills) {
+    const dest = path.resolve(target.skillsDir, skill);
+    if (await fs.pathExists(dest) && !owned.has(dest)) conflicts.push(dest);
+  }
+  return conflicts;
+}
+
 /**
  * Project the canonical store into one target.
  *
@@ -68,7 +81,9 @@ export function canonicalSkillDir(canonicalDir, category, skill) {
  *
  * @returns {Promise<{mode: string, paths: string[]}>}
  */
-export async function projectToTarget({ target, canonicalDir, skills, index }) {
+export async function projectToTarget({
+  target, canonicalDir, skills, index, previousPaths = [],
+}) {
   if (target.projection === PROJECTION.NONE) {
     return { mode: PROJECTION.NONE, paths: [] };
   }
@@ -79,6 +94,14 @@ export async function projectToTarget({ target, canonicalDir, skills, index }) {
   }
 
   await fs.ensureDir(target.skillsDir);
+  const selectedPaths = new Set(skills.map(skill => path.resolve(target.skillsDir, skill)));
+  for (const previousPath of previousPaths) {
+    const resolved = path.resolve(previousPath);
+    if (isDirectChild(target.skillsDir, resolved) && !selectedPaths.has(resolved)) {
+      await removeProjectedPath(resolved);
+    }
+  }
+
   const paths = [];
 
   for (const skill of skills) {
@@ -88,6 +111,12 @@ export async function projectToTarget({ target, canonicalDir, skills, index }) {
       : path.join(canonicalDir, skill);
     const dest = path.join(target.skillsDir, skill);
     if (!await fs.pathExists(src)) continue;
+
+    if (target.protectExistingSkills
+      && await fs.pathExists(dest)
+      && !previousPaths.some(previousPath => path.resolve(previousPath) === path.resolve(dest))) {
+      throw new Error(`Refusing to overwrite unowned skill: ${dest}`);
+    }
 
     await fs.remove(dest);
     if (target.projection === PROJECTION.LINK) {
@@ -150,4 +179,10 @@ async function pruneManagedSkills(destDir, index) {
  */
 export async function removeProjectedPath(target) {
   await fs.remove(target);
+}
+
+function isDirectChild(parent, child) {
+  const relative = path.relative(path.resolve(parent), child);
+  return relative !== '' && !relative.startsWith('..') && !path.isAbsolute(relative)
+    && !relative.includes(path.sep);
 }
